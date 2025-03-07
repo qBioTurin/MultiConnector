@@ -81,7 +81,7 @@ sines <- generate_curve(num_curves, "Sine")
 
 cosines <- generate_curve(num_curves, "Cosine")
 
-iperboltest <- as_tibble(rbind(parabolas, hyperbolas, sines, cosines))
+TimeSeries <- as_tibble(rbind(parabolas, hyperbolas, sines, cosines))
 generate_annotation_file <- function(curves_data) {
   # Estrai i subjID unici dalle curve generate
   unique_subjects <- unique(curves_data$subjID)
@@ -101,4 +101,4 @@ generate_annotation_file <- function(curves_data) {
 }
 
 
-annotation_data <- generate_annotation_file(iperboltest)
+Annotations <- generate_annotation_file(iperboltest)
