@@ -99,6 +99,6 @@ generate_annotation_file <- function(curves_data) {
   
   return(annotations)
 }
-
+iperboltest <- rbind(parabolas, hyperbolas, sines, cosines)
 
 Annotations <- generate_annotation_file(iperboltest)
