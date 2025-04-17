@@ -5,7 +5,7 @@ setMethod("splinePlot", signature = c("KData"), function(KData, ConfigChosen) {
   library(dplyr)
   library(ggplot2)
   library(patchwork)
-  
+  library(rlist)
   ######
   data<-KData@CData
   cluster<-ConfigChosen$CfitandParameters$pred$class.pred
