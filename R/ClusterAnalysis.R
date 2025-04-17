@@ -82,7 +82,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
   
   CData <- CONNECTORData@curves
   start <- Sys.time()
-  KmData <- presetKmeans(CData, q = p)
+  KmData <- presetKmeans(CData, q = p, TimeGrids=CONNECTORData@TimeGrids)
   
   i <- rep(G, each = runs)
   if (!is.null(seed)) {

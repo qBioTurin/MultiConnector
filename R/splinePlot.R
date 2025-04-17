@@ -1,12 +1,11 @@
+#' @import dplyr ggplot2 patchwork rlist
+#' @export
+#'
 setGeneric("splinePlot", function(KData, ConfigChosen) standardGeneric("splinePlot"))
 #' @rdname splinePlot
 #' @export
 setMethod("splinePlot", signature = c("KData"), function(KData, ConfigChosen) {
-  library(dplyr)
-  library(ggplot2)
-  library(patchwork)
-  library(rlist)
-  ######
+
   data<-KData@CData
   cluster<-ConfigChosen$CfitandParameters$pred$class.pred
   q <- sapply(1:length(KData@FullS), function(x)
