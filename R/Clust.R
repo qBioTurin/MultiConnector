@@ -11,7 +11,6 @@ library(RhpcBLASctl)
 "presetKmeans" <- function(CData,
                            natural = TRUE,
                            q,
-                           TimeGrids,
                            pert = 0.01) {
   
   CData$jamesID <- as.integer(factor(CData$subjID, levels = unique(CData$subjID)))
@@ -33,9 +32,13 @@ library(RhpcBLASctl)
   
   #Definiamo la griglia(faccio una lista i tempi per la j-esima misura)
   
+  grid <- list()
   
-  grid=TimeGrids
-  
+  for (j in 1:J) {
+    a <- sort(unique(CData$time[CData$measureID == M[j]]))
+    grid <- list.append(grid, a)
+  }
+  names(grid)<-M
   
   #Faccio una lista contente le FullS per ogni misura
   FullS <- list()
@@ -102,7 +105,6 @@ library(RhpcBLASctl)
     points[i, ]  <- solve(t(Si) %*% Si + pert * diag(sum(q))) %*% t(Si) %*% 
       yi
   }
-  browser()
   return(new(
     "KData",
     CData = CData,

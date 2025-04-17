@@ -11,7 +11,7 @@
 #' @param seed Seed for the kmeans function.
 #' @param save If TRUE then the growth curves plot truncated at the "TruncTime" is saved into a pdf file.
 #' @param path The folder path where the plot(s) will be saved. If it is missing, the plot is saved in the current working  directory.
-#' @param Cores Number of cores to parallelize computations.
+#' @param cores Number of cores to parallelize computations.
 #' @param PercPCA=.85
 #' @param pert ....
 #'
@@ -60,7 +60,7 @@ setGeneric("ClusterAnalysis", function(CONNECTORData,
                                        h = NULL,
                                        runs = 50,
                                        seed = 2404,
-                                       Cores = 1,
+                                       cores = 1,
                                        PercPCA = .85,
                                        MinErrFreq = 0,
                                        pert = 0.01)
@@ -73,7 +73,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
                                                                    h = NULL,
                                                                    runs = 50,
                                                                    seed = 2404,
-                                                                   Cores = 1,
+                                                                   cores = 1,
                                                                    PercPCA = .85,
                                                                    MinErrFreq = 0,
                                                                    pert = 0.01)
@@ -82,7 +82,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
   
   CData <- CONNECTORData@curves
   start <- Sys.time()
-  KmData <- presetKmeans(CData, q = p, TimeGrids=CONNECTORData@TimeGrids)
+  KmData <- presetKmeans(CData, q = p)
   
   i <- rep(G, each = runs)
   if (!is.null(seed)) {
@@ -118,7 +118,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
       )
     }
   }
-  if (Cores == 1) {
+  if (cores == 1) {
     
     results <- lapply(all_combinations, function(combo) {
       #browser()
@@ -199,7 +199,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
       "FORK"
     else
       "PSOCK"
-    cl <- makeCluster(Cores, type = type)
+    cl <- makeCluster(cores, type = type)
     clusterSetRNGStream(cl, seed)
     clusterCall(cl, function() {
       library(statmod)
