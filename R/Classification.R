@@ -173,7 +173,7 @@ ClassificationSingleCurve = function(clusterdata, CData_i, Snew, Gamma, sigma, L
 
   ## calculate the probs to belong in the clusters
 
-  Pcl$class = Pcl$pi * pi / sum(pi * pi)
+  Pcl$class = Pcl$pi * pi / sum(Pcl$pi * pi)
 
   CData_i$cluster = Pcl$cluster[which.max(Pcl$log_pi)]
   Pclass = Pcl$class

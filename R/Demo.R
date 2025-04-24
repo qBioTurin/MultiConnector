@@ -17,6 +17,7 @@ library(MetBrewer)
 library(gghalves)
 library(statmod)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
 #RandomGenerationNumber sets as: "Mersenne-Twister" "Inversion"        "Rejection"   (RNGkind())
 
 #### Loading data to cluster ####
@@ -86,6 +87,7 @@ ClassNew = ClassificationCurves(newdata = DataNew,
                      Cores =1,
                      entropyCutoff =1, probCutoff = 0.6 )
 
-ClassNew$ClassMatrix_entropy
+ClassNew$ListClassID$ID_1
+
 
 
