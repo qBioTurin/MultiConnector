@@ -60,7 +60,7 @@ MaximumDiscriminationFunction<-function(ConfigChoosen, KData,absvalue=TRUE)
       data.frame(Time = unlist(KData@TimeGrids), DiscrFunc = discrim[, x], DiscrNumber = paste0("DiscrFunc", x))
     )
 
-    q<- sapply(c(1:4), function(i){
+    q<- sapply((1:length(KData@TimeGrids), function(i){
       rep(names(KData@TimeGrids[i]), length(KData@TimeGrids[[i]]))
     })
     DiscrList[[1]]$measureID<-unlist(q)
