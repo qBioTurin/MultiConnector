@@ -44,7 +44,7 @@ setMethod("LargeGridTimeOfPoints", signature = c("CONNECTORData"),
             timeMeasure <- data@curves[, c("curvesID", "time")]
             timeCombination <- timeMeasure %>%
               group_by(curvesID) %>%
-              expand(Time1 = time, Time2 = time) %>%
+              tidyr::expand(Time1 = time, Time2 = time) %>%
               ungroup() %>%
               select(-curvesID)
             #group timeMeasure by Time1 and Time2 and count the number of elements in each group

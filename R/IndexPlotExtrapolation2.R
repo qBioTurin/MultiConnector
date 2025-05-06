@@ -70,6 +70,8 @@ setMethod("IndexPlotExtrapolation2", signature(), function(CONNECTORData,
     return(Mean)
   })) %>%
     tidyr::gather(-time, -measureID, value = "value", key = "cluster")
+  combined_df$cluster <- factor(combined_df$cluster)
+  MeanC$cluster <- factor(MeanC$cluster)
   
   # Plot with cluster-specific mean curves
   combined_df %>%

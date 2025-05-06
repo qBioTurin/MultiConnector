@@ -46,7 +46,7 @@ CrossLogLikePlot$Cosine
 source("KData.R")
 source("ClusterAnalysis.R")
 
-clusters<-ClusterAnalysis(Data, G=2:6, p=c(3,4,6,7), runs=8, cores=4)
+clusters<-ClusterAnalysis(Data, G=2:6, p=c("Cosine"=3,"Parabola"=6,"Hyperbola"=4,"Sine"=7), runs=8, cores=10)
 
 saveRDS(clusters, file = "../inst/Data/Synthetic/clusters.RDs")
 clusters = readRDS("../inst/Data/Synthetic/clusters.RDs")

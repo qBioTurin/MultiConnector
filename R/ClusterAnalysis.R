@@ -78,10 +78,10 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
                                                                    MinErrFreq = 0,
                                                                    pert = 0.01)
 {
-  #CONNECTORData deve essere il dataset
-  
-  CData <- CONNECTORData@curves
   start <- Sys.time()
+  p<-process_q(p, CONNECTORData)
+  #CONNECTORData deve essere il dataset
+  CData <- CONNECTORData@curves
   KmData <- presetKmeans(CData, q = p)
   
   i <- rep(G, each = runs)
@@ -317,8 +317,9 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
   
   end <- Sys.time() - start
   #save in a file the value of end
-  cat(end, file = "end.txt")
-  print(end)
+  #cat(end, file = "end.txt")
+  end<-as.numeric(end)
+  print(paste("Total time:", round(end, 2), "seconds (rounded at the 2 decim)"))
   return(results)
 })
 
@@ -544,4 +545,24 @@ setMethod("DistAllSubjCurves2Curves.sapl", signature(KData = "KData"), function(
   dist_matrix[upper.tri(dist_matrix)] <- dist_values
   
   return(dist_matrix)
+})
+
+
+setGeneric("process_p", function(p, CONNECTORData)
+  standardGeneric("process_p"))
+
+setMethod("process_p", signature(), function(p, CONNECTORData) {
+  if (!is.null(names(p))) {
+    valid_names <- names(CONNECTORData@TimeGrids)
+    if (!all(names(p) %in% valid_names)) {
+      stop(
+        "Some of the names provided in 'p' are invalid. Allowed names are: ",
+        paste(valid_names, collapse = ", ")
+      )
+    }
+    # Ordina in ordine alfabetico e rimuove i nomi
+    p <- p[order(names(p))]
+    names(p) <- NULL
+  }
+  return(p)
 })
