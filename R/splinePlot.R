@@ -95,7 +95,10 @@ setMethod("splinePlot", signature = c("KData"), function(KData, ConfigChosen) {
     }
     
     # Combine plots for this jamesID using patchwork
-    combined_plot <- wrap_plots(james_plots, ncol = 2)
+    combined_plot <- wrap_plots(james_plots, ncol = 2) + 
+      plot_layout(guides = "collect") & 
+      theme(legend.position = "bottom")
+    
     plot_list[[as.character(james_id)]] <- combined_plot
   }
   

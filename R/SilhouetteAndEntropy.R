@@ -118,7 +118,7 @@ setMethod("SilEntropy", signature(), function(best, ClusAnaOutput) {
          x = "Subject",
          y = "Entropy",
          fill = "Cluster Type") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none")+
     coord_flip()
   
   p1+p2
