@@ -2,6 +2,8 @@
 
 #' @title KData
 #' @description KData is a class with all output of PRESETKMEANS that are necessary for call JUSTKMEANS and INTFCLUST
+#' @slot CData Contains timeseriefile datas
+#' @slot TimeGrids TimeGrids present in CONNECTORData
 #' @slot points Initial coefficent spline points
 #' @slot N subject number
 #' @slot S block diagonal matrix
