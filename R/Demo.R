@@ -36,14 +36,16 @@ source("DataVisualization.R")
 source("GridTimeOfPoints.R")
 DataVisualization(Data)
 DataVisualization(Data, large=T)
+source("PlotDataTruncation.R")
 source("DataTruncation.R")
-DataTruncation(Data, feature="gender", measure="Parabola", truncTime=5)
+PlotDataTruncation(Data,  measure="Parabola", truncTime=5)
+DataTruncation(Data,  measure="Parabola", truncTime=5)
 source("BasisDimensionChoice.R")
 source("Clust.R")
 CrossLogLikePlot<-BasisDimensionChoice(Data, p=2:10, cores=10)
 CrossLogLikePlot$Cosine
 
-source("KData.R")
+source("Clust.R")
 source("ClusterAnalysis.R")
 
 clusters<-ClusterAnalysis(Data, G=2:6, p=c("Cosine"=3,"Parabola"=6,"Hyperbola"=4,"Sine"=7), runs=8, cores=10)
@@ -53,20 +55,21 @@ clusters = readRDS("../inst/Data/Synthetic/clusters.RDs")
 
 source("IndexPlotExtrapolation.R")
 IndexPlotExtrapolation(clusters)
+source("CONNECTORDataClustered.R")
 source("ConfigSelection.R")
 Set<-ConfigSelection(clusters, G=2, "MinfDB")
 source("IndexPlotExtrapolation2.R")
-IndexPlotExtrapolation2(Data, ConfigChoosen=Set,KData = clusters$KData, feature="comorbidity")
+IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="comorbidity")
 
 source("DiscriminantPlot.R")
-DiscriminantPlot(Data, ConfigChoosen=Set, KData=clusters$KData, feature="gender")
+DiscriminantPlot(Data, ConfigChosen=Set, feature="gender")
 
 source("SilhouetteAndEntropy.R")
-SilEntropy(Set, clusters)
+SilEntropy(Set)
 source("splinePlot.R")
-splinePlots = splinePlot(KData=clusters$KData, ConfigChosen = Set)
+splinePlots = splinePlot(ConfigChosen = Set)
 source("MaximumDiscriminationFunction.R")
-MaximumDiscriminationFunction(ConfigChoosen = Set, KData = clusters$KData)
+MaximumDiscriminationFunction(ConfigChosen = Set)
 
 
 ###### Classification #######
@@ -82,7 +85,6 @@ DataNew<-DataImport(TimeSeriesClassif, AnnotationsClassif)
 source("Classification.R")
 
 ClassNew = ClassificationCurves(newdata = DataNew,
-                     KData = clusters$KData,
                      ConfigChosen = Set,
                      Cores =1,
                      entropyCutoff =1, probCutoff = 0.6 )

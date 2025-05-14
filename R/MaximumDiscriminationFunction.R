@@ -20,19 +20,19 @@
 #' @import ggplot2 dplyr Matrix
 #' @export
 #'
-setGeneric("MaximumDiscriminationFunction", function(ConfigChoosen, KData, absvalue =
+setGeneric("MaximumDiscriminationFunction", function(ConfigChosen, absvalue =
                                                        TRUE)
   standardGeneric("MaximumDiscriminationFunction"))
 #' @rdname DataTruncation
 #' @export
-setMethod("MaximumDiscriminationFunction", signature ("KData"), function(ConfigChoosen, KData, absvalue =
+setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, absvalue =
                                                                            TRUE)
 {
-  parameters <- ConfigChoosen$CfitandParameters$cfit$parameters
+  parameters <- ConfigChosen@CfitandParameters$cfit$parameters
   DiscriminantResults <- list()
-  FullS = KData@FullS
+  FullS = ConfigChosen@KData$FullS
   sigma <- parameters$sigma
-  J <- length(unique(KData@CData$measureID))
+  J <- length(unique(ConfigChosen@KData$CData$measureID))
   
   
   for (j in 1:J) {
@@ -64,13 +64,13 @@ setMethod("MaximumDiscriminationFunction", signature ("KData"), function(ConfigC
   
   DiscrList <- lapply(1:n, function(x)
     data.frame(
-      Time = unlist(KData@TimeGrids),
+      Time = unlist(ConfigChosen@KData$TimeGrids),
       DiscrFunc = discrim[, x],
       DiscrNumber = paste0("DiscrFunc", x)
     ))
   
-  q <- sapply(1:length(KData@TimeGrids), function(i) {
-    rep(names(KData@TimeGrids[i]), length(KData@TimeGrids[[i]]))
+  q <- sapply(1:length(ConfigChosen@KData$TimeGrids), function(i) {
+    rep(names(ConfigChosen@KData$TimeGrids[i]), length(ConfigChosen@KData$TimeGrids[[i]]))
   })
   DiscrList[[1]]$measureID <- unlist(q)
   DiscrFrame <- do.call("rbind", DiscrList)

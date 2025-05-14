@@ -105,8 +105,7 @@ library(RhpcBLASctl)
     points[i, ]  <- solve(t(Si) %*% Si + pert * diag(sum(q))) %*% t(Si) %*% 
       yi
   }
-  return(new(
-    "KData",
+  return(list(
     CData = CData,
     TimeGrids=grid,
     points = points,
@@ -124,10 +123,10 @@ library(RhpcBLASctl)
   
   if (K > 1) {
     
-    class <- kmeans(CLUSTData@points, K, 10)$cluster
+    class <- kmeans(CLUSTData$points, K, 10)$cluster
   }
   else{
-    class <- rep(1, CLUSTData@N)
+    class <- rep(1, CLUSTData$N)
   }
   return(class)
 }
@@ -180,7 +179,7 @@ library(RhpcBLASctl)
                         hard = FALSE,
                         pert2 = 0) {
   
-  piigivej <- matrix(0, CLUSTData@N, K)
+  piigivej <- matrix(0, CLUSTData$N, K)
   piigivej[col(piigivej) == class] <- 1
   
   
@@ -190,9 +189,9 @@ library(RhpcBLASctl)
   for (l in 1:K)
   {
     if (sum(class == l) > 1)
-      classmean[l, ] <- apply(CLUSTData@points[class == l, ], 2, mean)
+      classmean[l, ] <- apply(CLUSTData$points[class == l, ], 2, mean)
     else
-      classmean[l, ] <- CLUSTData@points[class == l, ]
+      classmean[l, ] <- CLUSTData$points[class == l, ]
   }
   
   #Calcolo i valori che mi servono
@@ -201,20 +200,20 @@ library(RhpcBLASctl)
   Lambda <- as.matrix(svd(scale(classmean, scale = F))$v[, 1:h])
   alpha <- scale(classmean, scale = F) %*% Lambda
   
-  gamma <- t(t(CLUSTData@points) - lambda.zero - (Lambda %*% t(alpha[class, ])))
+  gamma <- t(t(CLUSTData$points) - lambda.zero - (Lambda %*% t(alpha[class, ])))
   gprod <- NULL
-  for (i in 1:CLUSTData@N) {
+  for (i in 1:CLUSTData$N) {
     gprod <- cbind(gprod, (gamma[i, ]) %*% t(gamma[i, ]))
   }
   b = sum(q)
-  gamma <- array(gamma[, rep(1:sum(q), rep(K, sum(q)))], c(CLUSTData@N, K, sum(q)))
-  gcov <- matrix(0, b, CLUSTData@N * b)
+  gamma <- array(gamma[, rep(1:sum(q), rep(K, sum(q)))], c(CLUSTData$N, K, sum(q)))
+  gcov <- matrix(0, b, CLUSTData$N * b)
   
   #Definisco i dati in uscita
   
   # data1 = list(
-  #   # S = CLUSTData@S,
-  #   # FullS = CLUSTData@FullS,
+  #   # S = CLUSTData$S,
+  #   # FullS = CLUSTData$FullS,
   #   #starter = CData,
   parameters = list(lambda.zero = lambda.zero,
                     Lambda = Lambda,
@@ -230,8 +229,8 @@ library(RhpcBLASctl)
   # )
   
   
-  S <- CLUSTData@S
-  FullS <- CLUSTData@FullS
+  S <- CLUSTData$S
+  FullS <- CLUSTData$FullS
   sigma.old <- 0
   sigma.new <- 1
   ind <- 1
@@ -244,7 +243,7 @@ library(RhpcBLASctl)
     
     parameters <- fclustMstep(
       parameters = parameters,
-      curve_ok = CLUSTData@CData,
+      curve_ok = CLUSTData$CData,
       S = S,
       vars = vars,
       hard = hard,
@@ -255,7 +254,7 @@ library(RhpcBLASctl)
     
     vars <- fclustEstep(
       parameters = parameters,
-      curve_ok = CLUSTData@CData,
+      curve_ok = CLUSTData$CData,
       vars = vars,
       S,
       hard = hard
@@ -476,11 +475,11 @@ library(RhpcBLASctl)
                           reweight = FALSE,
                           pert2=0) {
   #FullS <- data1$FullS
-  S <- data@S
-  M <- data@CData$measureID
+  S <- data$S
+  M <- data$CData$measureID
   par <- fit$parameters
-  curve <- data@CData$jamesID
-  time <- data@CData$timeindex
+  curve <- data$CData$jamesID
+  time <- data$CData$timeindex
   N <- length(table(curve))
   J <- length(unique(M))
   h <- dim(par$alpha)[2]
@@ -489,8 +488,8 @@ library(RhpcBLASctl)
   distance <- matrix(0, N, K)
   Calpha <- array(0, c(N, h, h))
   for (i in 1:N) {
-    Si <- S[data@CData$jamesID == i, ]
-    yi <- data@CData$value[data@CData$jamesID == i]
+    Si <- S[data$CData$jamesID == i, ]
+    yi <- data$CData$value[data$CData$jamesID == i]
     n <- length(yi)
     Sigma <- par$sigma * diag(n) + Si %*% par$Gamma %*% t(Si)
     # Calculate covariance for each alpha hat.
@@ -551,8 +550,8 @@ library(RhpcBLASctl)
                                KData) {
   
   fit=data$cfit
-  FullS=KData@FullS
-  data=KData@CData
+  FullS=KData$FullS
+  data=KData$CData
   J <- length(unique(data$measureID))
   #N indica il numero di soggetti studiati
   N <- length(unique(data$jamesID))

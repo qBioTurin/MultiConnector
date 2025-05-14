@@ -2,26 +2,29 @@
 
 #ggplot, plotly, geometry, grDevices, RColorBrewer
 
+setGeneric("DiscriminantPlot", function(CONNECTORData,
+                                               ConfigChosen,
+                                               feature) {
+  standardGeneric("DiscriminantPlot")
+})
 
-DiscriminantPlot <- function(CONNECTORData,
-                             ConfigChoosen,
-                             KData,
-                             feature)
-{ 
-  data = KData@CData
-  G <- ConfigChoosen$TTandfDB$G
-  h <- ConfigChoosen$h
+setMethod("DiscriminantPlot", signature(), function(CONNECTORData,
+                                                           ConfigChosen,
+                                                           feature) {
+  data = ConfigChosen@KData$CData
+  G <- ConfigChosen@TTandfDBandSil$G
+  h <- ConfigChosen@h
   discrplot <- list()
   
-  p <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
-  # FCM <- fclust.curvepred(data = ConfigChoosen$CfitandParameters,
+  p <- sapply(1:length(ConfigChosen@KData$FullS), function(x)
+    ncol(ConfigChosen@KData$FullS[[x]]))
+  # FCM <- fclust.curvepred(data = ConfigChosen@CfitandParameters,
   #                                     q = p,
-  #                                    KData = KData)
-  outpred <- ConfigChoosen$CfitandParameters$pred
+  #                                    ConfigChosen@KData = ConfigChosen@KData)
+  outpred <- ConfigChosen@CfitandParameters$pred
   
   projectedcurve = outpred$alpha.hat
-  projectedclustcenters = ConfigChoosen$CfitandParameters$cfit$parameters$alpha
+  projectedclustcenters = ConfigChosen@CfitandParameters$cfit$parameters$alpha
   outpred$Calpha -> stdevalpha
   outpred$class.pred -> classes
   outpred$distance -> distanze
@@ -30,7 +33,7 @@ DiscriminantPlot <- function(CONNECTORData,
   col <- as.character(unlist(unique(Feature)))
   colFeature <- get_robust_colors(unlist(Feature))
   
-  symbols <- ConfigChoosen$cluster.names
+  symbols <- ConfigChosen@cluster.names
   
   if (h == 1)
   {
@@ -619,7 +622,7 @@ DiscriminantPlot <- function(CONNECTORData,
   }
   
   return(discrplot)
-}
+})
 
 
 get_robust_colors <- function(Feature) {

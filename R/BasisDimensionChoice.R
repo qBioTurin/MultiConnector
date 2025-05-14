@@ -132,17 +132,7 @@ setMethod("BasisDimensionChoicePerObs", signature = c("CONNECTORData"),
               library(Matrix)
               library(rlist)
               library(RhpcBLASctl)
-              setClass(
-                "KData",
-                slots = list(
-                  CData = "tbl_df",
-                  TimeGrids = "list",
-                  points = "matrix",
-                  N = "integer",
-                  S = "matrix",
-                  FullS = "list"
-                )
-              )
+              
 
             })
             crossvalid <- parLapply(cl, 1:splits, function(step) {
@@ -203,7 +193,6 @@ setMethod("BasisDimensionChoicePerObs", signature = c("CONNECTORData"),
               df$p = paste("p =", p)
               return(df)
             })
-            
             Knots.df <- do.call("rbind", Knots.list)
             Knots.df$p.num <-
               as.numeric(sub("p = ", "", Knots.df$p))
@@ -364,14 +353,14 @@ setMethod("Likelihood", signature = c(),
             mu <-
               fcm.fit$cfit$parameters$lambda.zero + Lambda * c(alpha)
             
-            base <- KmData@FullS[[1]]
+            base <- KmData$FullS[[1]]
             data.temp <- TestSet[TestSet$IDnum == x, ]
             data.temp <- arrange(data.temp, time)
             time.temp <- data.temp$time
             #####
             newGrid = time.temp
             Snew = matrix(1,ncol = p , nrow = length(newGrid))
-            Snew[,1:p] = sapply(1:p,function(i) stats::spline(x = KmData@TimeGrids[[1]], y = KmData@FullS[[1]][,i], xout = newGrid )$y)
+            Snew[,1:p] = sapply(1:p,function(i) stats::spline(x = KmData$TimeGrids[[1]], y = KmData$FullS[[1]][,i], xout = newGrid )$y)
             #####            
             base.i <- Snew
             Yi <- data.temp$value

@@ -1,18 +1,18 @@
 #' @import dplyr ggplot2 patchwork rlist
 #' @export
 #'
-setGeneric("splinePlot", function(KData, ConfigChosen) standardGeneric("splinePlot"))
+setGeneric("splinePlot", function(ConfigChosen) standardGeneric("splinePlot"))
 #' @rdname splinePlot
 #' @export
-setMethod("splinePlot", signature = c("KData"), function(KData, ConfigChosen) {
+setMethod("splinePlot", signature(), function(ConfigChosen) {
 
-  data<-KData@CData
-  cluster<-ConfigChosen$CfitandParameters$pred$class.pred
-  q <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
-  objects <- fclust.curvepred(data = ConfigChosen$CfitandParameters,
+  data<-ConfigChosen@KData$CData
+  cluster<-ConfigChosen@CfitandParameters$pred$class.pred
+  q <- sapply(1:length(ConfigChosen@KData$FullS), function(x)
+    ncol(ConfigChosen@KData$FullS[[x]]))
+  objects <- fclust.curvepred(data = ConfigChosen@CfitandParameters,
                               q = q,
-                              KData = KData)
+                              KData = ConfigChosen@KData)
 
   J <- length(unique(data$measureID))
   M <- sort(unique(data$measureID))

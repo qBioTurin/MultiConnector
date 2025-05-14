@@ -1,15 +1,17 @@
 
-source("Clust.R")
-source("ClusterAnalysis.R")
 # parallel, ggplot2, dplyr
 
+setGeneric("ClassificationCurves", function(newdata,
+                                            ConfigChosen,
+                                            Cores =1,
+                                            entropyCutoff =1,probCutoff = 0.6)
+  standardGeneric("ClassificationCurves"))
 
-ClassificationCurves <- function(newdata,
-                                 KData,
-                                 ConfigChosen,
-                                 Cores =1,
-                                 entropyCutoff =1,probCutoff = 0.6){
-
+#' @export
+setMethod("ClassificationCurves", signature(), function(newdata,
+                                                        ConfigChosen,
+                                                        Cores =1,
+                                                        entropyCutoff =1,probCutoff = 0.6){
   CData = newdata@curves
   CData$jamesID <- as.integer(factor(CData$subjID, levels = unique(CData$subjID)))
   M <- sort(unique(CData$measureID))
@@ -21,11 +23,11 @@ ClassificationCurves <- function(newdata,
   nworkers <- detectCores()
   if(nworkers<Cores) Cores <- nworkers
 
-  parameters <- ConfigChosen$CfitandParameters$cfit$parameters
+  parameters <- ConfigChosen@CfitandParameters$cfit$parameters
 
 
   ### delete points that are outside of the old grid ###
-  grid <- KData@TimeGrids
+  grid <- ConfigChosen@KData$TimeGrids
   #
   # for(i in names(grid)){print(i)
   #   gridM = grid[[i]]
@@ -35,13 +37,13 @@ ClassificationCurves <- function(newdata,
   ### Lets obtain the new S of the new curves exploiting the S from FCM
   ## The old S is not the FUllS stored in clusterdata since this one is the U from the svd(old S)
 
-  Nclusters =  length(ConfigChosen$cluster.names)
+  Nclusters =  length(ConfigChosen@cluster.names)
 
-  KData@CData$cluster = ConfigChosen$CfitandParameters$pred$class.pred[KData@CData$jamesID]
+  ConfigChosen@KData$CData$cluster = ConfigChosen@CfitandParameters$pred$class.pred[ConfigChosen@KData$CData$jamesID]
 
-  FullS = KData@FullS
+  FullS = ConfigChosen@KData$FullS
   sigma <- parameters$sigma
-  J <- length(unique(KData@CData$measureID))
+  J <- length(unique(ConfigChosen@KData$CData$measureID))
 
   Gamma <- parameters$Gamma
   Lambda <- parameters$Lambda
@@ -88,8 +90,7 @@ ClassificationCurves <- function(newdata,
               })
       ) -> CData_i
 
-      ClassificationSingleCurve(KData,
-                                CData_i,
+      ClassificationSingleCurve(CData_i,
                                 Snew,
                                 Gamma = Gamma,
                                 sigma = sigma,
@@ -108,6 +109,7 @@ ClassificationCurves <- function(newdata,
   #stopCluster(cl)
 
   names(ALL.runs) = paste0("ID_",IDcurves)
+  browser()
   df = as.data.frame(t(sapply(ALL.runs,"[[",3)),row.names = F)
   df$ID = IDcurves
   df = df %>% relocate(ID)
@@ -125,12 +127,12 @@ ClassificationCurves <- function(newdata,
     tidyr::spread(key = "ClusterOld",value = "Prob")
 
   return(list(ClassMatrix = df, ClassMatrix_entropy = df_Entrop, ListClassID =  ALL.runs ) )
-}
+})
 
-ClassificationSingleCurve = function(clusterdata, CData_i, Snew, Gamma, sigma, Lambda.alpha, Nclusters, ConfigChosen){
+ClassificationSingleCurve = function(CData_i, Snew, Gamma, sigma, Lambda.alpha, Nclusters, ConfigChosen){
   M <- sort(unique(CData_i$measureID))
   J = length(M)
-  pi = ConfigChosen$CfitandParameters$cfit$parameters$pi
+  pi = ConfigChosen@CfitandParameters$cfit$parameters$pi
   for (j in 1:J) {
     A <- Snew[[j]][CData_i$timeindex[(CData_i$measureID == M[j])], ]
     if (j == 1) {
@@ -181,22 +183,22 @@ ClassificationSingleCurve = function(clusterdata, CData_i, Snew, Gamma, sigma, L
 
   ### Plotting with the new
 
-  resClust = ConfigChosen$CfitandParameters$pred$class.pred
-  df = clusterdata@CData
+  resClust = ConfigChosen@CfitandParameters$pred$class.pred
+  df = ConfigChosen@KData$CData
 
   # Get number of features per measure
-  q <- sapply(clusterdata@FullS, function(x)
+  q <- sapply(ConfigChosen@KData$FullS, function(x)
     dim(x)[2])
 
   # Merge data
   df$cluster = resClust[df$jamesID]
 
-  TimeGrids =  clusterdata@TimeGrids
+  TimeGrids =  ConfigChosen@KData$TimeGrids
 
   # Compute curve predictions
   curvepred = fclust.curvepred(
-    ConfigChosen$CfitandParameters,
-    clusterdata,
+    ConfigChosen@CfitandParameters,
+    KData=ConfigChosen@KData,
     tau = 0.95,
     tau1 = 0.975,
     q = q
