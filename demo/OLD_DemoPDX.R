@@ -16,30 +16,24 @@ Timegrid <- TimeGridDensity(CONNECTORList)
 Timegrid$TimeGrid_plot
 # To visualize both the plots together
 Datavisual<-DataVisualization(CONNECTORList,
-                              feature="LongID",
-                              labels = c("Time","Volume","Tumor Growth"))
+                              feature="LongID")
 Datavisual
 
-### Truncation
-CONNECTORList.trunc<- DataTruncation(CONNECTORList,
-                                     feature="LongID",
-                                     truncTime = 70,
-                                     labels = c("Time","Volume","Tumor Growth"))
 
 ### Calculation of p
-CrossLogLike<-BasisDimension.Choice(CONNECTORList.trunc,2:6,Cores = 2)
+CrossLogLike<-BasisDimension.Choice(CONNECTORList.trunc,2:8,Cores = 2)
 
 CrossLogLike$CrossLogLikePlot
 CrossLogLike$KnotsPlot
 
 # p is 
-p<-3
+p<-4
 
 ### Cluster Analysis to set G
-S.cl <-ClusterAnalysis(CONNECTORList.trunc,
+S.cl <-ClusterAnalysis(CONNECTORList,
                        G=2:6,
                        p=p,
-                       runs=50,
+                       runs=100,
                        Cores=2)
 
 
