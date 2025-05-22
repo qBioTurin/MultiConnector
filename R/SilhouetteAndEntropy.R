@@ -6,7 +6,6 @@
 #'
 #' @param best: configuration chosen
 #' @param ConfigChoosen 
-#' @param KData 
 #' @param feature
 #'
 #'
@@ -22,13 +21,13 @@
 
 
 
-setGeneric("SilEntropy", function(best, ClusAnaOutput) {
+setGeneric("SilEntropy", function(best) {
   standardGeneric("SilEntropy")
 })
 
-setMethod("SilEntropy", signature(), function(best, ClusAnaOutput) {
-  probs = best$CfitandParameters$pred$probs
-  colnames(probs) =best$cluster.names
+setMethod("SilEntropy", signature(), function(best) {
+  probs = best@CfitandParameters$pred$probs
+  colnames(probs) =best@cluster.names
   
   MatrixClass= as.data.frame(probs)
   MatrixClass$ClusterType <- colnames(MatrixClass)[apply(MatrixClass, MARGIN = 1, FUN = which.max)]
@@ -49,16 +48,15 @@ setMethod("SilEntropy", signature(), function(best, ClusAnaOutput) {
     ungroup() %>%
     tidyr::spread(key = "Cluster",value = "Prob") 
   
-  KData<-ClusAnaOutput$KData
-  q <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
-  cluster_assignments <- best$CfitandParameters$pred$class.pred
-  curvepred <- fclust.curvepred(data = best$CfitandParameters,
+  q <- sapply(1:length(best@KData$FullS), function(x)
+    ncol(best@KData$FullS[[x]]))
+  cluster_assignments <- best@CfitandParameters$pred$class.pred
+  curvepred <- fclust.curvepred(data = best@CfitandParameters,
                                      q = q,
-                                     KData = KData)
-  all_distances = DistAllSubjCurves2Curves.sapl(KData, curvepred)
+                                     KData = best@KData)
+  all_distances = DistAllSubjCurves2Curves.sapl(best@KData, curvepred)
   silCoeff = do.call(rbind, 
-                     lapply(1:max(KData@CData$jamesID),function(jID){
+                     lapply(1:max(best@KData$CData$jamesID),function(jID){
                        current_cluster = cluster_assignments[jID]
                        in_cluster_indices <- which(cluster_assignments == current_cluster)
                        out_cluster_indices <- cluster_assignments[cluster_assignments != current_cluster]
@@ -88,8 +86,8 @@ setMethod("SilEntropy", signature(), function(best, ClusAnaOutput) {
   
   df <- silCoeff %>%
     left_join(df1, by = c("jamesID" = "ID"))
-  df$jamesID <- ClusAnaOutput$KData@CData$subjID[
-    match(df$jamesID, ClusAnaOutput$KData@CData$jamesID)
+  df$jamesID <- best@KData$CData$subjID[
+    match(df$jamesID, best@KData$CData$jamesID)
   ]
   df <- df %>%
     group_by(cluster) %>%  
@@ -118,7 +116,7 @@ setMethod("SilEntropy", signature(), function(best, ClusAnaOutput) {
          x = "Subject",
          y = "Entropy",
          fill = "Cluster Type") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), legend.position = "none")+
     coord_flip()
   
   p1+p2

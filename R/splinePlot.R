@@ -1,18 +1,18 @@
 #' @import dplyr ggplot2 patchwork rlist
 #' @export
 #'
-setGeneric("splinePlot", function(KData, ConfigChosen) standardGeneric("splinePlot"))
+setGeneric("splinePlot", function(ConfigChosen) standardGeneric("splinePlot"))
 #' @rdname splinePlot
 #' @export
-setMethod("splinePlot", signature = c("KData"), function(KData, ConfigChosen) {
+setMethod("splinePlot", signature(), function(ConfigChosen) {
 
-  data<-KData@CData
-  cluster<-ConfigChosen$CfitandParameters$pred$class.pred
-  q <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
-  objects <- fclust.curvepred(data = ConfigChosen$CfitandParameters,
+  data<-ConfigChosen@KData$CData
+  cluster<-ConfigChosen@CfitandParameters$pred$class.pred
+  q <- sapply(1:length(ConfigChosen@KData$FullS), function(x)
+    ncol(ConfigChosen@KData$FullS[[x]]))
+  objects <- fclust.curvepred(data = ConfigChosen@CfitandParameters,
                               q = q,
-                              KData = KData)
+                              KData = ConfigChosen@KData)
 
   J <- length(unique(data$measureID))
   M <- sort(unique(data$measureID))
@@ -95,7 +95,10 @@ setMethod("splinePlot", signature = c("KData"), function(KData, ConfigChosen) {
     }
     
     # Combine plots for this jamesID using patchwork
-    combined_plot <- wrap_plots(james_plots, ncol = 2)
+    combined_plot <- wrap_plots(james_plots, ncol = 2) + 
+      plot_layout(guides = "collect") & 
+      theme(legend.position = "bottom")
+    
     plot_list[[as.character(james_id)]] <- combined_plot
   }
   

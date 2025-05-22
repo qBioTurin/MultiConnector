@@ -5,8 +5,7 @@
 #'  plot ??
 #'
 #' @param CONNECTORData Connector object created with DataImport
-#' @param ConfigChoosen configuration choosen using ConfigSelection
-#' @param KData Last element returned by ClusterAnalysis
+#' @param ConfigChosen configuration choosen using ConfigSelection
 #' @param feature dunno
 #'
 #'
@@ -23,25 +22,23 @@
 
 
 setGeneric("IndexPlotExtrapolation2", function(CONNECTORData,
-                                               ConfigChoosen,
-                                               KData,
+                                               ConfigChosen,
                                                feature) {
   standardGeneric("IndexPlotExtrapolation2")
 })
 
 setMethod("IndexPlotExtrapolation2", signature(), function(CONNECTORData,
-                                                           ConfigChoosen,
-                                                           KData,
+                                                           ConfigChosen,
                                                            feature) {
-  # Get number of clusters from ConfigChoosen
-  G = ConfigChoosen$TTandfDBandSil$G[1]
+  # Get number of clusters from ConfigChosen
+  G = ConfigChosen@TTandfDBandSil$G[1]
   
   # Get predicted clusters
-  resClust = ConfigChoosen$CfitandParameters$pred$class.pred
-  df = KData@CData
+  resClust = ConfigChosen@CfitandParameters$pred$class.pred
+  df = ConfigChosen@KData$CData
   
   # Get number of features per measure
-  q <- sapply(KData@FullS, function(x)
+  q <- sapply(ConfigChosen@KData$FullS, function(x)
     dim(x)[2])
   
   # Merge data
@@ -52,8 +49,8 @@ setMethod("IndexPlotExtrapolation2", signature(), function(CONNECTORData,
   
   # Compute curve predictions
   curvepred = fclust.curvepred(
-    ConfigChoosen$CfitandParameters,
-    KData,
+    ConfigChosen@CfitandParameters,
+    ConfigChosen@KData,
     tau = 0.95,
     tau1 = 0.975,
     q = q
@@ -70,6 +67,8 @@ setMethod("IndexPlotExtrapolation2", signature(), function(CONNECTORData,
     return(Mean)
   })) %>%
     tidyr::gather(-time, -measureID, value = "value", key = "cluster")
+  combined_df$cluster <- factor(combined_df$cluster)
+  MeanC$cluster <- factor(MeanC$cluster)
   
   # Plot with cluster-specific mean curves
   combined_df %>%

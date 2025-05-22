@@ -20,7 +20,7 @@
 #' @export
 
 setGeneric("PlotTimeSeries", function(data,
-                                      feature,
+                                      feature=NULL,
                                       labels)
   standardGeneric("PlotTimeSeries"))
 
@@ -28,7 +28,7 @@ setGeneric("PlotTimeSeries", function(data,
 #' @export
 
 setMethod("PlotTimeSeries", signature("CONNECTORData"),
-          function(data, feature, labels) {
+          function(data, feature=NULL, labels) {
             if (missing(labels))
             {
               axes.x <- ""
@@ -41,53 +41,61 @@ setMethod("PlotTimeSeries", signature("CONNECTORData"),
               axes.y <- labels[2]
               title <- labels[3]
             }
-            #dataframe for ggplot
-            dataplot <-
-              as_tibble(merge(data@curves, data@annotations[, c("subjID", feature)], by =
-                                "subjID"))
-            dataplot[[feature]] <-
-              factor(as.matrix(dataplot[feature]))
+            dataplot <- as_tibble(data@curves)
             
-            col <- as.character(unique(dataplot[[feature]]))
-            colFeature <-
-              rainbow(dim(unique(data@annotations[feature])))
-            # long_dataplot <- dataplot %>%
-            #   pivot_longer(c(-curvesID, -time, -all_of(feature), -subjID, -measureID),
-            #                names_to = "curve",
-            #                values_to = "value")
-            
-            #ggplot with a facet-grid on all different from time Id and feature
-            PlotTimeSeries <-
-              ggplot(data = dataplot, aes(
+            if (!is.null(feature)) {
+              # Controllo se la feature è valida
+              if (!feature %in% colnames(data@annotations)) {
+                stop("The provided feature does not exist in the annotations.")
+              }
+              
+              dataplot <- merge(dataplot, data@annotations[, c("subjID", feature)], by = "subjID")
+              dataplot[[feature]] <- factor(dataplot[[feature]])
+              
+              col <- as.character(unique(dataplot[[feature]]))
+              colFeature <- rainbow(length(col))
+              
+              plt <- ggplot(dataplot, aes(
                 x = time,
                 y = value,
                 group = subjID,
-                col = factor(.data[[feature]])
+                col = .data[[feature]]
               )) +
-              geom_line() +
-              geom_point() +
-              labs(
-                title = title,
-                x = axes.x,
-                y = axes.y,
-                col = feature
-              ) +
-              theme(plot.title = element_text(hjust = 0.5),
-                    title = element_text(size = 10, face = 'bold')) +
-              scale_colour_manual(
-                values = colFeature,
-                limits = col,
-                breaks = sort(col),
-                name = feature
-              ) +
-              facet_wrap(~ measureID, scales = "free") +
+                geom_line() +
+                geom_point() +
+                labs(
+                  title = title,
+                  x = axes.x,
+                  y = axes.y,
+                  col = feature
+                ) +
+                theme(plot.title = element_text(hjust = 0.5),
+                      title = element_text(size = 10, face = 'bold')) +
+                scale_colour_manual(
+                  values = colFeature,
+                  limits = col,
+                  breaks = sort(col),
+                  name = feature
+                )
+            } else {
+              plt <- ggplot(dataplot, aes(
+                x = time,
+                y = value,
+                group = subjID
+              )) +
+                geom_line() +
+                geom_point() +
+                labs(
+                  title = title,
+                  x = axes.x,
+                  y = axes.y
+                ) +
+                theme(plot.title = element_text(hjust = 0.5),
+                      title = element_text(size = 10, face = 'bold'))
+            }
+            
+            plt <- plt + facet_wrap(~ measureID, scales = "free") +
               theme_bw()
-              
-            ### Set growth curve plot with ggplot
             
-            
-            #data$FeatureColour <- colFeature
-            
-            
-            return(PlotTimeSeries)
+            return(plt)
           })

@@ -25,7 +25,7 @@
 
 
 setGeneric("DataTruncation", function(data,
-                                      feature,
+                                      feature=NULL,
                                       truncTime = NULL,
                                       labels = NULL,
                                       measure = NULL)
@@ -34,7 +34,7 @@ setGeneric("DataTruncation", function(data,
 #' @export
 setMethod("DataTruncation",
           signature ("CONNECTORData"), function(data,
-                                                feature,
+                                                feature=NULL,
                                                 truncTime = NULL,
                                                 labels = NULL,
                                                 measure = NULL)
@@ -52,14 +52,8 @@ setMethod("DataTruncation",
               }
             }
             dimBefore <- oldData@dimensions$nTimePoints
-            growthCurveTr <-
-              PlotTimeSeries(data, feature, labels = labels)
-            if (!is.null(truncTime))
-            {
-              growthCurveTr <- growthCurveTr + geom_vline(xintercept = truncTime,
-                                                          color = "black",
-                                                          linewidth = 1)
-            }
+            
+            
             if (!is.null(truncTime))
             {
               dataTr <- DataTrunc(data, truncTime = truncTime)
@@ -102,7 +96,7 @@ setMethod("DataTruncation",
               cat("############################### \n")
             }
               
-              return(list(dataTr, growthCurveTr))
+              return(dataTr)
             })
 
 setGeneric("DataTrunc", function(data,

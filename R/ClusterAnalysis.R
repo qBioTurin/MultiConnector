@@ -78,10 +78,10 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
                                                                    MinErrFreq = 0,
                                                                    pert = 0.01)
 {
-  #CONNECTORData deve essere il dataset
-  
-  CData <- CONNECTORData@curves
   start <- Sys.time()
+  p<-process_p(p, CONNECTORData)
+  #CONNECTORData deve essere il dataset
+  CData <- CONNECTORData@curves
   KmData <- presetKmeans(CData, q = p)
   
   i <- rep(G, each = runs)
@@ -317,8 +317,9 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
   
   end <- Sys.time() - start
   #save in a file the value of end
-  cat(end, file = "end.txt")
-  print(end)
+  #cat(end, file = "end.txt")
+  end<-as.numeric(end)
+  print(paste("Total time:", round(end, 2), "seconds (rounded at the 2 decim)"))
   return(results)
 })
 
@@ -328,7 +329,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
 setGeneric("TTandfDBandSilfunction", function(result, KData, curvepred, G)
   standardGeneric("TTandfDBandSilfunction"))
 
-setMethod("TTandfDBandSilfunction", signature(KData = "KData"), function(result, KData, curvepred, G) {
+setMethod("TTandfDBandSilfunction", signature(), function(result, KData, curvepred, G) {
   allsubjdist2mu <- DistAllSubjCurve2mu(result, KData, curvepred)
   # sono ordinate per jamesID
   TT <- sum(allsubjdist2mu)
@@ -359,7 +360,7 @@ setMethod("TTandfDBandSilfunction", signature(KData = "KData"), function(result,
   cluster_assignments <- result$pred$class.pred
   
   silCoeff = do.call(rbind, 
-                     lapply(1:max(KData@CData$jamesID),function(jID){
+                     lapply(1:max(KData$CData$jamesID),function(jID){
                        current_cluster = cluster_assignments[jID]
                        in_cluster_indices <- which(cluster_assignments == current_cluster)
                        out_cluster_indices <- cluster_assignments[cluster_assignments != current_cluster]
@@ -394,9 +395,9 @@ setMethod("TTandfDBandSilfunction", signature(KData = "KData"), function(result,
 setGeneric("DistAllSubjCurve2mu", function(result, KData, curvepred)
   standardGeneric("DistAllSubjCurve2mu"))
 
-setMethod("DistAllSubjCurve2mu", signature(KData = "KData"), function(result, KData, curvepred) {
-  q <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
+setMethod("DistAllSubjCurve2mu", signature(), function(result, KData, curvepred) {
+  q <- sapply(1:length(KData$FullS), function(x)
+    ncol(KData$FullS[[x]]))
   # curvepred <- fclust.curvepred(
   #       data=result,
   #       KData= KmData,
@@ -405,11 +406,11 @@ setMethod("DistAllSubjCurve2mu", signature(KData = "KData"), function(result, KD
   
   DistSingleSubjCurve2mu <- function(jamesID) {
     # numero delle misure
-    M <- length(KData@TimeGrids)
+    M <- length(KData$TimeGrids)
     # bisogna settare gli estremi dell'intervallo di integrazione per ora lo teniamo
     # completo dobbiamo discuterne
-    a <- min(KData@CData$time)
-    b <- max(KData@CData$time)
+    a <- min(KData$CData$time)
+    b <- max(KData$CData$time)
     
     library(statmod)
     ptgauss <- gauss.quad(10)
@@ -424,7 +425,7 @@ setMethod("DistAllSubjCurve2mu", signature(KData = "KData"), function(result, KD
     
     effe_j <- function(measure) {
       y <- curvepred[[measure]]$gpred[jamesID, ]
-      x <- KData@TimeGrids[[measure]]
+      x <- KData$TimeGrids[[measure]]
       fit.temp <- lm(y ~ ns(x, df = q[measure], intercept = TRUE))
       ypred <- unname(predict(fit.temp, newdata = data.frame(x = xk)))
       m <- curvepred[[measure]]$meancurves[, result$pred$class.pred[jamesID]]
@@ -439,7 +440,7 @@ setMethod("DistAllSubjCurve2mu", signature(KData = "KData"), function(result, KD
     return(sqrt(barint))
   }
   
-  alldist <- sapply(1:max(KData@CData$jamesID), DistSingleSubjCurve2mu)
+  alldist <- sapply(1:max(KData$CData$jamesID), DistSingleSubjCurve2mu)
   # escono ordinate per jamesID
   return(alldist)
 })
@@ -448,9 +449,9 @@ setMethod("DistAllSubjCurve2mu", signature(KData = "KData"), function(result, KD
 setGeneric("Distmu2mu", function(result, KData, curvepred, k, h)
   standardGeneric("Distmu2mu"))
 
-setMethod("Distmu2mu", signature(KData = "KData"), function(result, KData, curvepred, k, h) {
-  q <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
+setMethod("Distmu2mu", signature(), function(result, KData, curvepred, k, h) {
+  q <- sapply(1:length(KData$FullS), function(x)
+    ncol(KData$FullS[[x]]))
   # curvepred <- fclust.curvepred(
   #   outfclust$cfit,
   #   data = outfclust$working_data,
@@ -459,11 +460,11 @@ setMethod("Distmu2mu", signature(KData = "KData"), function(result, KData, curve
   # quindi h e k sono le colonne di meancurves che vado a confrontare
   
   # numero delle misure
-  M <- length(KData@TimeGrids)
+  M <- length(KData$TimeGrids)
   # bisogna settare gli estremi dell'intervallo di integrazione per ora lo teniamo
   # completo dobbiamo discuterne
-  a <- min(KData@CData$time)
-  b <- max(KData@CData$time)
+  a <- min(KData$CData$time)
+  b <- max(KData$CData$time)
   
   library(statmod)
   ptgauss <- gauss.quad(10)
@@ -478,7 +479,7 @@ setMethod("Distmu2mu", signature(KData = "KData"), function(result, KData, curve
   
   effe_j <- function(measure) {
     mh <- curvepred[[measure]]$meancurves[, h]
-    x <- KData@TimeGrids[[measure]]
+    x <- KData$TimeGrids[[measure]]
     fit.temp <- lm(mh ~ ns(x, df = q[measure], intercept = TRUE))
     mhpred <- unname(predict(fit.temp, newdata = data.frame(x = xk)))
     mk <- curvepred[[measure]]$meancurves[, k]
@@ -497,23 +498,23 @@ setMethod("Distmu2mu", signature(KData = "KData"), function(result, KData, curve
 setGeneric("DistAllSubjCurves2Curves.sapl", function(KData, curvepred)
   standardGeneric("DistAllSubjCurves2Curves.sapl"))
 
-setMethod("DistAllSubjCurves2Curves.sapl", signature(KData = "KData"), function(KData, curvepred) {
+setMethod("DistAllSubjCurves2Curves.sapl", signature(), function(KData, curvepred) {
 
   
-  q <- sapply(1:length(KData@FullS), function(x)
-    ncol(KData@FullS[[x]]))
+  q <- sapply(1:length(KData$FullS), function(x)
+    ncol(KData$FullS[[x]]))
   
   # Function to calculate the distance between two curves
   DistBetweenCurves <- function(jamesID1, jamesID2) {
-    M <- length(KData@TimeGrids)
-    a <- min(KData@CData$time)
-    b <- max(KData@CData$time)
+    M <- length(KData$TimeGrids)
+    a <- min(KData$CData$time)
+    b <- max(KData$CData$time)
     
     ptgauss <- gauss.quad(10)
     xk <- (b + a) / 2 + (b - a) / 2 * ptgauss$nodes
     
     effe <- rowSums(sapply(1:M, function(measure) {
-      x <- KData@TimeGrids[[measure]]
+      x <- KData$TimeGrids[[measure]]
       y1 <- curvepred[[measure]]$gpred[jamesID1,]
       y2 <- curvepred[[measure]]$gpred[jamesID2,]
       fit.temp1 <- lm(y1 ~ ns(x, df = q[measure], intercept = TRUE))
@@ -528,7 +529,7 @@ setMethod("DistAllSubjCurves2Curves.sapl", signature(KData = "KData"), function(
   }
   
   # Number of curves
-  n <- max(KData@CData$jamesID)
+  n <- max(KData$CData$jamesID)
   
   # Generate all pairs of indices for the upper triangular part
   index_pairs <- t(combn(1:n, 2)) # Generate combinations of pairs (i, j) where i < j
@@ -544,4 +545,24 @@ setMethod("DistAllSubjCurves2Curves.sapl", signature(KData = "KData"), function(
   dist_matrix[upper.tri(dist_matrix)] <- dist_values
   
   return(dist_matrix)
+})
+
+
+setGeneric("process_p", function(p, CONNECTORData)
+  standardGeneric("process_p"))
+
+setMethod("process_p", signature(), function(p, CONNECTORData) {
+  if (!is.null(names(p))) {
+    valid_names <- names(CONNECTORData@TimeGrids)
+    if (!all(names(p) %in% valid_names)) {
+      stop(
+        "Some of the names provided in 'p' are invalid. Allowed names are: ",
+        paste(valid_names, collapse = ", ")
+      )
+    }
+    # Ordina in ordine alfabetico e rimuove i nomi
+    p <- p[order(names(p))]
+    names(p) <- NULL
+  }
+  return(p)
 })
