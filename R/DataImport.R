@@ -72,14 +72,14 @@ setMethod("DataImport", signature("tbl_df"),
             
             
             #Check if column "time" and "ID" are present, but just once. if not throw a error and quit. time could be lowercase or uppercase
-            if (sum(grepl("time", colnames(curves), ignore.case = TRUE)) != 1) {
+            if (sum(grepl("time", tolower(colnames(curves)), ignore.case = TRUE)) != 1) {
               stop(
                 "The column name 'time' is not present or is present more than once in the TimeSeriesFile"
               )
               return()
             }
             #trasform the column "time" in lowercase
-            colnames(curves)[grepl("time", colnames(curves), ignore.case = TRUE)] <-
+            colnames(curves)[grepl("time", tolower(colnames(curves)), ignore.case = TRUE)] <-
               "time"
             
             if (sum(colnames(curves) == "subjID") != 1) {
