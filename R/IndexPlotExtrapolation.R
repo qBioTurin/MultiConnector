@@ -83,10 +83,10 @@ setMethod("IndexPlotExtrapolation",signature(), function(results) {
                  shape = 8, size = 4, stroke=1.5, position = position_nudge(x = -0.3)) +
       geom_point(data = indexesfilteredMinfDB, 
                  aes(x = G, y = IndexesV, color = "minfDB"), 
-                 shape = 8, size = 4, stroke=1.5, position = position_nudge(x = 0)) +
+                 shape = 6, size = 4, stroke=1.5, position = position_nudge(x = 0)) +
       geom_point(data = indexesfilteredMaxSil,
                  aes(x = G, y = IndexesV, color = "maxSilhouette"), 
-                 shape = 8, size = 4, stroke=1.5, position = position_nudge(x = 0.3)) +
+                 shape = 2, size = 4, stroke=1.5, position = position_nudge(x = 0.3)) +
       
       geom_hline(data = indexesfull %>% filter(Indexes == "fDB"), 
                  aes(yintercept = 1), linetype = "dashed") +
