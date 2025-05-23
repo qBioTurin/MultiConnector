@@ -575,7 +575,8 @@ setMethod("DiscriminantPlot", signature(), function(CONNECTORData,
       unique_clusters <- unique(DataFrameSamples$Cluster)
       cluster_shapes <- setNames(c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)[1:length(unique_clusters)], unique_clusters)
       
-      discrplot[["ColFeature3DWithClusterShapes"]] <- plot_ly(
+      # Primo: grafico principale con i punti
+      plot_main <- plot_ly(
         data = DataFrameSamples,
         x = ~ PrjCurv1,
         y = ~ PrjCurv2,
@@ -588,19 +589,17 @@ setMethod("DiscriminantPlot", signature(), function(CONNECTORData,
         mode = "markers",
         marker = list(size = 5),
         text = ~ paste(
-          "Feature:",
-          Feature,
-          "<br>Cluster:",
-          Cluster,
-          "<br>PC1:",
-          round(PrjCurv1, 2),
-          "<br>PC2:",
-          round(PrjCurv2, 2),
-          "<br>PC3:",
-          round(PrjCurv3, 2)
+          "Feature:", Feature,
+          "<br>Cluster:", Cluster,
+          "<br>PC1:", round(PrjCurv1, 2),
+          "<br>PC2:", round(PrjCurv2, 2),
+          "<br>PC3:", round(PrjCurv3, 2)
         ),
         hoverinfo = "text"
-      ) %>%
+      )
+      
+      # Secondo: aggiunta dei centri come secondo livello
+      plot_final <- plot_main %>%
         add_trace(
           data = DataFrameCluster,
           x = ~ projectedclustcenters1,
@@ -610,14 +609,21 @@ setMethod("DiscriminantPlot", signature(), function(CONNECTORData,
           mode = "text",
           text = ~ Center,
           textposition = "top center",
-          showlegend = FALSE
+          showlegend = FALSE,
+          inherit = FALSE  # fondamentale: non eredita dati precedenti
         ) %>%
-        layout(title = "3D PCA Plot by Feature with Cluster Shapes",
-               scene = list(
-                 xaxis = list(title = paste0("PC1 (", round(percentage[1]), "%)")),
-                 yaxis = list(title = paste0("PC2 (", round(percentage[2]), "%)")),
-                 zaxis = list(title = paste0("PC3 (", round(percentage[3]), "%)"))
-               ))
+        layout(
+          title = "3D PCA Plot by Feature with Cluster Shapes",
+          scene = list(
+            xaxis = list(title = paste0("PC1 (", round(percentage[1]), "%)")),
+            yaxis = list(title = paste0("PC2 (", round(percentage[2]), "%)")),
+            zaxis = list(title = paste0("PC3 (", round(percentage[3]), "%)"))
+          )
+        )
+      
+      # Salva nel tuo oggetto
+      discrplot[["ColFeature3DWithClusterShapes"]] <- plot_final
+      
     }
   }
   

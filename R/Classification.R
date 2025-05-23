@@ -109,7 +109,6 @@ setMethod("ClassificationCurves", signature(), function(newdata,
   #stopCluster(cl)
 
   names(ALL.runs) = paste0("ID_",IDcurves)
-  browser()
   df = as.data.frame(t(sapply(ALL.runs,"[[",3)),row.names = F)
   df$ID = IDcurves
   df = df %>% relocate(ID)
@@ -222,13 +221,12 @@ ClassificationSingleCurve = function(CData_i, Snew, Gamma, sigma, Lambda.alpha, 
                          Prob = round(Pcl$class,digits = 2),
                          x = rep(-Inf,Nclusters),
                          y = rep(Inf,Nclusters))
-
+  
   pl = ggplot()+
-    geom_line(data = MeanC,aes(x = time, y = value,linetype=cluster)) +
-    geom_line(data = df, aes(x = time, y = value, group = subjID), col = "grey",alpha = .4) +
-    facet_grid(measureID~cluster)+
-    geom_line(data = CData_i,aes(x = time, y = value),col = "red") +
-    geom_text(data = ProbAnnot, aes(x = x, y = y, label = paste0("Prob: ",Prob)),hjust = 0, vjust = 1)
+    geom_line(data = df, aes(x = time, y = value, group = subjID), col = "grey", alpha = .4) +
+    facet_grid(measureID~cluster) +
+    geom_line(data = CData_i, aes(x = time, y = value), col = "red") +
+    geom_text(data = ProbAnnot, aes(x = x, y = y, label = paste0("Prob: ", Prob)), hjust = 0, vjust = 1)
 
   return(list(plot = pl, weight = Pcl, prob = Pclass))
 

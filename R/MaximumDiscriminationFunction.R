@@ -27,7 +27,7 @@ setGeneric("MaximumDiscriminationFunction", function(ConfigChosen, absvalue =
 #' @export
 setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, absvalue =
                                                                            TRUE)
-{
+{ 
   parameters <- ConfigChosen@CfitandParameters$cfit$parameters
   DiscriminantResults <- list()
   FullS = ConfigChosen@KData$FullS
@@ -54,14 +54,13 @@ setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, a
   Lambda <- parameters$Lambda
   discrim <- as.data.frame(solve(Sigma) %*% S %*% Lambda)
   
-  colnames(discrim) <- paste0("DiscrFunc", ncol(discrim))
+  colnames(discrim) <- paste0("DiscrFunc", 1:ncol(discrim))
   
   
   
   if (absvalue)
     discrim <- abs(discrim)
   n <- ncol(discrim)
-  
   DiscrList <- lapply(1:n, function(x)
     data.frame(
       Time = unlist(ConfigChosen@KData$TimeGrids),
@@ -72,7 +71,12 @@ setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, a
   q <- sapply(1:length(ConfigChosen@KData$TimeGrids), function(i) {
     rep(names(ConfigChosen@KData$TimeGrids[i]), length(ConfigChosen@KData$TimeGrids[[i]]))
   })
-  DiscrList[[1]]$measureID <- unlist(q)
+  measureID <- as.vector(q)
+  
+  # Aggiungi measureID a tutti gli elementi di DiscrList (non solo al primo)
+  for (i in 1:length(DiscrList)) {
+    DiscrList[[i]]$measureID <- measureID
+  }
   DiscrFrame <- do.call("rbind", DiscrList)
   
   DiscriminantFunctions <- list()
