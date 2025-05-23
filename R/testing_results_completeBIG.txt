@@ -1,0 +1,281 @@
+
+Test configuration: Curves: 10 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 1
+
+Date and time: 2025-05-22 12:07:44 
+
+ERROR during test: replacement has 5 rows, data has 553
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 10 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 5
+
+Date and time: 2025-05-22 12:08:37 
+
+ERROR during test: replacement has 5 rows, data has 541
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 10 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 10
+
+Date and time: 2025-05-22 12:09:27 
+
+ERROR during test: replacement has 5 rows, data has 541
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 10 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 1
+
+Date and time: 2025-05-22 12:10:19 
+
+Timing results:
+DataImport                              :      0.141 s
+PlotTimeSeries                          :      0.021 s
+DataVisualization_normal                :      0.030 s
+DataVisualization_large                 :      0.256 s
+PlotDataTruncation                      :      0.084 s
+DataTruncation                          :      0.132 s
+BasisDimensionChoice                    :     27.628 s
+ClusterAnalysis_G                       :     12.553 s
+IndexPlotExtrapolation_G                :      0.084 s
+ConfigSelection_G2                      :      0.026 s
+IndexPlotExtrapolation2_G2              :      0.060 s
+DiscriminantPlot_G2                     :      0.023 s
+SilEntropy_G2                           :      1.352 s
+splinePlot_G2                           :      0.984 s
+MaximumDiscriminationFunction_G2        :      0.640 s
+ConfigSelection_G3                      :      0.034 s
+IndexPlotExtrapolation2_G3              :      0.059 s
+DiscriminantPlot_G3                     :      0.059 s
+SilEntropy_G3                           :      1.430 s
+splinePlot_G3                           :      0.995 s
+MaximumDiscriminationFunction_G3        :      0.614 s
+ConfigSelection_G4                      :      0.025 s
+IndexPlotExtrapolation2_G4              :      0.079 s
+DiscriminantPlot_G4                     :      0.043 s
+SilEntropy_G4                           :      1.381 s
+splinePlot_G4                           :      0.956 s
+MaximumDiscriminationFunction_G4        :      0.659 s
+ConfigSelection_G5                      :      0.025 s
+IndexPlotExtrapolation2_G5              :      0.062 s
+DiscriminantPlot_G5                     :      0.049 s
+SilEntropy_G5                           :      1.452 s
+splinePlot_G5                           :      0.993 s
+MaximumDiscriminationFunction_G5        :      0.538 s
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 10 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 5
+
+Date and time: 2025-05-22 12:11:35 
+
+Timing results:
+DataImport                              :      0.062 s
+PlotTimeSeries                          :      0.014 s
+DataVisualization_normal                :      0.028 s
+DataVisualization_large                 :      0.245 s
+PlotDataTruncation                      :      0.079 s
+DataTruncation                          :      0.127 s
+BasisDimensionChoice                    :     27.192 s
+ClusterAnalysis_G                       :     12.660 s
+IndexPlotExtrapolation_G                :      0.085 s
+ConfigSelection_G2                      :      0.025 s
+IndexPlotExtrapolation2_G2              :      0.060 s
+DiscriminantPlot_G2                     :      0.021 s
+SilEntropy_G2                           :      1.419 s
+splinePlot_G2                           :      0.967 s
+MaximumDiscriminationFunction_G2        :      0.105 s
+ConfigSelection_G3                      :      0.025 s
+IndexPlotExtrapolation2_G3              :      0.061 s
+DiscriminantPlot_G3                     :      0.039 s
+SilEntropy_G3                           :      1.403 s
+splinePlot_G3                           :      0.995 s
+MaximumDiscriminationFunction_G3        :      0.616 s
+ConfigSelection_G4                      :      0.026 s
+IndexPlotExtrapolation2_G4              :      0.060 s
+DiscriminantPlot_G4                     :      0.043 s
+SilEntropy_G4                           :      1.403 s
+splinePlot_G4                           :      0.990 s
+MaximumDiscriminationFunction_G4        :      0.109 s
+ConfigSelection_G5                      :      0.026 s
+IndexPlotExtrapolation2_G5              :      0.062 s
+DiscriminantPlot_G5                     :      0.041 s
+SilEntropy_G5                           :      1.416 s
+splinePlot_G5                           :      0.983 s
+MaximumDiscriminationFunction_G5        :      0.072 s
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 10 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 10
+
+Date and time: 2025-05-22 12:12:47 
+
+Timing results:
+DataImport                              :      0.063 s
+PlotTimeSeries                          :      0.015 s
+DataVisualization_normal                :      0.029 s
+DataVisualization_large                 :      0.256 s
+PlotDataTruncation                      :      0.084 s
+DataTruncation                          :      0.133 s
+BasisDimensionChoice                    :     27.109 s
+ClusterAnalysis_G                       :     12.948 s
+IndexPlotExtrapolation_G                :      0.082 s
+ConfigSelection_G2                      :      0.024 s
+IndexPlotExtrapolation2_G2              :      0.059 s
+DiscriminantPlot_G2                     :      0.021 s
+SilEntropy_G2                           :      1.386 s
+splinePlot_G2                           :      0.958 s
+MaximumDiscriminationFunction_G2        :      0.068 s
+ConfigSelection_G3                      :      0.026 s
+IndexPlotExtrapolation2_G3              :      0.057 s
+DiscriminantPlot_G3                     :      0.038 s
+SilEntropy_G3                           :      1.351 s
+splinePlot_G3                           :      0.966 s
+MaximumDiscriminationFunction_G3        :      0.062 s
+ConfigSelection_G4                      :      0.026 s
+IndexPlotExtrapolation2_G4              :      0.059 s
+DiscriminantPlot_G4                     :      0.043 s
+SilEntropy_G4                           :      1.381 s
+splinePlot_G4                           :      0.962 s
+MaximumDiscriminationFunction_G4        :      0.455 s
+ConfigSelection_G5                      :      0.025 s
+IndexPlotExtrapolation2_G5              :      0.060 s
+DiscriminantPlot_G5                     :      0.042 s
+SilEntropy_G5                           :      1.390 s
+splinePlot_G5                           :      0.956 s
+MaximumDiscriminationFunction_G5        :      0.562 s
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 30 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 1
+
+Date and time: 2025-05-22 12:14:01 
+
+ERROR during test: replacement has 5 rows, data has 909
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 30 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 5
+
+Date and time: 2025-05-22 12:18:07 
+
+ERROR during test: replacement has 5 rows, data has 889
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 30 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 10
+
+Date and time: 2025-05-22 12:21:01 
+
+ERROR during test: replacement has 5 rows, data has 889
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 30 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 1
+
+Date and time: 2025-05-22 12:23:30 
+
+ERROR during test: replacement has 5 rows, data has 981
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 30 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 5
+
+Date and time: 2025-05-22 12:26:46 
+
+ERROR during test: replacement has 5 rows, data has 981
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 30 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 10
+
+Date and time: 2025-05-22 12:29:54 
+
+ERROR during test: replacement has 5 rows, data has 981
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 50 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 1
+
+Date and time: 2025-05-22 12:33:02 
+
+ERROR during test: replacement has 5 rows, data has 982
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 50 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 5
+
+Date and time: 2025-05-22 12:40:41 
+
+ERROR during test: replacement has 5 rows, data has 986
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 50 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 30 Translation: 10
+
+Date and time: 2025-05-22 12:49:36 
+
+ERROR during test: replacement has 5 rows, data has 986
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 50 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 1
+
+Date and time: 2025-05-22 12:55:25 
+
+Timing results:
+DataImport                              :      0.076 s
+PlotTimeSeries                          :      0.025 s
+DataVisualization_normal                :      0.035 s
+DataVisualization_large                 :      0.602 s
+PlotDataTruncation                      :      0.088 s
+DataTruncation                          :      0.147 s
+BasisDimensionChoice                    :     73.046 s
+ClusterAnalysis_G                       :    844.721 s
+IndexPlotExtrapolation_G                :      0.092 s
+ConfigSelection_G2                      :      0.032 s
+IndexPlotExtrapolation2_G2              :      0.347 s
+DiscriminantPlot_G2                     :      0.022 s
+SilEntropy_G2                           :     37.725 s
+splinePlot_G2                           :      5.254 s
+MaximumDiscriminationFunction_G2        :      0.757 s
+ConfigSelection_G3                      :      0.032 s
+IndexPlotExtrapolation2_G3              :      0.298 s
+DiscriminantPlot_G3                     :      0.057 s
+SilEntropy_G3                           :     37.346 s
+splinePlot_G3                           :      5.180 s
+MaximumDiscriminationFunction_G3        :      0.299 s
+ConfigSelection_G4                      :      0.033 s
+IndexPlotExtrapolation2_G4              :      0.326 s
+DiscriminantPlot_G4                     :      0.044 s
+SilEntropy_G4                           :     38.107 s
+splinePlot_G4                           :      5.039 s
+MaximumDiscriminationFunction_G4        :      0.746 s
+ConfigSelection_G5                      :      0.033 s
+IndexPlotExtrapolation2_G5              :      0.332 s
+DiscriminantPlot_G5                     :      0.042 s
+SilEntropy_G5                           :     37.945 s
+splinePlot_G5                           :      5.222 s
+MaximumDiscriminationFunction_G5        :      0.143 s
+
+-------------------------------------------------
+
+
+Test configuration: Curves: 50 Measures: Parabola, Hyperbola, Sine, Cosine, Logarithm Max Points: 50 Translation: 5
+
+Date and time: 2025-05-22 13:14:03 
+
