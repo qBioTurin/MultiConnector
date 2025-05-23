@@ -1,0 +1,16 @@
+IDSample,Treatment,Progeny,Source
+CARBO14,Carboplatin,P3,NT4
+CARBO15,Carboplatin,P3,NT4
+CARBO16,Carboplatin,P3,NT6
+CARBO17,Carboplatin,P3,NT6
+CARBO18,Carboplatin,P3,NT6
+GEM24,Gemcitabine,P3,NT4
+GEM25,Gemcitabine,P3,NT4
+GEM26,Gemcitabine,P3,NT6
+GEM27,Gemcitabine,P3,NT6
+GEM28,Gemcitabine,P3,NT6
+TRB36,Trabectedin,P4,NT12
+TRB37,Trabectedin,P4,NT12
+TRB38,Trabectedin,P4,NT12
+TRB39,Trabectedin,P4,NT8
+TRB40,Trabectedin,P4,NT12
