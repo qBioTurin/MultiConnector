@@ -71,7 +71,7 @@ setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, a
   q <- sapply(1:length(ConfigChosen@KData$TimeGrids), function(i) {
     rep(names(ConfigChosen@KData$TimeGrids[i]), length(ConfigChosen@KData$TimeGrids[[i]]))
   })
-  measureID <- as.vector(q)
+  measureID <- unlist(q)
   
   # Aggiungi measureID a tutti gli elementi di DiscrList (non solo al primo)
   for (i in 1:length(DiscrList)) {
