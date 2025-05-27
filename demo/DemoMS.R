@@ -37,7 +37,7 @@ do.call(rbind,lapply(files[grepl("temporal",x = files)],function(f){
   Data$measureID = f
   
   Data %>% 
-    rename(subjID = ID,time = Time,value = Observation)
+    rename(subjID = ID,time = Time,value = Observation) %>% na.omit()
   
 })) -> TimeSeries
 
@@ -48,8 +48,11 @@ Annotations = loadRData("../inst/Data/MultipleSclerosis/Feature.RData") %>% rena
 source("DataImport.R")
 source("CONNECTORData.R")
 Data<-DataImport(as_tibble(TimeSeries), as_tibble(Annotations) )
+str(Data,max.level = 3)
+
 source("PlotTimeSeries.R")
 PlotTimeSeries(Data,feature = "GENDER")
+
 source("DataVisualization.R")
 source("GridTimeOfPoints.R")
 DataVisualization(Data)
@@ -64,22 +67,33 @@ source("Clust.R")
 # QUI
 # da controllare le p dalle analisi fatte prima
 CrossLogLikePlot<-BasisDimensionChoice(Data, p=2:6, cores=5)
-CrossLogLikePlot$PB
-CrossLogLikePlot$BM
+CrossLogLikePlot$CD4
+CrossLogLikePlot$EDSS
+CrossLogLikePlot$Th1_prod
+CrossLogLikePlot$Th17_prod
+CrossLogLikePlot$Th17Treg
+CrossLogLikePlot$Treg_prod
+
 source("ClusterAnalysis.R")
 
-clusters<-ClusterAnalysis(Data, G=2:6, p=c(4,4), runs=50, cores=5)
+clusters<-ClusterAnalysis(Data, G=2:6,
+                          p=c("EDSS" = 3, "CD4" = 4,"Th1_prod" = 4,"Th17_prod" = 4, "Th17Treg" = 4, "Treg_prod" = 5),
+                          runs=50, cores=5)
 
 saveRDS(clusters, file = "../inst/Data/MCL/clusters.RDs")
 clusters = readRDS("../inst/Data/MCL/clusters.RDs")
+str(clusters,max.level = 1)
+
 
 source("IndexPlotExtrapolation.R")
 IndexPlotExtrapolation(clusters)
 source("CONNECTORDataClustered.R")
 source("ConfigSelection.R")
-Set<-ConfigSelection(clusters, G=2, "MinfDB")
+Set<-ConfigSelection(clusters, G=3, "MinfDB")
+str(Set,max.level = 3)
+
 source("IndexPlotExtrapolation2.R")
-IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="TTP")
+IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="GENDER")
 
 source("SilhouetteAndEntropy.R")
 SilEntropy(Set)
