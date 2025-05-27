@@ -54,7 +54,7 @@
 #' @import RColorBrewer statmod parallel Matrix splines RhpcBLASctl dplyr
 #' @export
 #'
-setGeneric("ClusterAnalysis", function(CONNECTORData,
+setGeneric("estimateCluster", function(CONNECTORData,
                                        G,
                                        p,
                                        h = NULL,
@@ -64,10 +64,10 @@ setGeneric("ClusterAnalysis", function(CONNECTORData,
                                        PercPCA = .85,
                                        MinErrFreq = 0,
                                        pert = 0.01)
-  standardGeneric("ClusterAnalysis"))
-#' @rdname ClusterAnalysis
+  standardGeneric("estimateCluster"))
+#' @rdname estimateCluster
 #' @export
-setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData,
+setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData,
                                                                    G,
                                                                    p,
                                                                    h = NULL,
