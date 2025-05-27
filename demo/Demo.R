@@ -27,11 +27,11 @@ Annotations = readRDS("../inst/Data/Synthetic/Annotations.RDs")
 
 ####
 
-source("../R/DataImport.R")
+source("../R/ConnectorData.R")
 source("../R/CONNECTORData.R")
-Data<-DataImport(TimeSeries, Annotations)
+Data<-ConnectorData(TimeSeries, Annotations)
 source("../R/PlotTimeSeries.R")
-PlotTimeSeries(Data, feature="treatment_group")
+plot(Data, feature="treatment_group")
 source("../R/DataVisualization.R")
 source("../R/GridTimeOfPoints.R")
 DataVisualization(Data)
@@ -47,19 +47,18 @@ CrossLogLikePlot$Parabola
 
 source("../R/Clust.R")
 source("../R/ClusterAnalysis.R")
-
-clusters<-ClusterAnalysis(Data, G=2:6, p=c("Cosine"=3,"Parabola"=6,"Hyperbola"=4,"Sine"=7), runs=8, cores=10)
+source("../R/IndexPlotExtrapolation.R")
+clusters<-ClusterAnalysis(Data, G=2:6, p=c("Cosine"=3,"Parabola"=6,"Hyperbola"=4,"Sine"=7), runs=300, cores=10)
 clusters$plot
 saveRDS(clusters, file = "../inst/Data/Synthetic/clusters.RDs")
 clusters = readRDS("../inst/Data/Synthetic/clusters.RDs")
 
-source("../R/IndexPlotExtrapolation.R")
-IndexPlotExtrapolation(clusters)
+
 source("../R/CONNECTORDataClustered.R")
 source("../R/ConfigSelection.R")
 Set<-ConfigSelection(clusters, G=2, "MinfDB")
 source("../R/IndexPlotExtrapolation2.R")
-IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="comorbidity")
+plot(Data, ConfigChosen=Set, feature="comorbidity")
 
 source("../R/DiscriminantPlot.R")
 DiscriminantPlot(Data, ConfigChosen=Set, feature="gender")
@@ -81,8 +80,8 @@ source("ConfigSelection.R")
 Set<-ConfigSelection(clusters, G=2, "MinfDB")
 source("DataImport.R")
 source("CONNECTORData.R")
-DataNew<-DataImport(TimeSeriesClassif, AnnotationsClassif)
-source("Classification.R")
+DataNew<-ConnectorData(TimeSeriesClassif, AnnotationsClassif)
+source("../R/Classification.R")
 
 ClassNew = ClassificationCurves(newdata = DataNew,
                      ConfigChosen = Set,
