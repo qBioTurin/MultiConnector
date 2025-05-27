@@ -27,48 +27,48 @@ Annotations = readRDS("../inst/Data/Synthetic/Annotations.RDs")
 
 ####
 
-source("DataImport.R")
-source("CONNECTORData.R")
+source("../R/DataImport.R")
+source("../R/CONNECTORData.R")
 Data<-DataImport(TimeSeries, Annotations)
-source("PlotTimeSeries.R")
+source("../R/PlotTimeSeries.R")
 PlotTimeSeries(Data, feature="treatment_group")
-source("DataVisualization.R")
-source("GridTimeOfPoints.R")
+source("../R/DataVisualization.R")
+source("../R/GridTimeOfPoints.R")
 DataVisualization(Data)
 DataVisualization(Data, large=T)
-source("PlotDataTruncation.R")
-source("DataTruncation.R")
+source("../R/PlotDataTruncation.R")
+source("../R/DataTruncation.R")
 PlotDataTruncation(Data,  measure="Parabola", truncTime=5)
 DataTruncation(Data,  measure="Parabola", truncTime=5)
-source("BasisDimensionChoice.R")
-source("Clust.R")
+source("../R/BasisDimensionChoice.R")
+source("../R/Clust.R")
 CrossLogLikePlot<-BasisDimensionChoice(Data, p=2:10, cores=10)
-CrossLogLikePlot$Cosine
+CrossLogLikePlot$Parabola
 
-source("Clust.R")
-source("ClusterAnalysis.R")
+source("../R/Clust.R")
+source("../R/ClusterAnalysis.R")
 
 clusters<-ClusterAnalysis(Data, G=2:6, p=c("Cosine"=3,"Parabola"=6,"Hyperbola"=4,"Sine"=7), runs=8, cores=10)
-
+clusters$plot
 saveRDS(clusters, file = "../inst/Data/Synthetic/clusters.RDs")
 clusters = readRDS("../inst/Data/Synthetic/clusters.RDs")
 
-source("IndexPlotExtrapolation.R")
+source("../R/IndexPlotExtrapolation.R")
 IndexPlotExtrapolation(clusters)
-source("CONNECTORDataClustered.R")
-source("ConfigSelection.R")
+source("../R/CONNECTORDataClustered.R")
+source("../R/ConfigSelection.R")
 Set<-ConfigSelection(clusters, G=2, "MinfDB")
-source("IndexPlotExtrapolation2.R")
+source("../R/IndexPlotExtrapolation2.R")
 IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="comorbidity")
 
-source("DiscriminantPlot.R")
+source("../R/DiscriminantPlot.R")
 DiscriminantPlot(Data, ConfigChosen=Set, feature="gender")
 
-source("SilhouetteAndEntropy.R")
+source("../R/SilhouetteAndEntropy.R")
 SilEntropy(Set)
-source("splinePlot.R")
+source("../R/splinePlot.R")
 splinePlots = splinePlot(ConfigChosen = Set)
-source("MaximumDiscriminationFunction.R")
+source("../R/MaximumDiscriminationFunction.R")
 MaximumDiscriminationFunction(ConfigChosen = Set)
 
 

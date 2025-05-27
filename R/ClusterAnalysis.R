@@ -123,7 +123,7 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
     results <- lapply(all_combinations, function(combo) {
       #browser()
       if (is.null(h)) {
-        h = min(combo$K - 1, p) #TODO p mono???
+        h = min(combo$K - 1, p) 
       }
       h.found = F
       tentative = 1
@@ -238,10 +238,10 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
       #results <- lapply( all_combinations, function(combo) {
       omp_set_num_threads(1)
       
-      #Imposto h, ma p quale prendo? perché ora il risultato del kmeans è uno, fatto su tutte le dimensioni, mentre p ha più valori
+     
       
       if (is.null(h)) {
-        h = min(combo$K - 1, p) #TODO p mono???
+        h = min(combo$K - 1, p) 
       }
       h.found = F
       tentative = 1
@@ -314,6 +314,8 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
     stopCluster(cl)
   }
   results$KData = KmData
+  results$plot<-
+    IndexPlotExtrapolation(results)
   
   end <- Sys.time() - start
   #save in a file the value of end

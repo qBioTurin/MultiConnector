@@ -20,9 +20,10 @@ setGeneric("ConfigSelection", function(results, G, best) {
   standardGeneric("ConfigSelection")
 })
 setMethod("ConfigSelection", signature(), function(results, G, best) {
+  
   indexes =
     do.call(rbind, lapply(seq_along(results), function(x) {
-      if (x != (length(results))) {
+      if (x <= (length(results) - 2)) {
         xx = results[[x]]
         df = data.frame(xx$TTandfDBandSil)
         df$freq = xx$freq
