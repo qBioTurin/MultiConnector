@@ -4,7 +4,7 @@
 #'
 #'  plot ??
 #'
-#' @param CONNECTORData Connector object created with DataImport
+#' @param CONNECTORData Connector object created with ConnectorData
 #' @param ConfigChosen configuration choosen using ConfigSelection
 #' @param feature dunno
 #'
@@ -13,10 +13,9 @@
 #' @return Boh
 #'
 
-#' @seealso DataImport, ConfigSelection, ClusterAnalysis
+#' @seealso ConnectorData, ConfigSelection, ClusterAnalysis
 #'
 #' @import
-#' @export
 #'
 
 

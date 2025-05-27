@@ -23,7 +23,7 @@
 setGeneric("MaximumDiscriminationFunction", function(ConfigChosen, absvalue =
                                                        TRUE)
   standardGeneric("MaximumDiscriminationFunction"))
-#' @rdname DataTruncation
+
 #' @export
 setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, absvalue =
                                                                            TRUE)

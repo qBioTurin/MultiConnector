@@ -22,7 +22,7 @@ setMethod("PlotDataTruncation",
               else{
                 data <- filter(data@curves, measureID == measure)
                 invisible(capture.output(data <-
-                                           DataImport(data, oldData@annotations)))
+                                           ConnectorData(data, oldData@annotations)))
               }
             }
             dimBefore <- oldData@dimensions$nTimePoints

@@ -4,7 +4,7 @@
 #'
 #'  Fits and clusters the data with respect to the Functional Clustering Model [Sugar and James]. Multiple runs of the algorithm are necessary since the algorithm is stochastic As explained in [Sugar and James], to have a simple low-dimensional representation of the individual curves and to reduce the number of parameters to be estimated, h value must be equals or lower than \eqn{min(p,G-1)}.
 #'
-#' @param data CONNECTORList. (see \code{\link{DataImport}} or \code{\link{DataTruncation}})
+#' @param data CONNECTORList. (see \code{\link{ConnectorData}} or \code{\link{DataTruncation}})
 #' @param G The vector/number of possible clusters.
 #' @param p The dimension of the natural cubic spline basis. (see \code{\link{BasisDimension.Choice}})
 #' @param runs Number of runs.
@@ -316,7 +316,6 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
   results$KData = KmData
   results$plot<-
     IndexPlotExtrapolation(results)
-  
   time_diff <- Sys.time() - start
   
   # Estrai il valore numerico e l'unità

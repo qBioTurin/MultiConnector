@@ -1,11 +1,11 @@
-#' @title DataImport
-#' @description DataImport is a function that imports the data from the excel file storing the growth evolution data and the annotation file.
+#' @title ConnectorData
+#' @description ConnectorData is a function that imports the data from the excel file storing the growth evolution data and the annotation file.
 #' 
 #' @param TimeSeriesFile The name of the excel/csv file storing the  growth evolution data. Alternatively accepts a tibble with the data.
 #'
 #' @param AnnotationFile The name of a excel/csv file storing  the annotation data. Alternatively accepts a tibble with the annotations.
 #'
-#' @return DataImport returns a S4 object, called ConnectorData, with four arguments: (i) curves: tibble with 5 columns (subjID, measureID, time, curvesID, value) encoding the growth data for each sample, (ii) dimensions: the tibble reporting the number of observations collected per sample  (iii) annotations: the tibble matching the samples with their annotations, (iv) TimeGrid: the vector storing all the sample time points (i.e. time grid). Furthermore, it prints a brief summary of the input data, i.e. the total number of curves (samples), the minimum and the maximum curve length.
+#' @return ConnectorData returns a S4 object, called ConnectorData, with four arguments: (i) curves: tibble with 5 columns (subjID, measureID, time, curvesID, value) encoding the growth data for each sample, (ii) dimensions: the tibble reporting the number of observations collected per sample  (iii) annotations: the tibble matching the samples with their annotations, (iv) TimeGrid: the vector storing all the sample time points (i.e. time grid). Furthermore, it prints a brief summary of the input data, i.e. the total number of curves (samples), the minimum and the maximum curve length.
 #' @examples 
 #' TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
 #' AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
@@ -18,16 +18,16 @@
 #' @import readxl dplyr methods readr tibble magrittr tidyr
 #' @export
 #' 
-#Definition of generic for DataImport
+#Definition of generic for ConnectorData
 
 #zscoring TRUE fa il lavoro che dice robi, false no
-setGeneric("DataImport", function(TimeSeriesFile, AnnotationFile) {
-  standardGeneric("DataImport")
+setGeneric("ConnectorData", function(TimeSeriesFile, AnnotationFile) {
+  standardGeneric("ConnectorData")
 })
-#' @rdname DataImport
+#' @rdname ConnectorData
 #' @export
-#Definition of method DataImport
-setMethod("DataImport", signature ("character"),
+#Definition of method ConnectorData
+setMethod("ConnectorData", signature ("character"),
           function(TimeSeriesFile, AnnotationFile) {
             #Read Data File
             
@@ -58,13 +58,13 @@ setMethod("DataImport", signature ("character"),
             else {
               (stop("The AnnotationFile must be an excel or csv file"))
             }
-            return(DataImport(curves, annotations))
+            return(ConnectorData(curves, annotations))
             
           })
-#' @rdname DataImport
+#' @rdname ConnectorData
 #' @import readxl dplyr methods readr tibble magrittr tidyr
 #' @export
-setMethod("DataImport", signature("tbl_df"),
+setMethod("ConnectorData", signature("tbl_df"),
           function(TimeSeriesFile, AnnotationFile) {
             select<-dplyr::select
             curves <- TimeSeriesFile
