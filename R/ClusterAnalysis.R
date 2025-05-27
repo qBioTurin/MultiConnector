@@ -317,11 +317,12 @@ setMethod("ClusterAnalysis", signature ("CONNECTORData"), function(CONNECTORData
   results$plot<-
     IndexPlotExtrapolation(results)
   
-  end <- Sys.time() - start
-  #save in a file the value of end
-  #cat(end, file = "end.txt")
-  end<-as.numeric(end)
-  print(paste("Total time:", round(end, 2), "seconds (rounded at the 2 decim)"))
+  time_diff <- Sys.time() - start
+  
+  # Estrai il valore numerico e l'unità
+  time_value <- round(as.numeric(time_diff), 2)
+  time_unit <- attr(time_diff, "units")
+  print(paste("Total time:", time_value, time_unit))
   return(results)
 })
 
