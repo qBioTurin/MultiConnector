@@ -26,49 +26,49 @@ Annotations = readRDS("../inst/Data/PDX/AnnotationsFiltered.RDs")
 
 ####
 
-source("DataImport.R")
-source("CONNECTORData.R")
+source("../R/DataImport.R")
+source("../R/CONNECTORData.R")
 Data<-DataImport(as_tibble(TimeSeries), as_tibble(Annotations) )
-source("PlotTimeSeries.R")
+source("../R/PlotTimeSeries.R")
 PlotTimeSeries(Data,feature = "LongID") + ggplot2::theme(legend.position = "none")
-source("DataVisualization.R")
-source("GridTimeOfPoints.R")
+source("../R/DataVisualization.R")
+source("../R/GridTimeOfPoints.R")
 DataVisualization(Data)
 DataVisualization(Data, large=T)
 # source("PlotDataTruncation.R")
 # source("DataTruncation.R")
 # PlotDataTruncation(Data,  measure="PDX", truncTime=5)
 # DataTruncation(Data,  measure="PDX", truncTime=5)
-source("BasisDimensionChoice.R")
-source("Clust.R")
+source("../R/BasisDimensionChoice.R")
+source("../R/Clust.R")
 CrossLogLikePlot<-BasisDimensionChoice(Data, p=2:6, cores=5)
 CrossLogLikePlot
 
-source("ClusterAnalysis.R")
+source("../R/ClusterAnalysis.R")
 
 clusters<-ClusterAnalysis(Data, G=2:6, p=4, runs=50, cores=5)
 
 saveRDS(clusters, file = "../inst/Data/PDX/clusters.RDs")
 clusters = readRDS("../inst/Data/PDX/clusters.RDs")
 
-source("IndexPlotExtrapolation.R")
+source("../R/IndexPlotExtrapolation.R")
 IndexPlotExtrapolation(clusters)
-source("CONNECTORDataClustered.R")
-source("ConfigSelection.R")
+source("../R/CONNECTORDataClustered.R")
+source("../R/ConfigSelection.R")
 Set<-ConfigSelection(clusters, G=2, "MinfDB")
-source("IndexPlotExtrapolation2.R")
+source("../R/IndexPlotExtrapolation2.R")
 IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="LongID")
 
-source("SilhouetteAndEntropy.R")
+source("../R/SilhouetteAndEntropy.R")
 SilEntropy(Set)
 
-source("DiscriminantPlot.R")
+source("../R/DiscriminantPlot.R")
 DiscriminantPlot(Data, ConfigChosen=Set, feature="LongID")
 
 
-source("splinePlot.R")
+source("../R/splinePlot.R")
 splinePlots = splinePlot(ConfigChosen = Set)
-source("MaximumDiscriminationFunction.R")
+source("../R/MaximumDiscriminationFunction.R")
 MaximumDiscriminationFunction(ConfigChosen = Set)
 
 
