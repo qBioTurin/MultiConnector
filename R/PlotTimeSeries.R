@@ -17,7 +17,6 @@
 #' PlotTimeSeries(CONNECTORData,"Progeny",labels=c("Time","Volume","Tumor Growth"))
 #'
 #' @import ggplot2 tibble dplyr
-#' @export
 
 setGeneric("PlotTimeSeries", function(data,
                                       feature=NULL,
@@ -25,7 +24,6 @@ setGeneric("PlotTimeSeries", function(data,
   standardGeneric("PlotTimeSeries"))
 
 #' @rdname PlotTimeSeries
-#' @export
 
 setMethod("PlotTimeSeries", signature("CONNECTORData"),
           function(data, feature=NULL, labels) {

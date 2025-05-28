@@ -4,7 +4,7 @@
 #'
 #' Truncates the functional data (the time series) at a specific time point chosen by the user.
 #'
-#' @param data CONNECTORData. (see \code{\link{DataImport}})
+#' @param data CONNECTORData. (see \code{\link{ConnectorData}})
 #' @param feature The column name reported in the AnnotationFile containing the feature  to be investigated.
 #' @param truncTime  A two dimension vector of integers corresponding to the time points where the curves will be truncated. If an integer number is passed, than it will be considered as the upper time point by default.
 #' @param labels  Vector containing the text for the title of axis names and plot title.
@@ -17,7 +17,7 @@
 #'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
 #'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
 #'
-#'CONNECTORData <- DataImport(TimeSeriesFile,AnnotationFile)
+#'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
 #'
 #'CONNECTORData<- DataTruncation(CONNECTORData,"Progeny",truncTime=50,labels = c("time","volume","Tumor Growth"), measure="test")
 #' @import ggplot2 tibble dplyr tidyr
@@ -48,7 +48,7 @@ setMethod("DataTruncation",
               else{
                 data <- filter(data@curves, measureID == measure)
                 invisible(capture.output(data <-
-                  DataImport(data, oldData@annotations)))
+                  ConnectorData(data, oldData@annotations)))
               }
             }
             dimBefore <- oldData@dimensions$nTimePoints
@@ -72,7 +72,7 @@ setMethod("DataTruncation",
               oldAnnotations <- oldData@annotations
               oldData <- filter(oldData@curves, measureID != measure)
               dataTr <- bind_rows(oldData, dataTr@curves)
-              invisible(capture.output(dataTr <- DataImport(dataTr, oldAnnotations)))
+              invisible(capture.output(dataTr <- ConnectorData(dataTr, oldAnnotations)))
             }
             else{
               cat("############################### \n######## Summary ##############\n")

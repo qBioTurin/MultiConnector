@@ -4,7 +4,7 @@
 #'
 #'  plot ??
 #'
-#' @param CONNECTORData Connector object created with DataImport
+#' @param CONNECTORData Connector object created with ConnectorData
 #' @param ConfigChosen configuration choosen using ConfigSelection
 #' @param feature dunno
 #'
@@ -13,10 +13,9 @@
 #' @return Boh
 #'
 
-#' @seealso DataImport, ConfigSelection, ClusterAnalysis
+#' @seealso ConnectorData, ConfigSelection, ClusterAnalysis
 #'
 #' @import
-#' @export
 #'
 
 
@@ -85,7 +84,7 @@ setMethod("IndexPlotExtrapolation2", signature(), function(CONNECTORData,
       linewidth = .9,
       linetype = "dashed"
     ) +
-    facet_grid(measureID ~ cluster) +
+    facet_grid(measureID ~ cluster, scales = "free_y") +
     scale_color_brewer(palette = "Set1") +
     labs(y = "", x = "Time", col = feature) +
     theme_bw() +
@@ -112,8 +111,3 @@ setMethod("IndexPlotExtrapolation2", signature(), function(CONNECTORData,
       plot.margin = unit(c(0, 0, 0, 0), "cm")
     )
 })
-
-#Faccio l'1, poi un metodo per scegliere il migliore (most freq o minima) e poi questo che ha come input il migliore
-#se alpha son 2 dimensioni grafico normale, se son 3 uso plotly, se son di più faccio PCA
-#implementare anche countingsamples
-#prendo prob dall'output di clusteranalysis e calcolo l'entropia come in classification di connector vecchio

@@ -10,7 +10,7 @@
 #'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
 #'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
 #'
-#'CONNECTORData <- DataImport(TimeSeriesFile,AnnotationFile)
+#'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
 #'
 #'CrossLogLike<-BasisDimensionChoice(CONNECTORData,p=2:6, cores = 2)
 #'CrossLogLike[[1]]
@@ -42,7 +42,7 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
             else if (is.null(i)) {
               res <- lapply(measures, function(j) {
                 curve <- filter(data@curves, measureID == j)
-                invisible(capture.output(connect <- DataImport(curve, data@annotations)))
+                invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
                 result <- BasisDimensionChoicePerObs(connect, p, cores)
                 return(result)
               })
@@ -51,7 +51,7 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
             else if (i %in% measures) {
               res <- lapply(i, function(j) {
                 curve <- filter(data@curves, measureID == j)
-                invisible(capture.output(connect <- DataImport(curve, data@annotations)))
+                invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
                 result <- BasisDimensionChoicePerObs(connect, p, cores)
                 return(result)
               })

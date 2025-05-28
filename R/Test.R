@@ -3,8 +3,12 @@ library(ggplot2)
 library(dplyr)
 library(microbenchmark)
 library(parallel)
-library(stats) # Required for the sample function
+library(stats) 
 library(plotly)
+library(patchwork)
+library(MetBrewer)
+library(gghalves)
+library(statmod)
 
 # Source del codice originale
 source("DataImport.R")
@@ -173,7 +177,6 @@ run_test <- function(num_curves, measures, p_values, G_values, max_points, trans
     })[["elapsed"]]
   for (G_val in G_values) {
     # Misura il tempo per ConfigSelection
-    
     times[[paste0("ConfigSelection_G", G_val)]] <- system.time({
       ConfigChosen <- ConfigSelection(clusters, G = G_val, "MinfDB")
     })[["elapsed"]]
@@ -221,9 +224,17 @@ max_points_vals <- c(30, 50)  # Numero massimo di punti per curva
 translation_vals <- c(1, 5, 10)  # Valori di translation per l'irregolarità delle curve
 
 # Crea un file per salvare i risultati
-output_file <- "testing_results_complete1.txt"
+output_file <- "testing_results_completeBIGtest.txt"
 file.create(output_file)
 cat("Starting performance tests...\n")
+#TODO darimuove
+
+measures_sets <- list(
+  c("Hyperbola"))
+max_points_vals <- c(30)
+translation_vals <- c(1)
+num_curves_vals <- c(10)
+
 
 # Esegui i test in modo sistematico
 for (num_curves in num_curves_vals) {
