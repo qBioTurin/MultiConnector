@@ -57,7 +57,7 @@ library(RhpcBLASctl)
       FullS <- list.append(FullS, b)
     }
   }
-  #browser()
+  #
   #Creo i timeindex, poiché nel dataset iniziale io ho solo i tempi ma non come essi siano posizionati nella griglia
   timeindex <- NULL
   for (i in 1:N) {
@@ -88,19 +88,27 @@ library(RhpcBLASctl)
         Si <- bdiag(Si, A)
       }#Questo if è necessario poiché bdiag ha bisogno di una matrice iniziale su cui attaccarsi (ovvero quella della prima misura)
     }
+
+    if (is.null(dim(Si))){
+      Si <- matrix(Si,nrow=1)
+    }  else {
+      Si <- as.matrix(Si)
+    }
     
-    Si <- as.matrix(Si)
     S <- rbind(S, Si) #In questo modo attacco le matrice dei vari soggetti una sotto l'altra (tanto il numero di colonne è uguale per ogni soggetto, ovvero sum(q))
   }
   
   #S <- as.matrix(S)# è necessario perché rbind, non riempie le matrici con gli zeri
   
-  
   #Calcolo i coefficienti iniziali delle spline, usando il metodo dell'errore quadratico (penso qua si usi effetivamente la svd?)
   points <- matrix(0, N, sum(q))
-  #browser()
+  #
   for (i in 1:N) {
-    Si <- S[CData$jamesID == i, ] #Questa riga è sensata poiché i jamesID sono ordinati
+    if (length(which(CData$jamesID == i)) == 1){
+      Si <- matrix( S[CData$jamesID == i, ],nrow=1)
+    }  else {
+      Si <- S[CData$jamesID == i, ]
+    }
     yi <- CData$value[CData$jamesID == i]
     points[i, ]  <- solve(t(Si) %*% Si + pert * diag(sum(q))) %*% t(Si) %*% 
       yi
@@ -120,7 +128,6 @@ library(RhpcBLASctl)
 
 #Parte randomica dell'algoritmo, è necessario avere la parte di codice per K=1, poiché serve nello stimare gli iper-parametri
 "justKmeans" <- function(CLUSTData, K) {
-  
   if (K > 1) {
     
     class <- kmeans(CLUSTData$points, K, 10)$cluster
@@ -300,7 +307,13 @@ library(RhpcBLASctl)
   vars$gprod <- vars$gcov <- NULL
   for (j in 1:N) {
     # Calculate expected value of gamma.
-    Sj <- S[curve_ok$jamesID == j, ]
+    if (length(which(curve_ok$jamesID == j)) == 1){
+      Sj <- matrix( S[curve_ok$jamesID == j, ],nrow=1)
+    }  else {
+      Sj <- S[curve_ok$jamesID == j, ]
+    }
+    
+    # Sj <- S[curve_ok$jamesID == j, ]
     nj <- sum(curve_ok$jamesID == j) #determina quanti dati del soggetto j
     invvar <- diag(1 / rep(par$sigma, nj))
     Cgamma <- Gamma - Gamma %*% t(Sj) %*% solve(diag(nj) + Sj %*%
@@ -632,7 +645,7 @@ library(RhpcBLASctl)
       
       lower.p <- upper.p <- lower.c <- upper.c <- matrix(0, nrow(FullSj), numb)
       for (j in 1:numb) {
-        #browser()
+        #
         mu <- lambda.zero1 + Lambda1 %*% alpha[ord[j], ]
         mean <- FullSj %*% (mu + cov %*% t(Sij) %*% (y - Sij %*% mu))
         upper.p[, j] <- mean + qnorm(tau2) * pse

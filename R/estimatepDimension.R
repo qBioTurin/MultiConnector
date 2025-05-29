@@ -229,7 +229,6 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
               })
             })
             stopCluster(cl)}
-            
             crossvalid <- crossvalid[!sapply(crossvalid, is.null)]
             Knots.list <- lapply(p, function(p) {
               Spline <- ns(grid, df = (p - 1))
@@ -358,7 +357,6 @@ setGeneric("Calclikelihood", function(p, data.funcit, TestSet)#, grid)
 
 setMethod("Calclikelihood", signature = c(),
           function(p, data.funcit, TestSet){#, grid) {
-            
             perc <- max(TestSet$IDnum) #TODO
             # points <- data.funcit$value
             # ID <- data.funcit$curvesID
@@ -378,6 +376,7 @@ setMethod("Calclikelihood", signature = c(),
               class = runs,
               CLUSTData = KmData
             )
+            
             #Li <- sapply(1:perc, Likelihood, TestSet, fcm.fit)
             Li <-
               sapply(1:perc, function(per)
