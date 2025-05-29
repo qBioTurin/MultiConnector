@@ -95,6 +95,54 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
                 )
               )
             }
+            if(cores==1){
+              crossvalid<-lapply(1:splits, function(step) {
+                tryCatch({
+                  omp_set_num_threads(1)
+                  SampleTestSet <- sort(Allsplits[[step]])
+                  SampleTrainSet <- unname(unlist(Allsplits[-step]))
+                  TestSet <-
+                    data@curves[data@curves$curvesID %in% SampleTestSet, ]
+                  TrainingSet <-
+                    data@curves[data@curves$curvesID %in% SampleTrainSet, ]
+                  #trasforma la colonna ID di TrainingSet in valori numerici
+                  TrainingSet$IDnum <-
+                    as.numeric(as.factor(TrainingSet$curvesID))
+                  TestSet$IDnum <-
+                    as.numeric(as.factor(TestSet$curvesID)) #davedere
+                  #create data.funcit a tibble composed by TrainingTestSet plus a new column with the value of data@dimensions[2] matching the ID
+                  
+                  
+                  # data.funcit <- TrainingSet #%>%
+                  #mutate(timepos = match(TrainingSet$time, grid)) #da vedere
+                  
+                  Crosslikelihood <-
+                    sapply(p, function(p_value){
+                      
+                      Calclikelihood(
+                        p = p_value,
+                        data.funcit = TrainingSet,
+                        TestSet = TestSet
+                      )}
+                    )
+                  
+                  return(tibble(
+                    p = p,
+                    Crosslikelihood = Crosslikelihood,
+                    fold = step
+                  ))
+                }, error = function(e) {
+                  err <-
+                    paste("Error in prediction:",
+                          conditionMessage(e),
+                          TrainingSet$time,
+                          grid,
+                          "\n")
+                  return(err)
+                })
+              })
+            }
+            else{
             nworkers <- detectCores()-1
             if (nworkers < cores)
               cores <- nworkers
@@ -180,7 +228,7 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
                 return(err)
               })
             })
-            stopCluster(cl)
+            stopCluster(cl)}
             
             crossvalid <- crossvalid[!sapply(crossvalid, is.null)]
             Knots.list <- lapply(p, function(p) {
