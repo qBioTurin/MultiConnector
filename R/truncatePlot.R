@@ -1,12 +1,12 @@
-setGeneric("PlotDataTruncation", function(data,
+setGeneric("truncatePlot", function(data,
                                       feature=NULL,
                                       truncTime = NULL,
                                       labels = NULL,
                                       measure = NULL)
-  standardGeneric("PlotDataTruncation"))
-#' @rdname DataTruncation
+  standardGeneric("truncatePlot"))
+#' @rdname truncatePlot
 #' @export
-setMethod("PlotDataTruncation",
+setMethod("truncatePlot",
           signature ("CONNECTORData"), function(data,
                                                 feature=NULL,
                                                 truncTime = NULL,

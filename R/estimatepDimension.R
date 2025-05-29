@@ -1,4 +1,4 @@
-#' @title BasisDimensionChoice
+#' @title estimatepDimension
 #' @description Generates a line plot reporting the cross-validated loglikelihood value for each number of knots. In details, for each number of knots 10% of the curves from the whole data are removed and treated as a test set, then the remaing curves are fitted using the FCM and the loglikelihood on the test set is calculated. The process is then repeated nine more times.
 #' @param data CONNECTORData. See CONNECTORData for details.
 #' @param i an integer indicating the index of the observation to be used for the analysis. For example, if i=1 the first observation of the data set will be used for the analysis. If i=c(1,2) the first and the second observation of the data set will be used for the analysis. Column ID and time are not considered when indicate the index of the observation. Default value is 1.
@@ -12,22 +12,22 @@
 #'
 #'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
 #'
-#'CrossLogLike<-BasisDimensionChoice(CONNECTORData,p=2:6, cores = 2)
+#'CrossLogLike<-estimatepDimension(CONNECTORData,p=2:6, cores = 2)
 #'CrossLogLike[[1]]
 #' @import MASS dplyr parallel ggplot2 splines patchwork rlist
 #' @export
-setGeneric("BasisDimensionChoice", function(data,
+setGeneric("estimatepDimension", function(data,
                                             i = NULL,
                                             p,
                                             cores = 1)
-  standardGeneric("BasisDimensionChoice"))
-#' @rdname BasisDimensionChoice
+  standardGeneric("estimatepDimension"))
+#' @rdname estimatepDimension
 #' @export
 #'
 
 #'
 #'
-setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
+setMethod("estimatepDimension", signature = c("CONNECTORData"),
           function(data,
                    i = NULL,
                    p,
@@ -37,13 +37,13 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
             measures <- unique(data@curves$measureID)
             
             if (length(measures) == 1) {
-              return(BasisDimensionChoicePerObs(data, p, cores))
+              return(estimatepDimensionPerObs(data, p, cores))
             }
             else if (is.null(i)) {
               res <- lapply(measures, function(j) {
                 curve <- filter(data@curves, measureID == j)
                 invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
-                result <- BasisDimensionChoicePerObs(connect, p, cores)
+                result <- estimatepDimensionPerObs(connect, p, cores)
                 return(result)
               })
               names(res) <- measures
@@ -52,7 +52,7 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
               res <- lapply(i, function(j) {
                 curve <- filter(data@curves, measureID == j)
                 invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
-                result <- BasisDimensionChoicePerObs(connect, p, cores)
+                result <- estimatepDimensionPerObs(connect, p, cores)
                 return(result)
               })
               names(res) <- i
@@ -64,10 +64,10 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
             return(res)
           })
 
-setGeneric("BasisDimensionChoicePerObs", function(data, p, cores)
-  standardGeneric("BasisDimensionChoicePerObs"))
+setGeneric("estimatepDimensionPerObs", function(data, p, cores)
+  standardGeneric("estimatepDimensionPerObs"))
 
-setMethod("BasisDimensionChoicePerObs", signature = c("CONNECTORData"),
+setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
           function(data, p, cores) {
             
             if(length(unique(data@dimensions$curvesID))>9){

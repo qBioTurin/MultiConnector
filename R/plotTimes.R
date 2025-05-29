@@ -15,16 +15,16 @@
 #'
 #'CONNECTORData <- DataImport(TimeSeriesFile,AnnotationFile)
 #'
-#'DataVisualization(CONNECTORData)
+#'plotTimes(CONNECTORData)
 #'
 #' 
 #' @seealso  \code{\link{PlotTimeSeries}}, code{\link{GridTimeOfPoints}}.
 #' @export
 #' 
-setGeneric("DataVisualization", function(data, large=FALSE, measureIDs=NULL) standardGeneric("DataVisualization"))
-#' @rdname DataVisualization
+setGeneric("plotTimes", function(data, large=FALSE, measureIDs=NULL) standardGeneric("plotTimes"))
+#' @rdname plotTimes
 #' @export
-setMethod("DataVisualization", signature = c("CONNECTORData"), function(data, large =FALSE, measureIDs=NULL) {
+setMethod("plotTimes", signature = c("CONNECTORData"), function(data, large =FALSE, measureIDs=NULL) {
   if (!is.null(measureIDs) && length(measureIDs) > 0) {
     data@curves <- dplyr::filter(data@curves, measureID %in% measureIDs)
   }

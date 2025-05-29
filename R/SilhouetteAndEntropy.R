@@ -1,3 +1,8 @@
+
+setGeneric("SilEntropy", function(best) {
+  standardGeneric("SilEntropy")
+})
+
 setMethod("SilEntropy", signature(), function(best) {
   probs = best@CfitandParameters$pred$probs
   colnames(probs) = best@cluster.names

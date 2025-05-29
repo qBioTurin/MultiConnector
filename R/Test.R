@@ -11,24 +11,25 @@ library(gghalves)
 library(statmod)
 
 # Source del codice originale
-source("DataImport.R")
-source("CONNECTORData.R")
-source("PlotTimeSeries.R")
-source("DataVisualization.R")
-source("GridTimeOfPoints.R")
-source("PlotDataTruncation.R")
-source("DataTruncation.R")
-source("BasisDimensionChoice.R")
-source("Clust.R")
-source("ClusterAnalysis.R")
-source("IndexPlotExtrapolation.R")
-source("CONNECTORDataClustered.R")
-source("ConfigSelection.R")
-source("IndexPlotExtrapolation2.R")
-source("DiscriminantPlot.R")
-source("SilhouetteAndEntropy.R")
-source("splinePlot.R")
-source("MaximumDiscriminationFunction.R")
+source("../R/ConnectorData.R")
+source("../R/CONNECTORData.R")
+source("../R/PlotTimeSeries.R")
+source("../R/plot.R")
+source("../R/plotTimes.R")
+source("../R/GridTimeOfPoints.R")
+source("../R/truncatePlot.R")
+source("../R/truncate.R")
+source("../R/estimatepDimension.R")
+source("../R/Clust.R")
+source("../R/estimateCluster.R")
+source("../R/IndexPlotExtrapolation.R")
+source("../R/CONNECTORDataClustered.R")
+source("../R/configSelection.R")
+source("../R/IndexPlotExtrapolation2.R")
+source("../R/DiscriminantPlot.R")
+source("../R/SilhouetteAndEntropy.R")
+source("../R/splinePlot.R")
+source("../R/MaximumDiscriminationFunction.R")
 
 # Funzione per generare curve
 generate_curve <- function(n, curve_type, max_points = 30, translation = 5) {
@@ -120,90 +121,117 @@ run_test <- function(num_curves, measures, p_values, G_values, max_points, trans
   
   if (nrow(all_data) == 0) {
     cat("Error: No data generated. Skipping this test configuration.\n")
+    Sys.sleep(0.1)  # Small pause to ensure output is flushed
     return(times)
   }
   
   Annotations <- generate_annotation_file(all_data)
   
-  # Misura il tempo per DataImport
-  times[["DataImport"]] <- system.time({
-    Data <- DataImport(all_data, Annotations)
+  # Misura il tempo per ConnectorData (era DataImport)
+  times[["ConnectorData"]] <- system.time({
+    Data <- ConnectorData(all_data, Annotations)
   })[["elapsed"]]
   
-  # Misura il tempo per PlotTimeSeries
-  times[["PlotTimeSeries"]] <- system.time({
-    PlotTimeSeries(Data, feature = "treatment_group")
+  Sys.sleep(0.1)  # Small pause between operations
+  
+  # Misura il tempo per plot (era PlotTimeSeries)
+  times[["plot"]] <- system.time({
+    plot(Data, feature = "treatment_group")
   })[["elapsed"]]
   
-  # Misura il tempo per DataVisualization (normale)
-  times[["DataVisualization_normal"]] <- system.time({
-    DataVisualization(Data)
+  Sys.sleep(0.1)
+  
+  # Misura il tempo per plotTimes (era DataVisualization normale)
+  times[["plotTimes_normal"]] <- system.time({
+    plotTimes(Data)
   })[["elapsed"]]
   
-  # Misura il tempo per DataVisualization (large)
-  times[["DataVisualization_large"]] <- system.time({
-    DataVisualization(Data, large = TRUE)
+  Sys.sleep(0.1)
+  
+  # Misura il tempo per plotTimes (era DataVisualization large)
+  times[["plotTimes_large"]] <- system.time({
+    plotTimes(Data, large = TRUE)
   })[["elapsed"]]
   
-  # Misura il tempo per PlotDataTruncation
+  Sys.sleep(0.1)
+  
+  # Misura il tempo per truncatePlot (era PlotDataTruncation)
   if (length(measures) > 0) {
-    times[["PlotDataTruncation"]] <- system.time({
-      PlotDataTruncation(Data, measure = measures[1], truncTime = 5)
+    times[["truncatePlot"]] <- system.time({
+      truncatePlot(Data, measure = measures[1], truncTime = 5)
     })[["elapsed"]]
     
-    # Misura il tempo per DataTruncation
-    times[["DataTruncation"]] <- system.time({
-      DataTruncation(Data, measure = measures[1], truncTime = 5)
+    Sys.sleep(0.1)
+    
+    # Misura il tempo per truncate (era DataTruncation)
+    times[["truncate"]] <- system.time({
+      truncate(Data, measure = measures[1], truncTime = 5)
     })[["elapsed"]]
   }
   
-  # Misura il tempo per BasisDimensionChoice
-  times[["BasisDimensionChoice"]] <- system.time({
-    CrossLogLikePlot <- BasisDimensionChoice(Data, p = p_values, cores = min(10, detectCores()))
+  Sys.sleep(0.1)
+  
+  # Misura il tempo per estimatepDimension (era BasisDimensionChoice)
+  times[["estimatepDimension"]] <- system.time({
+    CrossLogLikePlot <- estimatepDimension(Data, p = p_values, cores = min(10, detectCores()))
   })[["elapsed"]]
+  
+  Sys.sleep(0.1)
   
   # Crea un vettore di p per ogni misura
   p_vector <- setNames(rep(p_values[length(p_values) %/% 2], length(measures)), measures)
   
-  # Test ClusterAnalysis per ogni valore di G
+  # Misura il tempo per estimateCluster (era ClusterAnalysis)
+  times[["estimateCluster"]] <- system.time({
+    clusters <- estimateCluster(Data, G = G_values, p = p_vector, runs = 100, cores = min(10, detectCores()))
+  })[["elapsed"]]
+  
  
-    # Misura il tempo per ClusterAnalysis
-    times[[paste0("ClusterAnalysis_G")]] <- system.time({
-      clusters <- ClusterAnalysis(Data, G = G_values, p = p_vector, runs = 100, cores = min(10, detectCores()))
-    })[["elapsed"]]
-    # Misura il tempo per IndexPlotExtrapolation
-    times[[paste0("IndexPlotExtrapolation_G")]] <- system.time({
-      IndexPlotExtrapolation(clusters)
-    })[["elapsed"]]
+  
+  Sys.sleep(0.1)
+  
   for (G_val in G_values) {
-    # Misura il tempo per ConfigSelection
-    times[[paste0("ConfigSelection_G", G_val)]] <- system.time({
-      ConfigChosen <- ConfigSelection(clusters, G = G_val, "MinfDB")
+    # Misura il tempo per configSelection (era ConfigSelection)
+    times[[paste0("configSelection_G", G_val)]] <- system.time({
+      ConfigChosen <- configSelection(clusters, G = G_val, "MinfDB")
     })[["elapsed"]]
     
-    # Misura il tempo per IndexPlotExtrapolation2
-    times[[paste0("IndexPlotExtrapolation2_G", G_val)]] <- system.time({
-      IndexPlotExtrapolation2(Data, ConfigChosen = ConfigChosen, feature = "comorbidity")
+    Sys.sleep(0.1)
+    
+    # Misura il tempo per plot con ConfigChosen (era IndexPlotExtrapolation2)
+    times[[paste0("plot_ConfigChosen_G", G_val)]] <- system.time({
+      plot(Data, ConfigChosen = ConfigChosen, feature = "comorbidity")
     })[["elapsed"]]
+    
+    Sys.sleep(0.1)
     
     # Misura il tempo per DiscriminantPlot
     times[[paste0("DiscriminantPlot_G", G_val)]] <- system.time({
       DiscriminantPlot(Data, ConfigChosen = ConfigChosen, feature = "gender")
     })[["elapsed"]]
     
-    # Misura il tempo per SilhouetteAndEntropy
+    Sys.sleep(0.1)
+    
+    # Misura il tempo per SilEntropy (era SilhouetteAndEntropy)
     times[[paste0("SilEntropy_G", G_val)]] <- system.time({
       SilEntropy(ConfigChosen)
     })[["elapsed"]]
+    
+    Sys.sleep(0.1)
     
     # Misura il tempo per splinePlot
     times[[paste0("splinePlot_G", G_val)]] <- system.time({
       splinePlot(ConfigChosen = ConfigChosen)
     })[["elapsed"]]
+    
+    Sys.sleep(0.1)
+    
     # Misura il tempo per MaximumDiscriminationFunction
     times[[paste0("MaximumDiscriminationFunction_G", G_val)]] <- system.time({
       MaximumDiscriminationFunction(ConfigChosen = ConfigChosen)
     })[["elapsed"]]
+    
+    Sys.sleep(0.1)
   }
   
   return(times)
@@ -224,17 +252,15 @@ max_points_vals <- c(30, 50)  # Numero massimo di punti per curva
 translation_vals <- c(1, 5, 10)  # Valori di translation per l'irregolarità delle curve
 
 # Crea un file per salvare i risultati
-output_file <- "testing_results_completeBIGtest.txt"
+output_file <- "testing_results.txt"
 file.create(output_file)
 cat("Starting performance tests...\n")
-#TODO darimuove
+Sys.sleep(0.1)
 
-measures_sets <- list(
-  c("Hyperbola"))
-max_points_vals <- c(30)
-translation_vals <- c(1)
-num_curves_vals <- c(10)
 
+max_points_vals <- c(30, 50, 80)
+translation_vals <- c(1, 5 , 10)
+num_curves_vals <- c(10, 30, 50)
 
 # Esegui i test in modo sistematico
 for (num_curves in num_curves_vals) {
@@ -249,6 +275,7 @@ for (num_curves in num_curves_vals) {
                              "Translation:", translation_val)
         
         cat("\n", test_config, "\n", sep = "")
+        Sys.sleep(0.1)
         
         # Scrivi la configurazione nel file
         write(paste("\n", test_config, "\n", sep = ""), file = output_file, append = TRUE)
@@ -263,19 +290,24 @@ for (num_curves in num_curves_vals) {
           for (name in names(times_results)) {
             write(sprintf("%-40s: %10.3f s", name, times_results[[name]]), file = output_file, append = TRUE)
           }
-        }, error = function(e) {
           
+          Sys.sleep(0.1)
+          
+        }, error = function(e) {
           write(paste("ERROR during test:", conditionMessage(e)), file = output_file, append = TRUE)
           cat("ERROR:", conditionMessage(e), "\n")
+          Sys.sleep(0.1)
         })
         
         write("\n-------------------------------------------------\n", file = output_file, append = TRUE)
         
         # Pulisci la memoria dopo ogni test
         gc()
+        Sys.sleep(0.2)  # Slightly longer pause after cleanup
       }
     }
   }
 }
 
 cat("\nTest completati. I risultati sono stati salvati in", output_file, "\n")
+Sys.sleep(0.1)

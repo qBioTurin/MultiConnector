@@ -5,7 +5,6 @@ setGeneric("plot", function(data, ...) {
 setMethod("plot", 
           signature(data = "CONNECTORData"), 
           function(data, ...) {
-            
             args <- list(...)
             
             if (!"ConfigChosen" %in% names(args)) {

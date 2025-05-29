@@ -1,4 +1,4 @@
-#' ConfigSelection
+#' configSelection
 #'
 #'@description
 #'
@@ -16,10 +16,10 @@
 #' @import
 #' @export
 #'
-setGeneric("ConfigSelection", function(results, G, best) {
-  standardGeneric("ConfigSelection")
+setGeneric("configSelection", function(results, G, best) {
+  standardGeneric("configSelection")
 })
-setMethod("ConfigSelection", signature(), function(results, G, best) {
+setMethod("configSelection", signature(), function(results, G, best) {
   
   indexes =
     do.call(rbind, lapply(seq_along(results), function(x) {
