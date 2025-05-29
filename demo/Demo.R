@@ -28,7 +28,7 @@ Annotations = readRDS("../inst/Data/Synthetic/Annotations.RDs")
 ####
 
 source("../R/ConnectorData.R")
-source("../R/CONNECTORData.R")
+source("../R/CONNData.R")
 Data<-ConnectorData(TimeSeries, Annotations)
 source("../R/PlotTimeSeries.R")
 source("../R/plot.R")
