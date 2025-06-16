@@ -162,10 +162,16 @@ setMethod("DataTrunc",
             }
             else
               dataTr <- data
-            
-            if (length(which(dataTr@dimensions < 2)) != 0)
+            browser()
+            if (length(which(dataTr@dimensions$nTimePoints <= 2)) != 0)
             {
-              warning("Curves with less than 2 points are now present!!!")
+              stop(
+                paste0(
+                  "Some curves have less than 2 points after truncation. \n",
+                  "The following curves have been truncated to less than 2 points: ",
+                  paste(dataTr@dimensions$curvesID[dataTr@dimensions$nTimePoints <= 2], collapse = ", ")
+                )
+              )
             }
             
             return(dataTr)

@@ -139,7 +139,12 @@ setMethod("ConnectorData", signature("tbl_df"),
               select(-time, -subjID, -measureID) %>%
               group_by(curvesID) %>%
               summarise_all(~ sum(!is.na(.)))
-            
+            if (any(dimensions$value <= 2)) {
+              stop(
+                "Some curves have less than 2 observations. Please check the data. The curves with less than 2 observations are: ",
+                paste(dimensions$curvesID[dimensions$value < 2], collapse = ", ")
+              )
+            }
             names(dimensions)[names(dimensions) == "value"] <- "nTimePoints"
             #order the column placing ID and time at the beginning
             curves <- curves[, c("subjID", "measureID", "time", "curvesID", setdiff(names(curves), c("subjID", "measureID", "time", "curvesID")))]
