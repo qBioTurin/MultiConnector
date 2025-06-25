@@ -1,3 +1,13 @@
+#' plot
+#'
+#' create  plot of the basic data or the data already analyzed
+#'
+#' @param data CONNECTORData. (see \code{\link{DataImport}})
+#' 
+#' @export
+#' 
+
+
 setGeneric("plot", function(data, ...) {
   standardGeneric("plot")
 })

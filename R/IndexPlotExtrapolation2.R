@@ -10,7 +10,7 @@
 #'
 #'
 #'
-#' @return Boh
+#' @return ...
 #'
 
 #' @seealso ConnectorData, ConfigSelection, ClusterAnalysis

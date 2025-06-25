@@ -9,7 +9,6 @@
 #' @slot cluster.names names of the clusters
 #' @slot KData contains: CData Contains timeseriefile datas, TimeGrids TimeGrids present in CONNECTORData, points Initial coefficent spline points, N subject number, S block diagonal matrix, FullS full block diagonal matrix
 
-#' @exportclass KData
 
 
 setClass(

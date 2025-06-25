@@ -1,11 +1,20 @@
-
-setGeneric("SilEntropy", function(best) {
+#' @title SilhouetteAndEntropy
+#'
+#' @description plot a graph with silhouette and entropy
+#'
+#' @param ConfigChosen set choosen with configSelection()
+#' @return a plot.
+#'
+#'
+#' @import ggplot2 tibble dplyr
+#' @export
+setGeneric("SilEntropy", function(ConfigChosen) {
   standardGeneric("SilEntropy")
 })
 
-setMethod("SilEntropy", signature(), function(best) {
-  probs = best@CfitandParameters$pred$probs
-  colnames(probs) = best@cluster.names
+setMethod("SilEntropy", signature(), function(ConfigChosen) {
+  probs = ConfigChosen@CfitandParameters$pred$probs
+  colnames(probs) = ConfigChosen@cluster.names
   
   MatrixClass = as.data.frame(probs)
   MatrixClass$ClusterType <- colnames(MatrixClass)[apply(MatrixClass, MARGIN = 1, FUN = which.max)]
@@ -21,18 +30,18 @@ setMethod("SilEntropy", signature(), function(best) {
     ungroup() %>%
     tidyr::spread(key = "Cluster", value = "Prob")
   
-  q <- sapply(1:length(best@KData$FullS), function(x)
-    ncol(best@KData$FullS[[x]]))
+  q <- sapply(1:length(ConfigChosen@KData$FullS), function(x)
+    ncol(ConfigChosen@KData$FullS[[x]]))
   
-  cluster_assignments <- best@CfitandParameters$pred$class.pred
-  curvepred <- fclust.curvepred(data = best@CfitandParameters,
+  cluster_assignments <- ConfigChosen@CfitandParameters$pred$class.pred
+  curvepred <- fclust.curvepred(data = ConfigChosen@CfitandParameters,
                                 q = q,
-                                KData = best@KData)
+                                KData = ConfigChosen@KData)
   
-  all_distances = DistAllSubjCurves2Curves.sapl(best@KData, curvepred)
+  all_distances = DistAllSubjCurves2Curves.sapl(ConfigChosen@KData, curvepred)
   
   silCoeff = do.call(rbind, 
-                     lapply(1:max(best@KData$CData$jamesID), function(jID) {
+                     lapply(1:max(ConfigChosen@KData$CData$jamesID), function(jID) {
                        current_cluster = cluster_assignments[jID]
                        in_cluster_indices <- which(cluster_assignments == current_cluster)
                        out_cluster_indices <- cluster_assignments[cluster_assignments != current_cluster]
@@ -56,7 +65,7 @@ setMethod("SilEntropy", signature(), function(best) {
   
   tbl_entropy_silhouette <- silCoeff %>%
     left_join(df1, by = c("jamesID" = "ID")) %>%
-    mutate(curvesID = best@KData$CData$subjID[match(jamesID, best@KData$CData$jamesID)]) %>%
+    mutate(curvesID = ConfigChosen@KData$CData$subjID[match(jamesID, ConfigChosen@KData$CData$jamesID)]) %>%
     group_by(cluster) %>%
     mutate(max_si = max(si)) %>%
     ungroup() %>%

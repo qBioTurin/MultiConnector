@@ -1,15 +1,35 @@
-# parallel, ggplot2, dplyr
+#' ClassificationCurves
+#'
+#'@description
+#'
+#'  
+#'
+#' @param newdata new set of data
+#' @param ConfigChosen Configuration choosen by ConfigSelection()
+#' @param cores number of cores used
+#' @param entropyCutoff ...
+#' @param probCutoff ...
+#'
+#' @return ...
+#'
+
+#' @seealso ConfigChosen()
+#'
+#' @import parallel, ggplot2, dplyr
+#' @export 
+#'
+
 
 setGeneric("ClassificationCurves", function(newdata,
                                             ConfigChosen,
-                                            Cores =1,
+                                            cores =1,
                                             entropyCutoff =1,probCutoff = 0.6)
   standardGeneric("ClassificationCurves"))
 
 #' @export
 setMethod("ClassificationCurves", signature(), function(newdata,
                                                         ConfigChosen,
-                                                        Cores =1,
+                                                        cores =1,
                                                         entropyCutoff =1,probCutoff = 0.6){
   CData = newdata@curves
   CData$jamesID <- as.integer(factor(CData$subjID, levels = unique(CData$subjID)))
@@ -19,8 +39,8 @@ setMethod("ClassificationCurves", signature(), function(newdata,
   # qua è da controllare che abbia le stesse misure dei clustered data
   ######
   
-  nworkers <- detectCores()
-  if(nworkers<Cores) Cores <- nworkers
+  nworkers <- detectcores()
+  if(nworkers<cores) cores <- nworkers
   
   parameters <- ConfigChosen@CfitandParameters$cfit$parameters
   
@@ -68,7 +88,7 @@ setMethod("ClassificationCurves", signature(), function(newdata,
   ###
   IDcurves = unique(CData$subjID)
   
-  #cl <- makeCluster(Cores)
+  #cl <- makeCluster(cores)
   #clusterCall(cl, function(){
   #   library(dplyr)
   #   library(ggplot2)

@@ -1,3 +1,12 @@
+#' @title splinePlot
+#'
+#' @description plot splines
+#'
+#' @param ConfigChosen data created with configSelection()
+#'
+#' @return a plot of splines for each data
+#'
+
 #' @import dplyr ggplot2 patchwork rlist
 #' @export
 #'

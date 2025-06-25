@@ -12,7 +12,7 @@ library(statmod)
 
 # Source del codice originale
 source("../R/ConnectorData.R")
-source("../R/CONNECTORData.R")
+source("../R/CONNData.R")
 source("../R/PlotTimeSeries.R")
 source("../R/plot.R")
 source("../R/plotTimes.R")
@@ -20,6 +20,7 @@ source("../R/GridTimeOfPoints.R")
 source("../R/truncatePlot.R")
 source("../R/truncate.R")
 source("../R/estimatepDimension.R")
+source("../R/Clust.R")
 source("../R/Clust.R")
 source("../R/estimateCluster.R")
 source("../R/IndexPlotExtrapolation.R")
@@ -30,6 +31,7 @@ source("../R/DiscriminantPlot.R")
 source("../R/SilhouetteAndEntropy.R")
 source("../R/splinePlot.R")
 source("../R/MaximumDiscriminationFunction.R")
+
 
 # Funzione per generare curve
 generate_curve <- function(n, curve_type, max_points = 30, translation = 5) {
@@ -248,11 +250,11 @@ measures_sets <- list(
 )
 p_values <- 5:8  # Valori di p da testare
 G_values <- 2:5  # Valori di G da testare
-max_points_vals <- c(30, 50)  # Numero massimo di punti per curva
-translation_vals <- c(1, 5, 10)  # Valori di translation per l'irregolarità delle curve
+max_points_vals <- c(10, 30, 50)  # Numero massimo di punti per curva
+translation_vals <- c(5)  # Valori di translation per l'irregolarità delle curve
 
 # Crea un file per salvare i risultati
-output_file <- "testing_results.txt"
+output_file <- "testing_results2.txt"
 file.create(output_file)
 cat("Starting performance tests...\n")
 Sys.sleep(0.1)

@@ -7,6 +7,7 @@
 #' @slot annotations the tibble matching the samples with their annotations
 #' @slot TimeGrid the vector storing all the sample time points (i.e. time grid)
 #' @exportclass CONNECTORData
+#' @import tibble
 
 
 setClass(

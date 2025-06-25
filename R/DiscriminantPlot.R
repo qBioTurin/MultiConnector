@@ -1,6 +1,20 @@
+#' fclustMstep
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param CONNECTORData data created by ConnectorData()
+#' @param ConfigChosen data created with configSelection()
+#' @param feature feature selected for coloring
+#'
+#' @return ...
+#'
 
-
-#ggplot, plotly, geometry, grDevices, RColorBrewer
+#' @seealso
+#'
+#' @import ggplot, plotly, geometry, grDevices, RColorBrewer
+#' @export
 
 setGeneric("DiscriminantPlot", function(CONNECTORData,
                                                ConfigChosen,

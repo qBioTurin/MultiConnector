@@ -1,4 +1,4 @@
-#' Data Visualitation
+#' plotTimes
 #'
 #' creates a barplot of the time presences in various IDs or also a plot that represent time grid density.
 #'

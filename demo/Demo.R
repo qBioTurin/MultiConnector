@@ -30,6 +30,7 @@ Annotations = readRDS("../inst/Data/Synthetic/Annotations.RDs")
 source("../R/ConnectorData.R")
 source("../R/CONNData.R")
 Data<-ConnectorData(TimeSeries, Annotations)
+
 source("../R/PlotTimeSeries.R")
 source("../R/plot.R")
 plot(Data, feature="treatment_group")
@@ -43,7 +44,7 @@ truncatePlot(Data,  measure="Parabola", truncTime=5)
 truncate(Data,  measure="Parabola", truncTime=5)
 source("../R/estimatepDimension.R")
 source("../R/Clust.R")
-CrossLogLikePlot<-estimatepDimension(Data, p=2:10, cores=10)
+CrossLogLikePlot<-estimatepDimension(Data, p=2:10, cores=1)
 CrossLogLikePlot$Parabola
 
 source("../R/Clust.R")

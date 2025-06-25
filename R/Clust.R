@@ -1,12 +1,22 @@
-#Prova a mettere tutto insieme
-#Metto prima le function, successivamente il ciclo finale
-#Metto le librerie usate
-library(splines)
-library(rlist)
-library(Matrix)
-library(dplyr)
-library(ggplot2)
-library(RhpcBLASctl)
+#' presetKmeans
+#'
+#'@description
+#'
+#'  presets data for the kmeans
+#'
+#' @param CData data
+#' @param natural ...
+#' @param q ...
+#' @param pert perturbation
+#'
+#' @return a list with all necessary data
+#'
+
+#' @seealso kmeans()
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+
+
 
 "presetKmeans" <- function(CData,
                            natural = TRUE,
@@ -124,6 +134,21 @@ library(RhpcBLASctl)
 }
 
 
+#' justKmeans
+#'
+#'@description
+#'
+#'  uses kmeans
+#'
+#' @param CLUSTData data
+#' @param k number of clusters
+#'
+#' @return results of kmeans
+#'
+
+#' @seealso kmeans()
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
 
 
 #Parte randomica dell'algoritmo, è necessario avere la parte di codice per K=1, poiché serve nello stimare gli iper-parametri
@@ -171,6 +196,30 @@ library(RhpcBLASctl)
 }
 
 
+#' intfclust
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param q 
+#' @param h 
+#' @param pert 
+#' @param K 
+#' @param class 
+#' @param CLUSTData 
+#' @param pert1 
+#' @param tol 
+#' @param maxit
+#' @param hard 
+#' @param pert2 
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
 
 
 
@@ -295,6 +344,28 @@ library(RhpcBLASctl)
 }
 
 
+
+#' fclustEstep
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param parameters
+#' @param curve_ok 
+#' @param vars 
+#' @param S 
+#' @param hard 
+
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+
+
 # E step
 "fclustEstep" <- function(parameters, curve_ok, vars, S, hard) {
   #Qui richiamo gli oggetti necessari per la function
@@ -344,6 +415,31 @@ library(RhpcBLASctl)
   }
   return(vars)
 }
+
+
+#' fclustMstep
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param parameters
+#' @param curve_ok 
+#' @param S 
+#' @param vars 
+#' @param hard 
+#' @param p 
+#' @param pert1 
+#' @param tol 
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+
+
 
 #M step
 "fclustMstep" <- function(parameters,
@@ -458,6 +554,24 @@ library(RhpcBLASctl)
   return(parameters)
 }
 
+#' fclustconst
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param parameters
+#' @param vars 
+#' @param S 
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+
+
 #Preso senza modifiche, questa function mi calcola i cfit
 "fclustconst" <- function(parameters, vars, S) {
   # This function enforces the constraint (7) from the paper on the
@@ -480,6 +594,27 @@ library(RhpcBLASctl)
   par$lambda.zero <- par$lambda.zero + par$Lambda %*% meanalpha
   return(list(parameters = par, vars = vars))
 }
+
+
+#' fclust_pred
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param fit
+#' @param data 
+#' @param rewight 
+#' @param pert2 
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+
+
 
 #Questa function mi calcola la predizione finale
 #Qui domandona da un milione di dollari, sulla S_ij
@@ -543,7 +678,19 @@ library(RhpcBLASctl)
   return(pred)
 }
 
+#' nummax
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param X
+#'
+#' @return ...
+#'
 
+#' @seealso
+#'
 "nummax" <- function(X) {
   ind <- rep(1, dim(X)[1])
   m <- X[, 1]
@@ -555,6 +702,24 @@ library(RhpcBLASctl)
     }
   list(ind = ind, max = m)
 }
+#' fclust.curvepred
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param data
+#' @param tau 
+#' @param tau1
+#' @param q 
+#' @param KData 
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
 
 "fclust.curvepred" <- function(data,
                                tau = 0.95,
@@ -675,6 +840,34 @@ library(RhpcBLASctl)
   return(Final_result)
 }
 
+
+
+#' fclust
+#'
+#'@description
+#'
+#'  ...
+#'
+#' @param data_input 
+#' @param q 
+#' @param h 
+#' @param K 
+#' @param pert 
+#' @param pert1 
+#' @param natural 
+#' @param tol 
+#' @param maxit 
+#' @param hard 
+#' @param pert2 
+#' @param seed 
+
+#'
+#' @return ...
+#'
+
+#' @seealso
+#'
+#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
 #Qui inzia il ciclo finale
 #initial sono i valori uscenti dall'inizializzazione
 #TODO Probabilmente non serve più
