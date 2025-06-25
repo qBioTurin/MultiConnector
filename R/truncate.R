@@ -162,7 +162,6 @@ setMethod("DataTrunc",
             }
             else
               dataTr <- data
-            browser()
             if (length(which(dataTr@dimensions$nTimePoints <= 2)) != 0)
             {
               stop(
