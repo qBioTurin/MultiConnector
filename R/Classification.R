@@ -1,6 +1,6 @@
 #' ClassificationCurves
 #'
-#'@description
+#'@description ...
 #'
 #'  
 #'
@@ -15,7 +15,7 @@
 
 #' @seealso ConfigChosen()
 #'
-#' @import parallel, ggplot2, dplyr
+#' @import parallel ggplot2 dplyr
 #' @export 
 #'
 

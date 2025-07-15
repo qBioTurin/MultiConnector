@@ -14,7 +14,7 @@
 
 #' @seealso kmeans()
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 
@@ -148,7 +148,7 @@
 
 #' @seealso kmeans()
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 #Parte randomica dell'algoritmo, è necessario avere la parte di codice per K=1, poiché serve nello stimare gli iper-parametri
@@ -202,24 +202,24 @@
 #'
 #'  ...
 #'
-#' @param q 
-#' @param h 
-#' @param pert 
-#' @param K 
-#' @param class 
-#' @param CLUSTData 
-#' @param pert1 
-#' @param tol 
-#' @param maxit
-#' @param hard 
-#' @param pert2 
+#' @param q ...
+#' @param h ...
+#' @param pert ...
+#' @param K ...
+#' @param class ... 
+#' @param CLUSTData ... 
+#' @param pert1 ...
+#' @param tol ...
+#' @param maxit ...
+#' @param hard .....
+#' @param pert2 ...
 #'
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 
@@ -351,19 +351,19 @@
 #'
 #'  ...
 #'
-#' @param parameters
-#' @param curve_ok 
-#' @param vars 
-#' @param S 
-#' @param hard 
+#' @param parameters ...
+#' @param curve_ok ...
+#' @param vars ...
+#' @param S ....
+#' @param hard ...
 
 #'
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 # E step
@@ -423,21 +423,21 @@
 #'
 #'  ...
 #'
-#' @param parameters
-#' @param curve_ok 
-#' @param S 
-#' @param vars 
-#' @param hard 
-#' @param p 
-#' @param pert1 
-#' @param tol 
+#' @param parameters ...
+#' @param curve_ok ...
+#' @param S ....
+#' @param vars ...
+#' @param hard ...
+#' @param p ...
+#' @param pert1 ...
+#' @param tol ...
 #'
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 
@@ -560,16 +560,16 @@
 #'
 #'  ...
 #'
-#' @param parameters
-#' @param vars 
-#' @param S 
+#' @param parameters ...
+#' @param vars ...
+#' @param S ...
 #'
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 #Preso senza modifiche, questa function mi calcola i cfit
@@ -602,17 +602,17 @@
 #'
 #'  ...
 #'
-#' @param fit
-#' @param data 
-#' @param rewight 
-#' @param pert2 
+#' @param fit ...
+#' @param data ....
+#' @param rewight ...
+#' @param pert2 ...
 #'
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 
 
@@ -689,7 +689,7 @@
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
 "nummax" <- function(X) {
   ind <- rep(1, dim(X)[1])
@@ -708,18 +708,18 @@
 #'
 #'  ...
 #'
-#' @param data
-#' @param tau 
-#' @param tau1
-#' @param q 
-#' @param KData 
+#' @param data ...
+#' @param tau ...
+#' @param tau1 ...
+#' @param q ...
+#' @param KData ... 
 #'
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 
 "fclust.curvepred" <- function(data,
                                tau = 0.95,
@@ -865,9 +865,9 @@
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import splines, rlist, Matrix, dplyr, ggplot2, RhpcBLASctl
+#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
 #Qui inzia il ciclo finale
 #initial sono i valori uscenti dall'inizializzazione
 #TODO Probabilmente non serve più

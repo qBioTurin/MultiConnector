@@ -1,4 +1,4 @@
-#' fclustMstep
+#' @title DiscrimintantPlot
 #'
 #'@description
 #'
@@ -11,9 +11,9 @@
 #' @return ...
 #'
 
-#' @seealso
+#' @seealso ...
 #'
-#' @import ggplot, plotly, geometry, grDevices, RColorBrewer
+#' @import ggplot2 plotly geometry grDevices RColorBrewer
 #' @export
 
 setGeneric("DiscriminantPlot", function(CONNECTORData,

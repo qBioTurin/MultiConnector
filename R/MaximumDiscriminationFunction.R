@@ -1,4 +1,4 @@
-#' Maximum Discrimination Function
+#' @title Maximum Discrimination Function
 #'
 #'@description
 #' Visualizes the h curve(s) representing the optimal weights to apply to each dimension for determining the cluster membership.
@@ -14,7 +14,6 @@
 #' @references
 #' Gareth M. James and Catherine A. Sugar, (2003). Clustering for Sparsely Sampled Functional Data. Journal of the American Statistical Association.
 #'
-#' @examples
 #'
 #'
 #' @import ggplot2 dplyr Matrix

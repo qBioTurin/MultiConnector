@@ -12,7 +12,7 @@
 
 #' @seealso ClusterAnalysis
 #'
-#' @import gghalves ggplot MetBrewer
+#' @import gghalves ggplot2 MetBrewer
 #' 
 #'
 setGeneric("IndexPlotExtrapolation", function(results) {

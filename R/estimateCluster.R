@@ -4,14 +4,14 @@
 #'
 #'  Fits and clusters the data with respect to the Functional Clustering Model [Sugar and James]. Multiple runs of the algorithm are necessary since the algorithm is stochastic As explained in [Sugar and James], to have a simple low-dimensional representation of the individual curves and to reduce the number of parameters to be estimated, h value must be equals or lower than \eqn{min(p,G-1)}.
 #'
-#' @param CONNECTORData CONNECTORList. (see \code{\link{ConnectorData}} or \code{\link{DataTruncation}})
+#' @param CONNECTORData CONNECTORList. (see \code{\link{ConnectorData}})
 #' @param G The vector/number of possible clusters.
 #' @param p The dimension of the natural cubic spline basis. (see \code{\link{BasisDimension.Choice}})
 #' @param h ...
 #' @param runs Number of runs.
 #' @param seed Seed for the kmeans function.
 #' @param cores Number of cores to parallelize computations.
-#' @param PercPCA=.85
+#' @param PercPCA ... standar 0.85
 #' @param MinErrFreq ...
 #' @param pert ....
 #'
@@ -19,7 +19,7 @@
 #'
 #' @return StabilityAnalysis returns a list of (i) lists, called ConsensusInfo, reporting for each G and h: the Consensus Matrix, either as a NxN matrix, where N is the number of samples, or plot, and the most probable clustering obtained from running several times the method; (ii) the box plots showing both the Elbow plot considering the total tightness and the box plots of the fDB indexes for each G; and finally, (iii) the seed. See \code{\link{IndexesPlot.Extrapolation}} and \code{\link{MostProbableClustering.Extrapolation}}.
 #'
-#' @details
+#' @details ...
 #'  
 #'
 #' @import RColorBrewer statmod parallel Matrix splines RhpcBLASctl dplyr

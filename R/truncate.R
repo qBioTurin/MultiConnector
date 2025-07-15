@@ -12,14 +12,6 @@
 #' @return  truncate returns a list containing the truncated data and the plot of the truncated curves.
 #'
 #'
-#' @examples
-#'
-#'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
-#'
-#'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
-#'
-#'CONNECTORData<- truncate(CONNECTORData,"Progeny",truncTime=50,labels = c("time","volume","Tumor Growth"), measure="test")
 #' @import ggplot2 tibble dplyr tidyr
 #' @export
 

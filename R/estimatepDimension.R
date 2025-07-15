@@ -5,15 +5,6 @@
 #' @param p The vector of the dimensions of the natural cubic spline basis
 #' @param cores The number of Cores to be used for parallel computation. Maximum number is 10.
 #' @return Returns a list containing for each element a line plot of the cross-validated loglikelihood for each value of p, in grey the result of all ten repetitions of the likelihood calculation and in black the mean of them.
-#' @examples
-#'
-#'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
-#'
-#'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
-#'
-#'CrossLogLike<-estimatepDimension(CONNECTORData,p=2:6, cores = 2)
-#'CrossLogLike[[1]]
 #' @import MASS dplyr parallel ggplot2 splines patchwork rlist
 #' @export
 setGeneric("estimatepDimension", function(data,

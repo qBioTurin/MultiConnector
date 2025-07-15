@@ -15,7 +15,7 @@
 #' dimensions is a tibble that contains the number of observations for each ID
 #' annotations is a tibble that contains the ID of each curve
 #' TimeGrid is a vector that contains the time points of the curves
-#' @import readxl dplyr methods readr tibble magrittr tidyr
+#' @import readxl dplyr methods readr tibble tidyr
 #' @export
 #' 
 #Definition of generic for ConnectorData

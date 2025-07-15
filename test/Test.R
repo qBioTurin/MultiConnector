@@ -40,6 +40,7 @@ generate_curve <- function(n, curve_type, max_points = 30, translation = 5) {
     num_points <- max(5, rbinom(1, max_points, 1/2))
     x <- sample(seq(-10, 10, 0.1), num_points)
     x <- sort(x)
+    #traslare tutti
     y <- switch(curve_type,
                 "Parabola" = {
                   is_translated <- sample(c(TRUE, FALSE), 1)

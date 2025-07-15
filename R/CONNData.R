@@ -5,8 +5,8 @@
 #' @slot curves tibble with n columns (i.e. ID, time and n-2 columns of records) encoding the growth data for each sample
 #' @slot dimensions the tibble reporting the number of observations collected per sample
 #' @slot annotations the tibble matching the samples with their annotations
-#' @slot TimeGrid the vector storing all the sample time points (i.e. time grid)
-#' @exportclass CONNECTORData
+#' @slot TimeGrids the vector storing all the sample time points (i.e. time grid)
+#' @export 
 #' @import tibble
 
 

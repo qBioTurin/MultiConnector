@@ -13,9 +13,9 @@
 #' @return ...
 #'
 
-#' @seealso ConnectorData, ConfigSelection, ClusterAnalysis
+#' @seealso ConnectorData ConfigSelection ClusterAnalysis
 #'
-#' @import
+#' @import magrittr
 #'
 
 

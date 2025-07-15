@@ -13,7 +13,6 @@
 
 #' @seealso ClusterAnalysis
 #'
-#' @import
 #' @export
 #'
 setGeneric("configSelection", function(results, G, best) {

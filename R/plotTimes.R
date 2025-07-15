@@ -7,18 +7,8 @@
 #' @return  Data Visualization returns a plot with the density time grid and the line plot of growth data as a ggplot object.
 #'  In details, a point $p_{x,y}$ of the time grid density  is defined by a pair of coordinates $p_{x,y}=( x,y) \ $ and by a colour. $p_{x,y}$ is defined if only if exists at least one sample with two observations at time $x\ $ and $y$.
 #'  The colour associates with it encodes the frequency of samples in which $p_{x,y}$ is present.
+
 #' 
-#' @examples
-#'
-#'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
-#'
-#'CONNECTORData <- DataImport(TimeSeriesFile,AnnotationFile)
-#'
-#'plotTimes(CONNECTORData)
-#'
-#' 
-#' @seealso  \code{\link{PlotTimeSeries}}, code{\link{GridTimeOfPoints}}.
 #' @export
 #' 
 setGeneric("plotTimes", function(data, large=FALSE, measureIDs=NULL) standardGeneric("plotTimes"))
