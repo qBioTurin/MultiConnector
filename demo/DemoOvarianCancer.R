@@ -42,6 +42,7 @@ plot(clusters)
 
 CLusterData<-selectCluster(clusters, G=4, "MinfDB")
 plot(CLusterData)
+getAnnotations(CLusterData)
 plot(CLusterData,feature="Progeny")
 
 Metrics = validateCluster(CLusterData)

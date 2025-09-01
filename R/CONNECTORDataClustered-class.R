@@ -33,25 +33,6 @@ setGeneric("getAnnotations", function(object) {
 setMethod("getAnnotations", signature(object = "CONNECTORDataClustered"), function(object) {
   # Get annotations from KData
   annotations <- object@KData$annotations
-  
-  # Get cluster assignments
-  cluster_assignments <- object@CfitandParameters$pred$class.pred
-  
-  # Add cluster assignments to annotations
-  if (!is.null(annotations) && !is.null(cluster_assignments)) {
-    # Match cluster assignments with subjects
-    annotations$cluster <- cluster_assignments[match(annotations$subjID, object@KData$CData$subjID)]
-    
-    # Print summary information
-    cat("Annotations for", nrow(annotations), "subjects:\n")
-    cat("Number of clusters:", length(unique(annotations$cluster, na.rm = TRUE)), "\n")
-    cat("Cluster distribution:\n")
-    print(table(annotations$cluster, useNA = "ifany"))
-    cat("\n")
-    
-    return(annotations)
-  } else {
-    cat("No annotations found in the object.\n")
-    return(NULL)
-  }
+  return(names(annotations %>% select(-subjID, -measureID)))
+ 
 })
