@@ -8,14 +8,7 @@
 #'
 #' @return PlotTimeSeries returns a ggplot object.
 #'
-#' @examples
-#'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
-#'
-#' CONNECTORData <- DataImport(TimeSeriesFile,AnnotationFile)
-#'
-#' PlotTimeSeries(CONNECTORData,"Progeny",labels=c("Time","Volume","Tumor Growth"))
-#'
+
 #' @import ggplot2 tibble dplyr
 
 setGeneric("PlotTimeSeries", function(data,

@@ -1,11 +1,10 @@
 #' @title GridTimeOfPoints
 #' @description creates a barplot of the time presences in various IDs or also a plot that represent time grid density.
-#' @param data CONNECTORData. (see \code{\link{DataImport}})
+#' @param data CONNECTORData. (see \code{\link{ConnectorData}})
 #' @return GridTimeOfPoints returns a plot with the density time grid and the line plot of growth data as a ggplot object.
 #'  In details, a point $p_{x,y}$ of the time grid density  is defined by a pair of coordinates $p_{x,y}=( x,y) \ $ and by a colour. $p_{x,y}$ is defined if only if exists at least one sample with two observations at time $x\ $ and $y$.
 #'  The colour associates with it encodes the frequency of samples in which $p_{x,y}$ is present.
 #' @import ggplot2 tidyr dplyr patchwork
-#' @export
 
 
 

@@ -1,4 +1,4 @@
-#' DataTruncation
+#' truncate
 #'
 #' @description
 #'
@@ -9,30 +9,22 @@
 #' @param truncTime  A two dimension vector of integers corresponding to the time points where the curves will be truncated. If an integer number is passed, than it will be considered as the upper time point by default.
 #' @param labels  Vector containing the text for the title of axis names and plot title.
 #' @param measure Measure on which to perform the Truncation.
-#' @return  DataTruncation returns a list containing the truncated data and the plot of the truncated curves.
+#' @return  truncate returns a list containing the truncated data and the plot of the truncated curves.
 #'
 #'
-#' @examples
-#'
-#'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
-#'
-#'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
-#'
-#'CONNECTORData<- DataTruncation(CONNECTORData,"Progeny",truncTime=50,labels = c("time","volume","Tumor Growth"), measure="test")
 #' @import ggplot2 tibble dplyr tidyr
 #' @export
 
 
-setGeneric("DataTruncation", function(data,
+setGeneric("truncate", function(data,
                                       feature=NULL,
                                       truncTime = NULL,
                                       labels = NULL,
                                       measure = NULL)
-  standardGeneric("DataTruncation"))
-#' @rdname DataTruncation
+  standardGeneric("truncate"))
+#' @rdname truncate
 #' @export
-setMethod("DataTruncation",
+setMethod("truncate",
           signature ("CONNECTORData"), function(data,
                                                 feature=NULL,
                                                 truncTime = NULL,
@@ -162,10 +154,15 @@ setMethod("DataTrunc",
             }
             else
               dataTr <- data
-            
-            if (length(which(dataTr@dimensions < 2)) != 0)
+            if (length(which(dataTr@dimensions$nTimePoints <= 2)) != 0)
             {
-              warning("Curves with less than 2 points are now present!!!")
+              stop(
+                paste0(
+                  "Some curves have less than 2 points after truncation. \n",
+                  "The following curves have been truncated to less than 2 points: ",
+                  paste(dataTr@dimensions$curvesID[dataTr@dimensions$nTimePoints <= 2], collapse = ", ")
+                )
+              )
             }
             
             return(dataTr)

@@ -1,3 +1,13 @@
+#' @title plot
+#'
+#' create  plot of the basic data or the data already analyzed
+#'
+#' @param data CONNECTORData. (see \code{\link{ConnectorData}})
+#' 
+#' @export
+#' 
+
+
 setGeneric("plot", function(data, ...) {
   standardGeneric("plot")
 })
@@ -5,7 +15,6 @@ setGeneric("plot", function(data, ...) {
 setMethod("plot", 
           signature(data = "CONNECTORData"), 
           function(data, ...) {
-            
             args <- list(...)
             
             if (!"ConfigChosen" %in% names(args)) {

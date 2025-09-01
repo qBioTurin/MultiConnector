@@ -1,33 +1,24 @@
-#' @title BasisDimensionChoice
+#' @title estimatepDimension
 #' @description Generates a line plot reporting the cross-validated loglikelihood value for each number of knots. In details, for each number of knots 10% of the curves from the whole data are removed and treated as a test set, then the remaing curves are fitted using the FCM and the loglikelihood on the test set is calculated. The process is then repeated nine more times.
 #' @param data CONNECTORData. See CONNECTORData for details.
 #' @param i an integer indicating the index of the observation to be used for the analysis. For example, if i=1 the first observation of the data set will be used for the analysis. If i=c(1,2) the first and the second observation of the data set will be used for the analysis. Column ID and time are not considered when indicate the index of the observation. Default value is 1.
 #' @param p The vector of the dimensions of the natural cubic spline basis
 #' @param cores The number of Cores to be used for parallel computation. Maximum number is 10.
 #' @return Returns a list containing for each element a line plot of the cross-validated loglikelihood for each value of p, in grey the result of all ten repetitions of the likelihood calculation and in black the mean of them.
-#' @examples
-#'
-#'TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#'AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
-#'
-#'CONNECTORData <- ConnectorData(TimeSeriesFile,AnnotationFile)
-#'
-#'CrossLogLike<-BasisDimensionChoice(CONNECTORData,p=2:6, cores = 2)
-#'CrossLogLike[[1]]
 #' @import MASS dplyr parallel ggplot2 splines patchwork rlist
 #' @export
-setGeneric("BasisDimensionChoice", function(data,
+setGeneric("estimatepDimension", function(data,
                                             i = NULL,
                                             p,
                                             cores = 1)
-  standardGeneric("BasisDimensionChoice"))
-#' @rdname BasisDimensionChoice
+  standardGeneric("estimatepDimension"))
+#' @rdname estimatepDimension
 #' @export
 #'
 
 #'
 #'
-setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
+setMethod("estimatepDimension", signature = c("CONNECTORData"),
           function(data,
                    i = NULL,
                    p,
@@ -37,13 +28,13 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
             measures <- unique(data@curves$measureID)
             
             if (length(measures) == 1) {
-              return(BasisDimensionChoicePerObs(data, p, cores))
+              return(estimatepDimensionPerObs(data, p, cores))
             }
             else if (is.null(i)) {
               res <- lapply(measures, function(j) {
                 curve <- filter(data@curves, measureID == j)
                 invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
-                result <- BasisDimensionChoicePerObs(connect, p, cores)
+                result <- estimatepDimensionPerObs(connect, p, cores)
                 return(result)
               })
               names(res) <- measures
@@ -52,7 +43,7 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
               res <- lapply(i, function(j) {
                 curve <- filter(data@curves, measureID == j)
                 invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
-                result <- BasisDimensionChoicePerObs(connect, p, cores)
+                result <- estimatepDimensionPerObs(connect, p, cores)
                 return(result)
               })
               names(res) <- i
@@ -64,10 +55,10 @@ setMethod("BasisDimensionChoice", signature = c("CONNECTORData"),
             return(res)
           })
 
-setGeneric("BasisDimensionChoicePerObs", function(data, p, cores)
-  standardGeneric("BasisDimensionChoicePerObs"))
+setGeneric("estimatepDimensionPerObs", function(data, p, cores)
+  standardGeneric("estimatepDimensionPerObs"))
 
-setMethod("BasisDimensionChoicePerObs", signature = c("CONNECTORData"),
+setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
           function(data, p, cores) {
             
             if(length(unique(data@dimensions$curvesID))>9){
@@ -95,6 +86,54 @@ setMethod("BasisDimensionChoicePerObs", signature = c("CONNECTORData"),
                 )
               )
             }
+            if(cores==1){
+              crossvalid<-lapply(1:splits, function(step) {
+                tryCatch({
+                  omp_set_num_threads(1)
+                  SampleTestSet <- sort(Allsplits[[step]])
+                  SampleTrainSet <- unname(unlist(Allsplits[-step]))
+                  TestSet <-
+                    data@curves[data@curves$curvesID %in% SampleTestSet, ]
+                  TrainingSet <-
+                    data@curves[data@curves$curvesID %in% SampleTrainSet, ]
+                  #trasforma la colonna ID di TrainingSet in valori numerici
+                  TrainingSet$IDnum <-
+                    as.numeric(as.factor(TrainingSet$curvesID))
+                  TestSet$IDnum <-
+                    as.numeric(as.factor(TestSet$curvesID)) #davedere
+                  #create data.funcit a tibble composed by TrainingTestSet plus a new column with the value of data@dimensions[2] matching the ID
+                  
+                  
+                  # data.funcit <- TrainingSet #%>%
+                  #mutate(timepos = match(TrainingSet$time, grid)) #da vedere
+                  
+                  Crosslikelihood <-
+                    sapply(p, function(p_value){
+                      
+                      Calclikelihood(
+                        p = p_value,
+                        data.funcit = TrainingSet,
+                        TestSet = TestSet
+                      )}
+                    )
+                  
+                  return(tibble(
+                    p = p,
+                    Crosslikelihood = Crosslikelihood,
+                    fold = step
+                  ))
+                }, error = function(e) {
+                  err <-
+                    paste("Error in prediction:",
+                          conditionMessage(e),
+                          TrainingSet$time,
+                          grid,
+                          "\n")
+                  return(err)
+                })
+              })
+            }
+            else{
             nworkers <- detectCores()-1
             if (nworkers < cores)
               cores <- nworkers
@@ -180,8 +219,7 @@ setMethod("BasisDimensionChoicePerObs", signature = c("CONNECTORData"),
                 return(err)
               })
             })
-            stopCluster(cl)
-            
+            stopCluster(cl)}
             crossvalid <- crossvalid[!sapply(crossvalid, is.null)]
             Knots.list <- lapply(p, function(p) {
               Spline <- ns(grid, df = (p - 1))
@@ -310,7 +348,6 @@ setGeneric("Calclikelihood", function(p, data.funcit, TestSet)#, grid)
 
 setMethod("Calclikelihood", signature = c(),
           function(p, data.funcit, TestSet){#, grid) {
-            
             perc <- max(TestSet$IDnum) #TODO
             # points <- data.funcit$value
             # ID <- data.funcit$curvesID
@@ -330,6 +367,7 @@ setMethod("Calclikelihood", signature = c(),
               class = runs,
               CLUSTData = KmData
             )
+            
             #Li <- sapply(1:perc, Likelihood, TestSet, fcm.fit)
             Li <-
               sapply(1:perc, function(per)

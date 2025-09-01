@@ -1,0 +1,31 @@
+Package: MultiConnector
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: GPL-3
+Encoding: UTF-8
+Imports:
+    MASS,
+    Matrix,
+    MetBrewer,
+    RColorBrewer,
+    RhpcBLASctl,
+    dplyr,
+    geometry,
+    gghalves,
+    ggplot2,
+    magrittr,
+    methods,
+    patchwork,
+    plotly,
+    readr,
+    readxl,
+    rlist,
+    statmod,
+    tibble,
+    tidyr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
