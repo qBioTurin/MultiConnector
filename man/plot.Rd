@@ -2,17 +2,28 @@
 % Please edit documentation in R/plot.R
 \name{plot}
 \alias{plot}
+\alias{plot,CONNECTORData-method}
+\alias{plot,CONNECTORDataClustered-method}
+\alias{plot,list-method}
 \title{plot
 
-create  plot of the basic data or the data already analyzed}
+create plot of the basic data or the data already clustered.}
 \usage{
 plot(data, ...)
+
+\S4method{plot}{CONNECTORData}(data, ...)
+
+\S4method{plot}{CONNECTORDataClustered}(data, ...)
+
+\S4method{plot}{list}(data, ...)
 }
 \arguments{
-\item{data}{CONNECTORData. (see \code{\link{ConnectorData}})}
+\item{data}{CONNECTORData or CONNECTORDataClustered object}
+
+\item{...}{Additional arguments passed to specific plotting functions}
 }
 \description{
 plot
 
-create  plot of the basic data or the data already analyzed
+create plot of the basic data or the data already clustered.
 }

@@ -4,15 +4,15 @@
 \alias{MaximumDiscriminationFunction}
 \title{Maximum Discrimination Function}
 \usage{
-MaximumDiscriminationFunction(ConfigChosen, absvalue = TRUE)
+MaximumDiscriminationFunction(CONNECTORDataClustered, absvalue = TRUE)
 }
 \arguments{
+\item{CONNECTORDataClustered}{The CONNECTORDataClustered object obtained from selectCluster function.}
+
 \item{absvalue}{If TRUE, the absolute values of the weights are plotted.
 @return
 MaximumDiscriminationFunction generates two plots as ggplot objects, showing
 the weights applied to each dimension for determining the cluster membership, plotted as a single curve.}
-
-\item{clusterdata}{The list obtained from extrapolating the most probable clustering from the StabilityAnalysis function output. (see \code{\link{StabilityAnalysis}} and \code{\link{MostProbableClustering.Extrapolation}}).}
 }
 \description{
 Visualizes the h curve(s) representing the optimal weights to apply to each dimension for determining the cluster membership.

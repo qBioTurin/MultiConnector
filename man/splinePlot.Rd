@@ -2,15 +2,15 @@
 % Please edit documentation in R/splinePlot.R
 \name{splinePlot}
 \alias{splinePlot}
-\alias{splinePlot,ANY-method}
+\alias{splinePlot,CONNECTORDataClustered-method}
 \title{splinePlot}
 \usage{
-splinePlot(ConfigChosen)
+splinePlot(CONNECTORDataClustered)
 
-\S4method{splinePlot}{ANY}(ConfigChosen)
+\S4method{splinePlot}{CONNECTORDataClustered}(CONNECTORDataClustered)
 }
 \arguments{
-\item{ConfigChosen}{data created with configSelection()}
+\item{CONNECTORDataClustered}{data created with selectCluster()}
 }
 \value{
 a plot of splines for each data

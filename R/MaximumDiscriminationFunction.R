@@ -3,7 +3,7 @@
 #'@description
 #' Visualizes the h curve(s) representing the optimal weights to apply to each dimension for determining the cluster membership.
 #'
-#' @param clusterdata The list obtained from extrapolating the most probable clustering from the StabilityAnalysis function output. (see \code{\link{StabilityAnalysis}} and \code{\link{MostProbableClustering.Extrapolation}}).
+#' @param CONNECTORDataClustered The CONNECTORDataClustered object obtained from selectCluster function.
 #' @param absvalue If TRUE, the absolute values of the weights are plotted.
 #'  @return
 #' MaximumDiscriminationFunction generates two plots as ggplot objects, showing
@@ -19,19 +19,21 @@
 #' @import ggplot2 dplyr Matrix
 #' @export
 #'
-setGeneric("MaximumDiscriminationFunction", function(ConfigChosen, absvalue =
-                                                       TRUE)
+setGeneric("MaximumDiscriminationFunction", function(CONNECTORDataClustered, absvalue =TRUE)
   standardGeneric("MaximumDiscriminationFunction"))
 
 #' @export
-setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, absvalue =
-                                                                           TRUE)
+setMethod("MaximumDiscriminationFunction", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered, absvalue =TRUE)
 { 
-  parameters <- ConfigChosen@CfitandParameters$cfit$parameters
+  if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {
+    stop("Input must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))
+  }
+  
+  parameters <- CONNECTORDataClustered@CfitandParameters$cfit$parameters
   DiscriminantResults <- list()
-  FullS = ConfigChosen@KData$FullS
+  FullS = CONNECTORDataClustered@KData$FullS
   sigma <- parameters$sigma
-  J <- length(unique(ConfigChosen@KData$CData$measureID))
+  J <- length(unique(CONNECTORDataClustered@KData$CData$measureID))
   
   
   for (j in 1:J) {
@@ -62,13 +64,13 @@ setMethod("MaximumDiscriminationFunction", signature(), function(ConfigChosen, a
   n <- ncol(discrim)
   DiscrList <- lapply(1:n, function(x)
     data.frame(
-      Time = unlist(ConfigChosen@KData$TimeGrids),
+      Time = unlist(CONNECTORDataClustered@KData$TimeGrids),
       DiscrFunc = discrim[, x],
       DiscrNumber = paste0("DiscrFunc", x)
     ))
   
-  q <- sapply(1:length(ConfigChosen@KData$TimeGrids), function(i) {
-    rep(names(ConfigChosen@KData$TimeGrids[i]), length(ConfigChosen@KData$TimeGrids[[i]]))
+  q <- sapply(1:length(CONNECTORDataClustered@KData$TimeGrids), function(i) {
+    rep(names(CONNECTORDataClustered@KData$TimeGrids[i]), length(CONNECTORDataClustered@KData$TimeGrids[[i]]))
   })
   measureID <- unlist(q)
   

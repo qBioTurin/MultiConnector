@@ -203,13 +203,9 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
       envir = environment()
     )
     
-    
-    
     results <- parLapply(cl, all_combinations, function(combo) {
       #results <- lapply( all_combinations, function(combo) {
       omp_set_num_threads(1)
-      
-     
       
       if (is.null(h)) {
         h = min(combo$K - 1, p) 
@@ -284,16 +280,24 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
     
     stopCluster(cl)
   }
-  results$KData = KmData
-  results$plot<-
-    IndexPlotExtrapolation(results)
+  
+  KmData$annotations = Data@annotations
+  
+  output <- list(
+    Clusterings = results,
+    KData = KmData,
+    Seed = seed
+  )
+  
+  #output$KData = KmData
+  #output$plot<- IndexPlotExtrapolation(output)
   time_diff <- Sys.time() - start
   
   # Estrai il valore numerico e l'unità
   time_value <- round(as.numeric(time_diff), 2)
   time_unit <- attr(time_diff, "units")
   print(paste("Total time:", time_value, time_unit))
-  return(results)
+  return(output)
 })
 
 

@@ -6,7 +6,7 @@
 \usage{
 ClassificationCurves(
   newdata,
-  ConfigChosen,
+  CONNECTORDataClustered,
   cores = 1,
   entropyCutoff = 1,
   probCutoff = 0.6
@@ -15,7 +15,7 @@ ClassificationCurves(
 \arguments{
 \item{newdata}{new set of data}
 
-\item{ConfigChosen}{Configuration choosen by ConfigSelection()}
+\item{CONNECTORDataClustered}{Configuration choosen by ConfigSelection()}
 
 \item{cores}{number of cores used}
 
@@ -30,5 +30,5 @@ ClassificationCurves(
 ...
 }
 \seealso{
-ConfigChosen()
+CONNECTORDataClustered()
 }

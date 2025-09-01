@@ -2,7 +2,7 @@
 #'
 #' @description plot splines
 #'
-#' @param ConfigChosen data created with configSelection()
+#' @param CONNECTORDataClustered data created with selectCluster()
 #'
 #' @return a plot of splines for each data
 #'
@@ -10,18 +10,22 @@
 #' @import dplyr ggplot2 patchwork rlist
 #' @export
 #'
-setGeneric("splinePlot", function(ConfigChosen) standardGeneric("splinePlot"))
+setGeneric("splinePlot", function(CONNECTORDataClustered) standardGeneric("splinePlot"))
 #' @rdname splinePlot
 #' @export
-setMethod("splinePlot", signature(), function(ConfigChosen) {
+setMethod("splinePlot", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered) {
 
-  data<-ConfigChosen@KData$CData
-  cluster<-ConfigChosen@CfitandParameters$pred$class.pred
-  q <- sapply(1:length(ConfigChosen@KData$FullS), function(x)
-    ncol(ConfigChosen@KData$FullS[[x]]))
-  objects <- fclust.curvepred(data = ConfigChosen@CfitandParameters,
+  if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {
+    stop("Input must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))
+  }
+  
+  data<-CONNECTORDataClustered@KData$CData
+  cluster<-CONNECTORDataClustered@CfitandParameters$pred$class.pred
+  q <- sapply(1:length(CONNECTORDataClustered@KData$FullS), function(x)
+    ncol(CONNECTORDataClustered@KData$FullS[[x]]))
+  objects <- fclust.curvepred(data = CONNECTORDataClustered@CfitandParameters,
                               q = q,
-                              KData = ConfigChosen@KData)
+                              KData = CONNECTORDataClustered@KData)
 
   J <- length(unique(data$measureID))
   M <- sort(unique(data$measureID))

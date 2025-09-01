@@ -1,34 +1,32 @@
-#' configSelection
+#' selectCluster
 #'
 #'@description
 #'
-#'  Print fDB and TT violin plots with best and most frequent value
+#'  Select cluster configuration by printing fDB and TT violin plots with best and most frequent value
 #'
 #' @param results ClusterAnalysis output
 #' @param G Number of cluster selected
 #' @param best Setup choosen. "MaxFreq" or "MinfDB"
 #'
-#' @return an object with the cofiguration selected
+#' @return an object with the configuration selected
 #'
 
 #' @seealso ClusterAnalysis
 #'
 #' @export
 #'
-setGeneric("configSelection", function(results, G, best) {
-  standardGeneric("configSelection")
+setGeneric("selectCluster", function(results, G, best) {
+  standardGeneric("selectCluster")
 })
-setMethod("configSelection", signature(), function(results, G, best) {
+setMethod("selectCluster", signature(), function(results, G, best) {
   
   indexes =
-    do.call(rbind, lapply(seq_along(results), function(x) {
-      if (x <= (length(results) - 2)) {
-        xx = results[[x]]
+    do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
+        xx = results$Clusterings[[x]]
         df = data.frame(xx$TTandfDBandSil)
         df$freq = xx$freq
         df$which = x
         return(df)
-      }
     }))
   if (best == "MaxFreq") {
     indexesfiltered <- indexes %>%
@@ -63,7 +61,7 @@ setMethod("configSelection", signature(), function(results, G, best) {
     stop("Error: 'best' must be 'MaxFeq' or 'MinfDB' or 'maxSilhouette")
   }
   pos = indexesfiltered %>% filter(.data[[sym("G")]] == !!G, Indexes == "fDB") %>% pull(which)
-  res = results[[pos]]
+  res = results$Clusterings[[pos]]
   
   return(
     new(

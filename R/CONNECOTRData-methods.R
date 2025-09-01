@@ -22,6 +22,7 @@
 # Global variable declarations for R CMD check
 if(getRversion() >= "2.15.1") utils::globalVariables(c("subjID", "measureID", "time", "curvesID", "nTimePoints", "."))
 
+
 # Initialize method for proper S4 constructor
 setMethod("initialize", "CONNECTORData",
           function(.Object, curves, dimensions, annotations, TimeGrids) {
@@ -84,7 +85,7 @@ setMethod("ConnectorData", signature ("character"),
             return(ConnectorData(curves, annotations))
             
           })
-
+          
 #' @rdname ConnectorData
 #' @import readxl dplyr methods readr tibble magrittr tidyr
 #' @export

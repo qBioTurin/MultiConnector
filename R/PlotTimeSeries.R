@@ -8,9 +8,8 @@
 #'
 #' @return PlotTimeSeries returns a ggplot object.
 #'
-
 #' @import ggplot2 tibble dplyr
-
+#' 
 setGeneric("PlotTimeSeries", function(data,
                                       feature=NULL,
                                       labels)

@@ -4,12 +4,10 @@
 \alias{DiscriminantPlot}
 \title{DiscrimintantPlot}
 \usage{
-DiscriminantPlot(CONNECTORData, ConfigChosen, feature)
+DiscriminantPlot(CONNECTORDataClustered, feature)
 }
 \arguments{
-\item{CONNECTORData}{data created by ConnectorData()}
-
-\item{ConfigChosen}{data created with configSelection()}
+\item{CONNECTORDataClustered}{data created with selectCluster()}
 
 \item{feature}{feature selected for coloring}
 }

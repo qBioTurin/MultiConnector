@@ -10,7 +10,7 @@
 
 #' 
 #' @export
-#' 
+
 setGeneric("plotTimes", function(data, large=FALSE, measureIDs=NULL) standardGeneric("plotTimes"))
 #' @rdname plotTimes
 #' @export

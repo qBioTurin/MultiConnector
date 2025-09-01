@@ -19,15 +19,12 @@ setGeneric("IndexPlotExtrapolation", function(results) {
   standardGeneric("IndexPlotExtrapolation")
 })
 setMethod("IndexPlotExtrapolation",signature(), function(results) {
-  indexes =
-    do.call(rbind, lapply(seq_along(results), function(x) {
-      if (x != (length(results))) {
-        xx = results[[x]]
+  indexes = do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
+        xx = results$Clusterings[[x]]
         df = data.frame(xx$TTandfDBandSil)
         df$freq = xx$freq
         df$which = x
         return(df)
-      }
     }))
   
   # palette di colori picasso

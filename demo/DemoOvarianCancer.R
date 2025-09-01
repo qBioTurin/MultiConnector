@@ -1,43 +1,12 @@
-library(readxl)
 library(dplyr)
-library(readr)
-library(tibble)
-library(magrittr)
-library(tidyr)
-library(ggplot2)
-library(patchwork)
 library(parallel)
-library(MASS)
-library(splines)
-library(rlist)
-library(RhpcBLASctl)
-library(RColorBrewer)
-library(Matrix)
-# install.packages("MetBrewer")
-library(MetBrewer)
-# install.packages("gghalves")
-library(gghalves)
-library(statmod)
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-
-#RandomGenerationNumber sets as: "Mersenne-Twister" "Inversion"        "Rejection"   (RNGkind())
+library(MultiConnector)
 
 #### Loading data to cluster ####
-TimeSeriesFile<- "./../inst/Data/OvarianCancer/475dataset.xlsx"
-AnnotationFile <- "./../inst/Data/OvarianCancer/475info.txt"
+TimeSeriesFile<- "./inst/Data/OvarianCancer/475dataset.xlsx"
+AnnotationFile <- "./inst/Data/OvarianCancer/475info.txt"
 
-####
-
-source("../R/DataImport.R")
-source("../R/CONNECTORData.R")
-source("../R/PlotTimeSeries.R")
-source("../R/DataVisualization.R")
-source("../R/GridTimeOfPoints.R")
-source("../R/PlotDataTruncation.R")
-source("../R/DataTruncation.R")
-source("../R/BasisDimensionChoice.R")
-source("../R/Clust.R")
-
+#### Creating the data object ####
 dataold = connector::DataImport(TimeSeriesFile,AnnotationFile)
 
 TimeSeries = dataold$Dataset %>%
@@ -46,46 +15,44 @@ TimeSeries = dataold$Dataset %>%
 Annotations = dataold$LabCurv  %>%
   mutate(measureID = "Ovarian") %>% rename(subjID = ID)
 
-Data<-DataImport(as_tibble(TimeSeries), as_tibble(Annotations) )
+#### Starting the analysis ####
+Data <- ConnectorData(as_tibble(TimeSeries), as_tibble(Annotations) )
 
-PlotTimeSeries(Data, feature="Progeny")
+plot(Data)
+plot(Data,feature="Progeny")
 
-DataVisualization(Data)
-DataVisualization(Data, large=T)
+plotTimes(Data, large=T)
+plotTimes(Data, large=F)
 
-PlotDataTruncation(Data,  measure="Ovarian", truncTime=70)
-DataTrunc = DataTruncation(Data,  measure="Ovarian", truncTime=70)
-PlotTimeSeries(DataTrunc, feature="Progeny")
+truncatePlot(Data, measure="Ovarian", truncTime=70)
+truncate(Data, measure="Ovarian", truncTime=70) -> DataTrunc
+plot(DataTrunc)
 
-source("../R/BasisDimensionChoice.R")
-source("../R/Clust.R")
+### p estimation
 detectCores() -> nworkers
-CrossLogLikePlot<-BasisDimensionChoice(DataTrunc, p=2:6, cores=nworkers-1)
+CrossLogLikePlot<-estimatepDimension(DataTrunc, p=2:6, cores=nworkers-1)
 CrossLogLikePlot
+# p is 3 
 
-source("../R/Clust.R")
-source("../R/ClusterAnalysis.R")
-
-clusters<-ClusterAnalysis(DataTrunc, G=2:6, p=3, runs=50, cores=5)
-
-source("../R/IndexPlotExtrapolation.R")
-IndexPlotExtrapolation(clusters) -> pp
-pp
-source("../R/CONNECTORDataClustered.R")
-source("../R/ConfigSelection.R")
-Set<-ConfigSelection(clusters, G=4, "MinfDB")
-source("../R/SilhouetteAndEntropy.R")
-SilEntropy(Set)
-
-source("../R/IndexPlotExtrapolation2.R")
-IndexPlotExtrapolation2(DataTrunc, ConfigChosen=Set, feature="Progeny")
-
-source("../R/DiscriminantPlot.R")
-DiscriminantPlot(DataTrunc, ConfigChosen=Set, feature="Progeny")
+### Clustering
+# Mean Total time with 8 cores: 23 secs
+clusters<-estimateCluster(DataTrunc, G=2:6, p=3, runs=50, cores=nworkers-1)
+plot(clusters)
 
 
-source("../R/splinePlot.R")
-splinePlots = splinePlot(ConfigChosen = Set)
-source("../R/MaximumDiscriminationFunction.R")
-MaximumDiscriminationFunction(ConfigChosen = Set)
+CLusterData<-selectCluster(clusters, G=4, "MinfDB")
+plot(CLusterData)
+plot(CLusterData,feature="Progeny")
+
+Metrics = validateCluster(CLusterData)
+Metrics$plot
+
+Discr = MultiConnector::DiscriminantPlot(CLusterData)
+Discr$ColCluster
+Discr$ColFeature
+
+splinePlots = splinePlot(CLusterData)
+splinePlots$`1`
+
+MultiConnector::MaximumDiscriminationFunction(CLusterData)
 

@@ -1,20 +1,27 @@
-#' @title SilhouetteAndEntropy
+#' @title validateCluster
 #'
-#' @description plot a graph with silhouette and entropy
+#' @description Validate clustering results by calculating and plotting silhouette and entropy metrics
 #'
-#' @param ConfigChosen set choosen with configSelection()
-#' @return a plot.
+#' @param CONNECTORDataClustered object of class CONNECTORDataClustered created with selectCluster()
+#' @return a list containing the combined plot and table with clustering metrics.
 #'
 #'
-#' @import ggplot2 tibble dplyr
+#' @import ggplot2 tibble dplyr tidyr
 #' @export
-setGeneric("SilEntropy", function(ConfigChosen) {
-  standardGeneric("SilEntropy")
+setGeneric("validateCluster", function(CONNECTORDataClustered) {
+  standardGeneric("validateCluster")
 })
 
-setMethod("SilEntropy", signature(), function(ConfigChosen) {
-  probs = ConfigChosen@CfitandParameters$pred$probs
-  colnames(probs) = ConfigChosen@cluster.names
+setMethod("validateCluster", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered) {
+  
+  # Check input class at the beginning
+  if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {
+    stop("Input must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))
+  }
+  
+  # Use the correct parameter name throughout the function
+  probs = CONNECTORDataClustered@CfitandParameters$pred$probs
+  colnames(probs) = CONNECTORDataClustered@cluster.names
   
   MatrixClass = as.data.frame(probs)
   MatrixClass$ClusterType <- colnames(MatrixClass)[apply(MatrixClass, MARGIN = 1, FUN = which.max)]
@@ -30,18 +37,18 @@ setMethod("SilEntropy", signature(), function(ConfigChosen) {
     ungroup() %>%
     tidyr::spread(key = "Cluster", value = "Prob")
   
-  q <- sapply(1:length(ConfigChosen@KData$FullS), function(x)
-    ncol(ConfigChosen@KData$FullS[[x]]))
+  q <- sapply(1:length(CONNECTORDataClustered@KData$FullS), function(x)
+    ncol(CONNECTORDataClustered@KData$FullS[[x]]))
   
-  cluster_assignments <- ConfigChosen@CfitandParameters$pred$class.pred
-  curvepred <- fclust.curvepred(data = ConfigChosen@CfitandParameters,
+  cluster_assignments <- CONNECTORDataClustered@CfitandParameters$pred$class.pred
+  curvepred <- fclust.curvepred(data = CONNECTORDataClustered@CfitandParameters,
                                 q = q,
-                                KData = ConfigChosen@KData)
+                                KData = CONNECTORDataClustered@KData)
   
-  all_distances = DistAllSubjCurves2Curves.sapl(ConfigChosen@KData, curvepred)
+  all_distances = DistAllSubjCurves2Curves.sapl(CONNECTORDataClustered@KData, curvepred)
   
   silCoeff = do.call(rbind, 
-                     lapply(1:max(ConfigChosen@KData$CData$jamesID), function(jID) {
+                     lapply(1:max(CONNECTORDataClustered@KData$CData$jamesID), function(jID) {
                        current_cluster = cluster_assignments[jID]
                        in_cluster_indices <- which(cluster_assignments == current_cluster)
                        out_cluster_indices <- cluster_assignments[cluster_assignments != current_cluster]
@@ -65,7 +72,7 @@ setMethod("SilEntropy", signature(), function(ConfigChosen) {
   
   tbl_entropy_silhouette <- silCoeff %>%
     left_join(df1, by = c("jamesID" = "ID")) %>%
-    mutate(curvesID = ConfigChosen@KData$CData$subjID[match(jamesID, ConfigChosen@KData$CData$jamesID)]) %>%
+    mutate(curvesID = CONNECTORDataClustered@KData$CData$subjID[match(jamesID, CONNECTORDataClustered@KData$CData$jamesID)]) %>%
     group_by(cluster) %>%
     mutate(max_si = max(si)) %>%
     ungroup() %>%
