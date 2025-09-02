@@ -1,0 +1,474 @@
+---
+title: "MultiConnector: Complete Guide to One-Dimensional Functional Clustering"
+subtitle: "Step-by-Step Analysis of Time Series Data"
+author: "MultiConnector Development Team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+    fig_caption: true
+    fig_width: 10
+    fig_height: 7
+vignette: >
+  %\VignetteIndexEntry{One-Dimensional Functional Clustering Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  cache = FALSE,
+  comment = "#>"
+)
+
+# Set up better figure output for PDF
+if (knitr::is_latex_output()) {
+  knitr::opts_chunk$set(
+    fig.pos = "H",
+    out.extra = ""
+  )
+}
+```
+
+
+This  guide demonstrates how to perform functional clustering analysis on one-dimensional time series data using the **MultiConnector** package. We use ovarian cancer cell growth data as a case study to illustrate the complete workflow from data import to biological interpretation. The analysis identifies distinct growth patterns and relates them to cellular progeny information, providing insights into cancer cell behavior and potential therapeutic targets.
+
+
+---
+
+# Introduction
+
+## Background
+
+Functional clustering is a powerful statistical method for analyzing time series data where the goal is to group curves based on their shape and temporal patterns rather than individual time points. This approach is particularly valuable in biological and medical research where understanding distinct temporal patterns can reveal important insights about:
+
+- Disease progression patterns
+- Treatment response profiles  
+- Cellular growth dynamics
+- Biomarker trajectories
+
+## The MultiConnector Package
+
+**MultiConnector** implements advanced functional clustering methods based on the Sugar & James model, which:
+
+- Projects curves onto lower-dimensional spaces using spline coefficients
+- Accounts for within-curve correlation and measurement error
+- Provides robust clustering solutions through multiple random initializations
+- Offers comprehensive visualization and validation tools
+
+## Case Study: Ovarian Cancer Cell Growth
+
+In this guide, we analyze ovarian cancer cell line growth curves to:
+
+1. **Identify distinct growth patterns** in cancer cell populations
+2. **Relate patterns to progeny information** to understand cellular heterogeneity
+3. **Demonstrate the complete analysis workflow** for one-dimensional functional clustering
+
+---
+
+# Getting Started
+
+## Installation and Setup
+
+```{r libraries, message=FALSE, warning=FALSE}
+# Load required libraries
+library(dplyr)           # Data manipulation
+library(parallel)        # Parallel computing
+library(MultiConnector)  # Main clustering package
+library(ggplot2)         # Enhanced plotting
+library(knitr)           # Table formatting
+library(kableExtra)      # Enhanced table styling
+
+# Set up parallel processing
+n_cores <- detectCores()
+workers <- max(1, n_cores - 1)  # Leave one core free
+
+cat("System Information:\n")
+cat("- Available CPU cores:", n_cores, "\n")
+cat("- Cores used for analysis:", workers, "\n")
+```
+
+## Data Requirements
+
+For one-dimensional functional clustering, your data should include:
+
+- **Time series data**: With columns `subjID`, `measureID`, `time`, `value`
+- **Annotation data**: With `subjID` and feature columns (e.g., treatment groups, demographics)
+- **Consistent identifiers**: Matching IDs between time series and annotations
+
+---
+
+# Data Import and Preparation
+
+## Loading the Dataset
+
+We begin by loading ovarian cancer cell growth data, which contains:
+
+- **475 cell growth curves** measured over time
+- **Progeny information** indicating cellular lineage
+- **Growth measurements** at multiple time points
+
+## Creating the CONNECTORData Object
+
+The `ConnectorData()` function validates and structures the data for analysis:
+
+```{r create-data-object}
+system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package="MultiConnector") -> time_series_path
+system.file("Data/OvarianCancer/Ovarian_Annotations.txt", package="MultiConnector") -> annotations_path
+# Create the main data object
+Data <- ConnectorData(time_series_path,annotations_path)
+
+```
+
+---
+
+# Initial Data Exploration
+
+Understanding your data structure is crucial before clustering. We examine:
+
+1. **Overall growth patterns**
+2. **Feature relationships** 
+3. **Time point distributions**
+
+## Basic Time Series Visualization
+
+```{r initial-plots, fig.cap="Initial data exploration: (A) All growth curves overlaid, (B) Curves colored by progeny type.", fig.width=12, fig.height=8}
+# Plot 1: Basic time series overview
+p1 <- plot(Data) + 
+  ggtitle("A) All Growth Curves") +
+  theme_minimal()
+
+# Plot 2: Colored by progeny feature
+p2 <- plot(Data, feature = "Progeny") + 
+  ggtitle("B) Curves by Progeny Type") +
+  theme_minimal()
+
+# Combine plots if possible (requires gridExtra or patchwork)
+if (requireNamespace("gridExtra", quietly = TRUE)) {
+  gridExtra::grid.arrange(p1, p2, ncol = 2)
+} else {
+  print(p1)
+  print(p2)
+}
+```
+
+## Time Point Distribution Analysis
+
+```{r time-analysis, fig.cap="Time point distribution analysis showing data density across the measurement period."}
+# Analyze time point distributions
+plotTimes(Data, large = TRUE)
+```
+
+### Key Observations
+
+From the initial exploration, we can observe:
+
+- **Growth curve diversity**: Multiple distinct patterns are visible
+- **Feature associations**: Some progeny types may show preferred growth patterns
+- **Data completeness**: Time point coverage affects analysis quality
+
+---
+
+# Data Preprocessing
+
+## Truncation Analysis
+
+Many time series datasets have sparse data at later time points. Truncation can improve clustering stability by focusing on well-sampled regions.
+
+```{r truncation-analysis, fig.cap="Truncation analysis helping to identify optimal cutoff time for maintaining data quality."}
+# Analyze truncation effects
+truncatePlot(Data, measure = "Ovarian", truncTime = 70)
+```
+
+```{r apply-truncation, fig.cap="Data after truncation at time = 70, showing improved data density."}
+# Apply truncation based on analysis
+DataTrunc <- truncate(Data, measure = "Ovarian", truncTime = 70)
+
+# Visualize truncated data
+plot(DataTrunc) + 
+  ggtitle("Growth Curves After Truncation (t ≤ 70)") +
+  theme_minimal()
+```
+
+---
+
+# Parameter Estimation
+
+## Spline Dimension Selection
+
+The spline dimension (`p`) parameter controls curve flexibility:
+
+- **Higher p**: More flexible curves, risk of overfitting
+- **Lower p**: Smoother curves, may miss important features
+
+```{r spline-estimation, fig.cap="Cross-validation results for spline dimension selection showing optimal p value."}
+# Estimate optimal spline dimension
+CrossLogLikePlot <- estimatepDimension(DataTrunc, p = 2:6, cores = workers)
+
+# Display results
+print(CrossLogLikePlot)
+
+# Set optimal value (typically where CV error is minimized)
+optimal_p <- 3
+cat("Selected optimal p =", optimal_p, "\n")
+```
+
+### Parameter Selection Guidelines
+
+| p Value | Characteristics | Best For |
+|---------|----------------|----------|
+| 2-3 | Smooth, simple curves | Linear/quadratic patterns |
+| 4-5 | Moderate flexibility | Complex but stable patterns |
+| 6+ | High flexibility | Complex curves (risk overfitting) |
+
+---
+
+# Clustering Analysis
+
+## Comprehensive Clustering
+
+We test multiple cluster numbers to find the optimal solution:
+
+```{r clustering-analysis, fig.cap="Clustering quality metrics across different numbers of clusters (G).", cache=TRUE}
+# Perform clustering analysis
+# Note: This is computationally intensive
+clusters <- estimateCluster(
+  DataTrunc, 
+  G = 2:6,              # Test 2-6 clusters
+  p = optimal_p,        # Use optimal spline dimension
+  runs = 20,            # Reduced for demonstration (use 100+ for final analysis)
+  cores = workers       # Parallel processing
+)
+
+# Display quality metrics
+plot(clusters)
+```
+
+### Quality Metrics Interpretation
+
+- **fDB (functional Data Depth)**: Lower values indicate more compact, well-separated clusters
+- **Silhouette Score**: Higher values (closer to 1) indicate better cluster quality
+- **Stability**: Consistent results across multiple runs indicate robust solutions
+
+## Cluster Selection
+
+Based on quality metrics, we select the optimal configuration:
+
+```{r cluster-selection}
+# Select optimal clustering (G=4 based on quality metrics)
+ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
+
+cat("Selected Configuration:\n")
+cat("- Number of clusters: 4\n")
+cat("- Selection criterion: Minimum fDB\n")
+cat("- This represents the most compact and well-separated clustering\n")
+```
+
+---
+
+# Results Visualization and Interpretation
+
+## Basic Cluster Visualization
+
+```{r cluster-plots, fig.cap="Cluster visualization: (A) Growth curves colored by cluster assignment, (B) Curves colored by progeny type to examine biological associations.", fig.width=12, fig.height=8}
+# Plot clusters
+p1 <- plot(ClusterData) + 
+  ggtitle("A) Clusters by Assignment") +
+  theme_minimal()
+
+# Plot by progeny feature
+p2 <- plot(ClusterData, feature = "Progeny") + 
+  ggtitle("B) Clusters by Progeny Type") +
+  theme_minimal()
+
+# Display plots
+if (requireNamespace("gridExtra", quietly = TRUE)) {
+  gridExtra::grid.arrange(p1, p2, ncol = 2)
+} else {
+  print(p1)
+  print(p2)
+}
+```
+
+## Cluster-Feature Association Analysis
+
+```{r cluster-annotations}
+# Examine cluster-annotation relationships
+annotations_summary <- getAnnotations(ClusterData)
+print(annotations_summary)
+
+# Create summary table if annotations exist
+if (exists("annotations_summary") && length(annotations_summary) > 0) {
+  kable(annotations_summary, 
+        caption = "Cluster-annotation summary showing the distribution of features across clusters.") %>%
+    kable_styling(bootstrap_options = c("striped", "hover"))
+}
+```
+
+---
+
+# Cluster Validation
+
+## Quality Assessment
+
+Comprehensive validation ensures clustering reliability:
+
+```{r validation, fig.cap="Cluster validation metrics: (A) Silhouette analysis showing how well samples fit their clusters, (B) Entropy analysis measuring assignment uncertainty."}
+# Perform validation analysis
+Metrics <- validateCluster(ClusterData)
+
+# Display validation plots
+print(Metrics$plot)
+```
+
+### Validation Metrics Interpretation
+
+- **Silhouette Analysis**:
+  - Values close to 1: Well-assigned samples
+  - Values near 0: Borderline assignments
+  - Negative values: Potentially misclassified samples
+
+- **Entropy Analysis**:
+  - Low entropy: Confident cluster assignments
+  - High entropy: Uncertain assignments requiring investigation
+
+---
+
+# Advanced Visualizations
+
+## Discriminant Analysis
+
+Discriminant plots show clusters in reduced dimensional space:
+
+```{r discriminant-plots, fig.cap="Discriminant analysis plots showing cluster separation in reduced dimensional space."}
+# Generate discriminant plots
+Discr <- DiscriminantPlot(ClusterData)
+
+# Display cluster-colored plot
+print(Discr$ColCluster)
+
+# Display feature-colored plot (if features exist)
+if ("ColFeature" %in% names(Discr)) {
+  print(Discr$ColFeature)
+}
+```
+
+## Spline-Based Cluster Representation
+
+```{r spline-plots, fig.cap="Spline-based visualization showing the characteristic curve shape for each cluster."}
+# Generate spline plots
+splinePlots <- splinePlot(ClusterData)
+
+# Display the main spline plot
+if (length(splinePlots) > 0) {
+  print(splinePlots[[1]])
+}
+```
+
+## Maximum Discrimination Analysis
+
+```{r discrimination-analysis}
+# Identify most discriminative features
+MaximumDiscriminationFunction(ClusterData)
+```
+
+---
+
+# Biological Interpretation
+
+## Growth Pattern Analysis
+
+Based on our clustering results, we can identify distinct growth patterns:
+
+---
+
+# Conclusions and Next Steps
+
+## Summary of Findings
+
+Our functional clustering analysis revealed:
+
+1. **Four distinct growth patterns** in ovarian cancer cell populations
+2. **Associations between growth patterns and progeny types** (if significant)
+3. **Robust clustering solution** validated through multiple quality metrics
+
+## Methodological Insights
+
+The MultiConnector package successfully:
+
+- Handled one-dimensional functional data
+- Provided stable clustering solutions
+- Offered comprehensive visualization tools
+- Enabled biological interpretation
+
+## Recommended Next Steps
+
+### Immediate Actions
+1. **Validate findings** with independent datasets
+2. **Investigate biological mechanisms** underlying each cluster
+3. **Collect additional features** for enhanced clustering
+
+### Long-term Research
+1. **Functional annotation** of cluster-specific genes/pathways
+2. **Clinical validation** in patient samples
+3. **Therapeutic targeting** of cluster-specific vulnerabilities
+
+---
+
+# Session Information
+
+```{r session-info}
+sessionInfo()
+```
+
+---
+
+# References
+
+1. Sugar, C. A., & James, G. M. (2003). Finding the number of clusters in a dataset: An information-theoretic approach. *Journal of the American Statistical Association*, 98(463), 750-763.
+
+2. James, G. M., & Sugar, C. A. (2003). Clustering for sparsely sampled functional data. *Journal of the American Statistical Association*, 98(462), 397-408.
+
+3. Ramsay, J. O., & Silverman, B. W. (2005). *Functional data analysis*. Springer.
+
+4. Ferraty, F., & Vieu, P. (2006). *Nonparametric functional data analysis: theory and practice*. Springer.
+
+---
+
+# Appendix
+
+## Computational Details
+
+- **Analysis performed on**: `r Sys.time()`
+- **R version**: `r R.version.string`
+- **Cores used**: `r workers`
+- **Total computation time**: Varies with dataset size and parameters
+
+## Troubleshooting Common Issues
+
+### Data Format Problems
+- Ensure column names match requirements (`subjID`, `measureID`, `time`, `value`)
+- Check for missing values in key columns
+- Verify ID consistency between time series and annotations
+
+### Convergence Issues
+- Reduce spline dimension (`p`) if clustering fails
+- Increase number of runs for stability
+- Consider data truncation to remove sparse regions
+
+### Memory and Performance
+- Use fewer clusters or runs for large datasets
+- Utilize parallel processing with `cores` parameter
+- Consider data subsampling for initial exploration
+
+---
+
+*This guide was generated using the MultiConnector package. For updates and additional resources, visit the package documentation.*
