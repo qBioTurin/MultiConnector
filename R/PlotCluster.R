@@ -24,7 +24,8 @@ setGeneric("ClusterPlot", function(CONNECTORDataClustered,
   standardGeneric("ClusterPlot")
 })
 
-setMethod("ClusterPlot", signature(), function(CONNECTORDataClustered,
+setMethod("ClusterPlot", signature(CONNECTORDataClustered = "CONNECTORDataClustered"),
+          function(CONNECTORDataClustered,
                                                feature= NULL) {
   # Get number of clusters from CONNECTORDataClustered
   G = CONNECTORDataClustered@TTandfDBandSil$G[1]

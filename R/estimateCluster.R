@@ -1,26 +1,94 @@
-#' estimateCluster
+#' @title Estimate Clustering Parameters and Solutions
 #'
-#'@description
+#' @description
+#' Performs comprehensive clustering analysis using the Functional Clustering Model approach.
+#' This function fits multiple clustering solutions with different numbers of clusters and
+#' parameters, running multiple iterations to ensure stability and robustness. The method
+#' is particularly suited for functional/longitudinal data where curves are clustered based
+#' on their shape and temporal patterns.
 #'
-#'  Fits and clusters the data with respect to the Functional Clustering Model [Sugar and James]. Multiple runs of the algorithm are necessary since the algorithm is stochastic As explained in [Sugar and James], to have a simple low-dimensional representation of the individual curves and to reduce the number of parameters to be estimated, h value must be equals or lower than \eqn{min(p,G-1)}.
+#' @param CONNECTORData A CONNECTORData object created with \code{\link{ConnectorData}}.
+#'   Contains the time series data, annotations, and time grids to be clustered.
+#' @param G Integer vector specifying the range of cluster numbers to evaluate (e.g., 2:6).
+#'   The algorithm will test each specified number of clusters.
+#' @param p Named vector or single integer specifying the dimension of the natural cubic 
+#'   spline basis for each measurement type. Higher values capture more complex curve shapes
+#'   but may lead to overfitting. See \code{\link{estimatepDimension}} for guidance.
+#' @param h Projection dimension parameter. Must be ≤ min(p, G-1) for identifiability.
+#'   Lower values provide simpler representations but may lose important curve features.
+#'   Default is typically 2 or 3.
+#' @param runs Integer specifying the number of random initializations for each parameter
+#'   combination. More runs improve stability but increase computation time. Default: 50.
+#' @param seed Integer seed for reproducible results. Ensures consistent random initializations
+#'   across runs.
+#' @param cores Integer specifying the number of CPU cores for parallel computation.
+#'   Speeds up analysis for large datasets or many parameter combinations.
+#' @param PercPCA Numeric (0-1) specifying the minimum percentage of variance to retain
+#'   in PCA preprocessing. Default: 0.85 (85% of variance retained).
+#' @param MinErrFreq Minimum error frequency threshold for stability assessment.
+#' @param pert Perturbation parameter for numerical stability in optimization.
 #'
-#' @param CONNECTORData CONNECTORList. (see \code{\link{ConnectorData}})
-#' @param G The vector/number of possible clusters.
-#' @param p The dimension of the natural cubic spline basis. (see \code{\link{BasisDimension.Choice}})
-#' @param h ...
-#' @param runs Number of runs.
-#' @param seed Seed for the kmeans function.
-#' @param cores Number of cores to parallelize computations.
-#' @param PercPCA ... standar 0.85
-#' @param MinErrFreq ...
-#' @param pert ....
+#' @return A comprehensive list containing:
+#'   \itemize{
+#'     \item \code{Clusterings}: List of all clustering solutions for each G and run
+#'     \item \code{QualityMetrics}: Data frame with quality metrics (fDB, silhouette, etc.)
+#'       for each solution
+#'     \item \code{ConsensusInfo}: Consensus matrices and stability measures across runs
+#'     \item \code{Parameters}: Summary of all tested parameter combinations
+#'     \item \code{seed}: The random seed used for reproducibility
+#'   }
+#'
+#' @details
+#' \strong{Clustering Approach:}
+#' The function implements functional clustering based on the Sugar & James model, which:
+#' \itemize{
+#'   \item Projects curves onto a lower-dimensional space using spline coefficients
+#'   \item Clusters curves based on their projected representations
+#'   \item Accounts for within-curve correlation and measurement error
+#' }
+#' 
+#' \strong{Parameter Selection Guidelines:}
+#' \itemize{
+#'   \item \strong{G}: Start with 2-6 clusters, extend based on domain knowledge
+#'   \item \strong{p}: Use \code{estimatepDimension()} to find optimal spline dimensions
+#'   \item \strong{h}: Usually 2-3, must be ≤ min(p, G-1)
+#'   \item \strong{runs}: 50-100 for final analysis, 10-20 for exploration
+#' }
+#' 
+#' \strong{Quality Assessment:}
+#' Multiple quality metrics are computed including functional Data Depth (fDB),
+#' silhouette scores, and stability measures to help identify optimal solutions.
+#'
+#' @examples
+#' \dontrun{
+#' # Basic clustering analysis
+#' results <- estimateCluster(
+#'   CONNECTORData = my_data,
+#'   G = 2:5,
+#'   p = c("measure1" = 4, "measure2" = 3),
+#'   h = 2,
+#'   runs = 50,
+#'   cores = 4
+#' )
+#' 
+#' # Quick exploration with fewer runs
+#' quick_results <- estimateCluster(
+#'   CONNECTORData = my_data,
+#'   G = 2:4,
+#'   p = 3,
+#'   h = 2,
+#'   runs = 10,
+#'   cores = 2
+#' )
+#' }
 #'
 #' @author Cordero Francesca, Pernice Simone, Sirovich Roberta
 #'
-#' @return StabilityAnalysis returns a list of (i) lists, called ConsensusInfo, reporting for each G and h: the Consensus Matrix, either as a NxN matrix, where N is the number of samples, or plot, and the most probable clustering obtained from running several times the method; (ii) the box plots showing both the Elbow plot considering the total tightness and the box plots of the fDB indexes for each G; and finally, (iii) the seed. See \code{\link{IndexesPlot.Extrapolation}} and \code{\link{MostProbableClustering.Extrapolation}}.
-#'
-#' @details ...
-#'  
+#' @seealso 
+#' \code{\link{ConnectorData}} for creating input data objects,
+#' \code{\link{estimatepDimension}} for selecting spline dimensions,
+#' \code{\link{selectCluster}} for choosing optimal solutions,
+#' \code{\link{validateCluster}} for validating results
 #'
 #' @import RColorBrewer statmod parallel Matrix splines RhpcBLASctl dplyr
 #' @export

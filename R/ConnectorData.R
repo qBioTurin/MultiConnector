@@ -1,20 +1,70 @@
-#' @title ConnectorData
-#' @description ConnectorData is a function that imports the data from the excel file storing the growth evolution data and the annotation file.
+#' @title Create CONNECTORData Object
 #' 
-#' @param TimeSeriesFile The name of the excel/csv file storing the  growth evolution data. Alternatively accepts a tibble with the data.
+#' @description 
+#' Creates a CONNECTORData object by importing and processing time series data and annotations.
+#' This is the primary entry point for the MultiConnector package, converting raw data files
+#' or tibbles into a structured format suitable for clustering analysis. The function handles
+#' data validation, processing, and creates time grids for each measurement type.
+#' 
+#' @param TimeSeriesFile Either a character string specifying the path to an Excel/CSV file
+#'   containing time series data, or a tibble with pre-loaded data. The data must contain
+#'   columns: \code{time}, \code{ID} (subject identifier), \code{value}, and at least one
+#'   measurement column (e.g., treatment responses, biomarkers).
+#' @param AnnotationFile Either a character string specifying the path to an Excel/CSV file
+#'   containing annotation data, or a tibble with pre-loaded annotations. Must contain an
+#'   \code{ID} column matching the time series data, plus additional feature columns
+#'   (e.g., demographics, treatment groups, clinical variables).
 #'
-#' @param AnnotationFile The name of a excel/csv file storing  the annotation data. Alternatively accepts a tibble with the annotations.
+#' @return A CONNECTORData S4 object containing:
+#'   \itemize{
+#'     \item \code{curves}: Tibble with columns (subjID, measureID, time, curvesID, value)
+#'       storing the processed time series data
+#'     \item \code{dimensions}: Tibble reporting the number of observations per sample
+#'     \item \code{annotations}: Tibble matching samples with their feature annotations
+#'     \item \code{TimeGrids}: List of time grids for each measurement type
+#'   }
+#'   The function also prints a summary including total curves, minimum/maximum curve lengths.
 #'
-#' @return ConnectorData returns a S4 object, called ConnectorData, with four arguments: (i) curves: tibble with 5 columns (subjID, measureID, time, curvesID, value) encoding the growth data for each sample, (ii) dimensions: the tibble reporting the number of observations collected per sample  (iii) annotations: the tibble matching the samples with their annotations, (iv) TimeGrid: the vector storing all the sample time points (i.e. time grid). Furthermore, it prints a brief summary of the input data, i.e. the total number of curves (samples), the minimum and the maximum curve length.
-#' @examples 
-#' TimeSeriesFile<-system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
-#' AnnotationFile <-system.file("testdata", "testinfo.txt", package = "ConnectorV2.0")
 #' @details
-#' create CONNECTORData like an object that contains 4 different slots curves dimensions annotations TimeGrid
-#' curves is a tibble that contains subjID, measureID, time, curvesID (concatenation of measureID_subjID), value
-#' dimensions is a tibble that contains the number of observations for each ID
-#' annotations is a tibble that contains the ID of each curve
-#' TimeGrid is a vector that contains the time points of the curves
+#' \strong{Data Requirements:}
+#' \itemize{
+#'   \item Time series file must have: 'time', 'ID', 'value', and measurement columns
+#'   \item Annotation file must have: 'ID' matching the time series, plus feature columns
+#'   \item IDs must be consistent between time series and annotation files
+#' }
+#' 
+#' \strong{Processing Steps:}
+#' \itemize{
+#'   \item Validates column names and data integrity
+#'   \item Creates unique curve identifiers (measureID_subjID)
+#'   \item Generates time grids for each measurement type
+#'   \item Calculates data dimensions and summaries
+#' }
+#' 
+#' \strong{Supported File Formats:}
+#' \itemize{
+#'   \item Excel files (.xlsx, .xls)
+#'   \item CSV/text files (.csv, .txt)
+#'   \item R tibbles (for programmatic use)
+#' }
+#'
+#' @examples 
+#' \dontrun{
+#' # From files
+#' data <- ConnectorData("timeseries.xlsx", "annotations.csv")
+#' 
+#' # From tibbles
+#' data <- ConnectorData(my_timeseries_tibble, my_annotations_tibble)
+#' 
+#' # View structure
+#' print(data)
+#' str(data, max.level = 2)
+#' }
+#' 
+#' @seealso 
+#' \code{\link{estimateCluster}} for clustering the created data,
+#' \code{\link{plot}} for visualizing the data
+#'
 #' @import readxl dplyr methods readr tibble tidyr
 #' @importFrom magrittr %>%
 #' @export
