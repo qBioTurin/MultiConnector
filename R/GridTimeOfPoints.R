@@ -4,15 +4,14 @@
 #' @return GridTimeOfPoints returns a plot with the density time grid and the line plot of growth data as a ggplot object.
 #'  In details, a point $p_{x,y}$ of the time grid density  is defined by a pair of coordinates $p_{x,y}=( x,y) \ $ and by a colour. $p_{x,y}$ is defined if only if exists at least one sample with two observations at time $x\ $ and $y$.
 #'  The colour associates with it encodes the frequency of samples in which $p_{x,y}$ is present.
-#' @import ggplot2 tidyr dplyr patchwork
-
-
-
+#' @import ggplot2 patchwork
+#' @importFrom dplyr select filter group_by mutate arrange summarise n_distinct
+#' @importFrom tidyr gather spread expand
+#' @keywords internal
+#' @noRd
 setGeneric("GridTimeOfPoints", function(data)
   standardGeneric("GridTimeOfPoints"))
 
-#' @rdname GridTimeOfPoints
-#' @export
 setMethod("GridTimeOfPoints", signature = c("CONNECTORData"),
           function(data) {
             nTime <- data@curves %>%

@@ -1,10 +1,10 @@
 Package: MultiConnector
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: MultiConnector: a package for functional clustering analysis
+Version: 1.0
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: MultiConnector is an R package for functional clustering analysis of multi-dimensional time series data. It implements the James & Sugar (2003) functional clustering model to identify distinct patterns in longitudinal data, making it particularly useful for biomedical research, growth studies, and longitudinal data analysis where curves need to be grouped based on their shape and temporal behavior.
 License: GPL-3
 Encoding: UTF-8
 Imports:
@@ -17,15 +17,23 @@ Imports:
     geometry,
     gghalves,
     ggplot2,
+    grDevices,
     magrittr,
     methods,
+    parallel,
     patchwork,
     plotly,
     readr,
     readxl,
     rlist,
+    splines,
     statmod,
     tibble,
     tidyr
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

@@ -12,8 +12,7 @@
 #' @export
 
 setGeneric("plotTimes", function(data, large=FALSE, measureIDs=NULL) standardGeneric("plotTimes"))
-#' @rdname plotTimes
-#' @export
+
 setMethod("plotTimes", signature = c("CONNECTORData"), function(data, large =FALSE, measureIDs=NULL) {
   if (!is.null(measureIDs) && length(measureIDs) > 0) {
     data@curves <- dplyr::filter(data@curves, measureID %in% measureIDs)

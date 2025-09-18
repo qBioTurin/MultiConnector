@@ -11,10 +11,13 @@
 #'
 #' @return a list with all necessary data
 #'
-
+#' @keywords internal
+#' @noRd
 #' @seealso kmeans()
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 
@@ -145,10 +148,13 @@
 #'
 #' @return results of kmeans
 #'
-
+#' @keywords internal
+#' @noRd
 #' @seealso kmeans()
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 #Parte randomica dell'algoritmo, è necessario avere la parte di codice per K=1, poiché serve nello stimare gli iper-parametri
@@ -217,9 +223,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 
@@ -361,9 +370,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 # E step
@@ -435,9 +447,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 
@@ -567,9 +582,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 #Preso senza modifiche, questa function mi calcola i cfit
@@ -610,9 +628,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 
 
@@ -689,7 +710,8 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
 "nummax" <- function(X) {
   ind <- rep(1, dim(X)[1])
@@ -717,9 +739,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 
 "fclust.curvepred" <- function(data,
                                tau = 0.95,
@@ -865,9 +890,12 @@
 #' @return ...
 #'
 
-#' @seealso ...
+#' @keywords internal
+#' @noRd
 #'
-#' @import splines rlist Matrix dplyr ggplot2 RhpcBLASctl
+#' @import splines rlist ggplot2 RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
 #Qui inzia il ciclo finale
 #initial sono i valori uscenti dall'inizializzazione
 #TODO Probabilmente non serve più

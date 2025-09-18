@@ -2,23 +2,67 @@
 % Please edit documentation in R/selectCluster.R
 \name{selectCluster}
 \alias{selectCluster}
-\title{selectCluster}
+\title{Select Optimal Cluster Configuration}
 \usage{
 selectCluster(results, G, best)
 }
 \arguments{
-\item{results}{ClusterAnalysis output}
+\item{results}{A list object returned by \code{estimateCluster()} containing multiple clustering
+solutions with different parameters and random initializations.}
 
-\item{G}{Number of cluster selected}
+\item{G}{Integer specifying the number of clusters to select. Must be one of the values
+used in the original clustering analysis.}
 
-\item{best}{Setup choosen. "MaxFreq" or "MinfDB"}
+\item{best}{Character string specifying the selection criterion:
+\itemize{
+\item \code{"MaxFreq"}: Select the most frequently occurring configuration across runs
+\item \code{"MinfDB"}: Select the configuration with minimum functional Data Depth
+}}
 }
 \value{
-an object with the configuration selected
+A CONNECTORDataClustered object containing:
+\itemize{
+\item Selected cluster configuration and parameters
+\item Cluster assignments for each curve
+\item Quality metrics (silhouette, entropy, fDB, TT)
+\item All necessary information for downstream analysis and visualization
+}
 }
 \description{
-Select cluster configuration by printing fDB and TT violin plots with best and most frequent value
+Selects the best cluster configuration from clustering analysis results based on quality metrics.
+This function evaluates different clustering solutions using functional Data Depth (fDB) and
+Total Time (TT) metrics, providing visualization through violin plots to aid in selection.
+Users can choose between selecting the most frequent configuration or the one with minimum fDB.
+}
+\details{
+This function is a crucial step in the clustering workflow. It helps identify the most
+stable and high-quality clustering solution from multiple runs. The function displays
+violin plots showing the distribution of fDB and TT values across different runs,
+highlighting the selected configuration.
+
+\strong{Selection criteria:}
+\itemize{
+\item \strong{MaxFreq}: Chooses the configuration that appears most often across runs,
+indicating stability and reproducibility
+\item \strong{MinfDB}: Chooses the configuration with the lowest functional Data Depth,
+indicating the most compact and well-separated clusters
+}
+}
+\examples{
+\dontrun{
+# Select most frequent 3-cluster configuration
+selected_config <- selectCluster(cluster_results, G = 3, best = "MaxFreq")
+
+# Select 4-cluster configuration with minimum fDB
+selected_config <- selectCluster(cluster_results, G = 4, best = "MinfDB")
+
+# View the selected configuration
+print(selected_config)
+}
+
 }
 \seealso{
-ClusterAnalysis
+\code{\link{estimateCluster}} for performing the initial clustering analysis,
+\code{\link{validateCluster}} for validating the selected configuration,
+\code{\link{plot}} for visualizing the selected clusters
 }

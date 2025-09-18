@@ -80,8 +80,6 @@ setMethod("plot",
             ))
           })
 
-#' @rdname plot
-#' @export
 setMethod("plot", 
           signature(data = "CONNECTORDataClustered"), 
           function(data, ...) {
@@ -94,8 +92,6 @@ setMethod("plot",
             ))
           })
 
-#' @rdname plot
-#' @export
 setMethod("plot", 
           signature(data = "list"), 
           function(data, ...) {

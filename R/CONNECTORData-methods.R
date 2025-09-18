@@ -15,13 +15,12 @@
 #' dimensions is a tibble that contains the number of observations for each ID
 #' annotations is a tibble that contains the ID of each curve
 #' TimeGrid is a vector that contains the time points of the curves
-#' @import readxl dplyr methods readr tibble tidyr
+#' @import readxl methods readr
+#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom tidyr gather spread
+#' @import tibble
 #' @importFrom magrittr %>%
 #' @export
-
-# Global variable declarations for R CMD check
-if(getRversion() >= "2.15.1") utils::globalVariables(c("subjID", "measureID", "time", "curvesID", "nTimePoints", "."))
-
 
 # Initialize method for proper S4 constructor
 setMethod("initialize", "CONNECTORData",
@@ -87,7 +86,11 @@ setMethod("ConnectorData", signature ("character"),
           })
           
 #' @rdname ConnectorData
-#' @import readxl dplyr methods readr tibble magrittr tidyr
+#' @import readxl methods readr
+#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom tidyr gather spread
+#' @importFrom magrittr %>%
+#' @import tibble
 #' @export
 setMethod("ConnectorData", signature("tbl_df"),
           function(TimeSeriesFile, AnnotationFile) {

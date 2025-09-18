@@ -1,103 +1,134 @@
-library(readxl)
-library(dplyr)
-library(readr)
-library(tibble)
-library(magrittr)
-library(tidyr)
-library(ggplot2)
-library(patchwork)
-library(parallel)
-library(MASS)
-library(splines)
-library(rlist)
-library(RhpcBLASctl)
-library(RColorBrewer)
-library(Matrix)
-library(MetBrewer)
-library(gghalves)
-library(statmod)
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+# Description: This script demonstrates the use of the MultiConnector package for clustering time series data.
+TimeSeries = readRDS(system.file("Data/MCL/TimeSeries.rds", package="MultiConnector"))
+Annotations = readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConnector"))
+
+# ------------------------------------------------------------------------------
+# STEP 1: CREATE CONNECTOR DATA OBJECT
+# ------------------------------------------------------------------------------
+
+# Create the main data object for analysis
+Data <- ConnectorData( tibble(TimeSeries), tibble(Annotations) )
+summary(Data)
+
+# ------------------------------------------------------------------------------
+# STEP 2: INITIAL DATA EXPLORATION
+# ------------------------------------------------------------------------------
+
+# Plot 2.1: Basic time series overview
+plot(Data)
+getAnnotations(Data)
+
+# Plot 2.2: TimData# Plot 2.2: Time series colored by progeny feature
+plot(Data, feature="TTP")
+
+# Plot 2.3: Time distribution analysis
+plotTimes(Data, large=TRUE)   # Detailed time analysis
+plotTimes(Data, large=FALSE)  # Summary time analysis
 
 
-#### Loading data to cluster ####
-load("./../inst/Data/MCL/MCLcurves.RData")
+# ------------------------------------------------------------------------------
+# STEP 3: SPLINE DIMENSION ESTIMATION
+# ------------------------------------------------------------------------------
 
-colnames(BM) = sub("BM_","",colnames(BM))
-BM = BM %>% mutate(measureID = "BM") %>% rename(subjID = SampleName,time = Time,value = Observation)
+# Estimating optimal spline basis dimension (p parameter)
+# This step determines how many spline basis functions to use for curve fitting
+# Higher p = more flexible curves, but risk of overfitting
+# Lower p = smoother curves, but may miss important features
 
-colnames(PB) = sub("PB_","",colnames(PB))
-PB = PB %>% mutate(measureID = "PB") %>% rename(subjID = SampleName,time = Time,value = Observation)
+# Cross-validation to find optimal p
+# Test p values from 2 to 6
+CrossLogLikePlot <- estimatepDimension(Data, p=2:6, cores=5)
 
-TimeSeries =as_tibble(rbind(PB,BM))
-Annotations = info %>% rename(subjID = SampleName)
+# Display results
+print(CrossLogLikePlot)
 
-####
+# Set optimal p value
+optimal_p <- c("PB"= 4, "BM" = 4)
 
-source("DataImport.R")
-source("CONNECTORData.R")
-Data<-DataImport(as_tibble(TimeSeries), as_tibble(Annotations) )
-source("PlotTimeSeries.R")
-PlotTimeSeries(Data,feature = "TTP")
-source("DataVisualization.R")
-source("GridTimeOfPoints.R")
-DataVisualization(Data)
-DataVisualization(Data, large=T)
-# source("PlotDataTruncation.R")
-# source("DataTruncation.R")
-# PlotDataTruncation(Data,  measure="PDX", truncTime=5)
-# DataTruncation(Data,  measure="PDX", truncTime=5)
-source("BasisDimensionChoice.R")
-source("Clust.R")
+# ------------------------------------------------------------------------------
+# STEP 4: CLUSTERING ANALYSIS
+# ------------------------------------------------------------------------------
 
-CrossLogLikePlot<-BasisDimensionChoice(Data, p=2:6, cores=5)
-CrossLogLikePlot$PB
-CrossLogLikePlot$BM
-source("ClusterAnalysis.R")
+# Estimated time with 5 cores: ~23 seconds
 
-clusters<-ClusterAnalysis(Data, G=2:6, p=c(4,4), runs=50, cores=5)
+# Perform clustering with multiple G values
+# This is the core clustering step - most computationally intensive
+clusters <- estimateCluster(Data, 
+                            G = 2:6,           # Test 2-6 clusters
+                            p = optimal_p,     # Use optimal spline dimension
+                            runs = 20,         # Multiple runs for stability
+                            cores = 5) # Parallel processing
 
-saveRDS(clusters, file = "../inst/Data/MCL/clusters.RDs")
-clusters = readRDS("../inst/Data/MCL/clusters.RDs")
+# Plot clustering quality metrics
+plot(clusters)
 
-source("IndexPlotExtrapolation.R")
-IndexPlotExtrapolation(clusters)
-source("CONNECTORDataClustered.R")
-source("selectCluster.R")
-Set<-selectCluster(clusters, G=2, "MinfDB")
-source("IndexPlotExtrapolation2.R")
-IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="TTP")
+# - fDB (functional Data Depth): Lower is better (more compact clusters)
+# - Total Time: Computational cost for each configuration
+# - Stability: How consistent results are across runs
 
-source("validateCluster.R")
-SilEntropy(Set)
+# ------------------------------------------------------------------------------
+# STEP 6: CLUSTER SELECTION
+# ------------------------------------------------------------------------------
 
-source("DiscriminantPlot.R")
-DiscriminantPlot(Data, ConfigChosen=Set, feature="TTP")
+# Using G = 4 clusters based on quality metrics
+# Selection criterion: MinfDB (minimum functional Data Depth)
 
+# Select the best configuration
+# G=4 often provides good balance between complexity and interpretability
+ClusterData <- selectCluster(clusters, G=4, "MinfDB")
 
-source("splinePlot.R")
-splinePlots = splinePlot(ConfigChosen = Set)
-source("MaximumDiscriminationFunction.R")
-MaximumDiscriminationFunction(ConfigChosen = Set)
+# ------------------------------------------------------------------------------
+# STEP 7: CLUSTER VISUALIZATION AND INTERPRETATION
+# ------------------------------------------------------------------------------
 
+# Plot 7.1: Basic cluster visualization
+plot(ClusterData)
 
-###### Classification #######
+# Plot 7.2: View cluster assignments with annotations
+annotations_summary <- getAnnotations(ClusterData)
+print(annotations_summary)
 
-TimeSeriesClassif = readRDS("../inst/Data/Synthetic/TimeSeries_Classification.RDs")
-AnnotationsClassif = readRDS("../inst/Data/Synthetic/Annotations_Classification.RDs")
-clusters = readRDS("../inst/Data/Synthetic/clusters.RDs")
-source("selectCluster.R")
-Set<-selectCluster(clusters, G=2, "MinfDB")
-source("DataImport.R")
-source("CONNECTORData.R")
-DataNew<-DataImport(TimeSeriesClassif, AnnotationsClassif)
-source("Classification.R")
+# Plot 7.3: Cluster visualization colored by progeny
+plot(ClusterData, feature="Progeny")
 
-ClassNew = ClassificationCurves(newdata = DataNew,
-                                ConfigChosen = Set,
-                                Cores =1,
-                                entropyCutoff =1, probCutoff = 0.6 )
+# Interpretation notes:
+# - Each cluster represents a distinct growth pattern
+# - Look for relationships between clusters and progeny information
+# - This helps understand biological meaning of discovered patterns
 
-ClassNew$ListClassID$ID_1
+# -----------------------------------------------------------------------------
+# STEP 8: CLUSTER VALIDATION
+# -----------------------------------------------------------------------------
 
+# Comprehensive cluster validation
+Metrics <- validateCluster(ClusterData)
 
+# Display validation plot
+# - Silhouette analysis: measures how well samples fit their clusters
+# - Entropy analysis: measures uncertainty in cluster assignments
+print(Metrics$plot)
+
+# Validation metrics interpretation:
+# - High silhouette scores (close to 1): well-separated clusters
+# - Low entropy: confident cluster assignments
+# - Negative silhouette: potentially misclassified samples
+
+# ------------------------------------------------------------------------------
+# STEP 9: ADVANCED VISUALIZATIONS
+# ------------------------------------------------------------------------------
+
+# Plot 9.1: Discriminant analysis plots
+# This shows clusters in reduced dimensional space
+Discr <- DiscriminantPlot(ClusterData)
+
+Discr$ColCluster
+Discr$ColFeature
+
+# Plot 9.2: Spline-based cluster representations
+
+splinePlots <- splinePlot(ClusterData)
+print(splinePlots$`1`)
+
+# Plot 9.3: Maximum discrimination analysis
+MaximumDiscriminationFunction(ClusterData)
 

@@ -1,66 +1,10 @@
-#' @title Validate Cluster Quality
+#' @title validateCluster
 #'
-#' @description 
-#' Validates the quality of clustering results by calculating and visualizing key clustering metrics.
-#' This function computes silhouette scores and entropy measures to assess cluster
-#' separation. The results are presented both as numerical summaries and
-#' comprehensive visualizations to help users evaluate clustering quality.
+#' @description Validate clustering results by calculating and plotting silhouette and entropy metrics
 #'
-#' @param CONNECTORDataClustered A CONNECTORDataClustered object created with \code{selectCluster()}.
-#'   This should contain the final selected clustering configuration with cluster assignments
-#'   and membership probabilities.
+#' @param CONNECTORDataClustered object of class CONNECTORDataClustered created with selectCluster()
+#' @return a list containing the combined plot and table with clustering metrics.
 #'
-#' @return A list containing validation results:
-#'   \itemize{
-#'     \item \code{plot}: A combined ggplot2 visualization showing silhouette scores and entropy
-#'       distributions across clusters
-#'     \item \code{metrics}: A data frame with detailed clustering metrics including:
-#'       \itemize{
-#'         \item Silhouette scores (average and per-cluster)
-#'         \item Entropy measures (indicating cluster assignment uncertainty)
-#'         \item Cluster sizes and proportions
-#'       }
-#'   }
-#'
-#' @details
-#' This function provides comprehensive cluster validation through multiple metrics:
-#' 
-#' \strong{Silhouette Analysis:}
-#' \itemize{
-#'   \item Measures how well each curve fits within its assigned cluster
-#'   \item Values range from -1 to 1 (higher is better)
-#'   \item Identifies potential misclassified curves
-#' }
-#' 
-#' \strong{Entropy Analysis:}
-#' \itemize{
-#'   \item Quantifies uncertainty in cluster assignments
-#'   \item Lower entropy indicates more confident assignments
-#'   \item Helps identify curves with ambiguous cluster membership
-#' }
-#' 
-#' The visualization includes boxplots, density plots, and summary statistics to provide
-#' a comprehensive view of clustering quality.
-#'
-#' @examples
-#' \dontrun{
-#' # Validate clustering results
-#' validation <- validateCluster(selected_clusters)
-#' 
-#' # View the validation plot
-#' print(validation$plot)
-#' 
-#' # Examine numerical metrics
-#' print(validation$metrics)
-#' 
-#' # Check average silhouette score
-#' mean_silhouette <- mean(validation$metrics$silhouette)
-#' }
-#'
-#' @seealso 
-#' \code{\link{selectCluster}} for selecting cluster configurations,
-#' \code{\link{estimateCluster}} for the initial clustering analysis,
-#' \code{\link{DiscriminantPlot}} for visualizing cluster separation
 #'
 #' @import ggplot2 tibble
 #' @importFrom dplyr select filter group_by mutate arrange

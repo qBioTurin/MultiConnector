@@ -16,13 +16,14 @@
 #'
 #'
 #'
-#' @import ggplot2 dplyr Matrix
+#' @import ggplot2
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter
 #' @export
 #'
 setGeneric("MaximumDiscriminationFunction", function(CONNECTORDataClustered, absvalue =TRUE)
   standardGeneric("MaximumDiscriminationFunction"))
 
-#' @export
 setMethod("MaximumDiscriminationFunction", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered, absvalue =TRUE)
 { 
   if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {

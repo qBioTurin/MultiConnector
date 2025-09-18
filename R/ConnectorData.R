@@ -33,14 +33,6 @@
 #'   \item IDs must be consistent between time series and annotation files
 #' }
 #' 
-#' \strong{Processing Steps:}
-#' \itemize{
-#'   \item Validates column names and data integrity
-#'   \item Creates unique curve identifiers (measureID_subjID)
-#'   \item Generates time grids for each measurement type
-#'   \item Calculates data dimensions and summaries
-#' }
-#' 
 #' \strong{Supported File Formats:}
 #' \itemize{
 #'   \item Excel files (.xlsx, .xls)
@@ -65,12 +57,13 @@
 #' \code{\link{estimateCluster}} for clustering the created data,
 #' \code{\link{plot}} for visualizing the data
 #'
-#' @import readxl dplyr methods readr tibble tidyr
+#' @import readxl methods readr
+#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom tidyr gather spread
+#' @import tibble
 #' @importFrom magrittr %>%
+#' @rdname initialize-ConnectorData
 #' @export
-
-# Global variable declarations for R CMD check
-if(getRversion() >= "2.15.1") utils::globalVariables(c("subjID", "measureID", "time", "curvesID", "nTimePoints", "."))
 
 # Initialize method for proper S4 constructor
 setMethod("initialize", "CONNECTORData",
@@ -89,16 +82,14 @@ setGeneric("ConnectorData", function(TimeSeriesFile, AnnotationFile) {
   standardGeneric("ConnectorData")
 })
 
-# show method
-setMethod("show", "CONNECTORData", function(object) {
+# summary method
+setMethod("summary", "CONNECTORData", function(object) {
   cat("CONNECTORData object with:\n")
   cat("- Curves:", nrow(object@curves), "\n")
   cat("- Subjects:", length(unique(object@curves$subjID)), "\n")
   cat("- Measures:", length(unique(object@curves$measureID)), "\n")
 })
 
-#' @rdname ConnectorData
-#' @export
 #Definition of method ConnectorData
 setMethod("ConnectorData", signature ("character"),
           function(TimeSeriesFile, AnnotationFile) {
@@ -135,9 +126,6 @@ setMethod("ConnectorData", signature ("character"),
             
           })
 
-#' @rdname ConnectorData
-#' @import readxl dplyr methods readr tibble magrittr tidyr
-#' @export
 setMethod("ConnectorData", signature("tbl_df"),
           function(TimeSeriesFile, AnnotationFile) {
             select<-dplyr::select

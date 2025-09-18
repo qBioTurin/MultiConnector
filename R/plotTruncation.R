@@ -10,7 +10,9 @@
 #' @param labels  Vector containing the text for the title of axis names and plot title.
 #' @param measure Measure on which to perform the Truncation.
 #' @return  a plot with a bar that indicate the position of truncation. Doesen0t truncate effectively. For truncation check truncate()
-#' @import ggplot2 tibble dplyr tidyr
+#' @import ggplot2 tibble
+#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom tidyr gather spread
 #' @export
 
 setGeneric("truncatePlot", function(data,
@@ -18,9 +20,9 @@ setGeneric("truncatePlot", function(data,
                                       truncTime = NULL,
                                       labels = NULL,
                                       measure = NULL)
-  standardGeneric("truncatePlot"))
-#' @rdname truncatePlot
-#' @export
+  standardGeneric("truncatePlot")
+  )
+
 setMethod("truncatePlot",
           signature ("CONNECTORData"), function(data,
                                                 feature=NULL,

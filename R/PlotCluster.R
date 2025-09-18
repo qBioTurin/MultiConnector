@@ -12,12 +12,12 @@
 
 #' @seealso CONNECTORDataClustered ConfigSelection ClusterAnalysis
 #'
-#' @import magrittr ggplot2 dplyr tidyr
+#' @importFrom magrittr %>%
+#' @import ggplot2
+#' @importFrom dplyr select filter mutate
+#' @importFrom tidyr gather
 #' @importFrom rlang sym
 #' @export
-
-# Global variable declarations for R CMD check
-if(getRversion() >= "2.15.1") utils::globalVariables(c("subjID", "value", "time", "measureID", "cluster", "jamesID"))
 
 setGeneric("ClusterPlot", function(CONNECTORDataClustered,
                                    feature = NULL) {

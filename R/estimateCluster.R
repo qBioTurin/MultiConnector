@@ -90,7 +90,9 @@
 #' \code{\link{selectCluster}} for choosing optimal solutions,
 #' \code{\link{validateCluster}} for validating results
 #'
-#' @import RColorBrewer statmod parallel Matrix splines RhpcBLASctl dplyr
+#' @import RColorBrewer statmod parallel splines RhpcBLASctl
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr summarise ungroup pull
 #' @export
 #'
 setGeneric("estimateCluster", function(CONNECTORData,
@@ -104,8 +106,7 @@ setGeneric("estimateCluster", function(CONNECTORData,
                                        MinErrFreq = 0,
                                        pert = 0.01)
   standardGeneric("estimateCluster"))
-#' @rdname estimateCluster
-#' @export
+
 setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData,
                                                                    G,
                                                                    p,
@@ -137,9 +138,7 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
       return(err.list)
     })
   })
-  
-  
-  
+
   ALL.runs_grouped <- split(ALL.runs, i)
   
   groupsFrequency <- lapply(ALL.runs_grouped, function(group) {
@@ -349,7 +348,7 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
     stopCluster(cl)
   }
   
-  KmData$annotations = Data@annotations
+  KmData$annotations = CONNECTORData@annotations
   
   output <- list(
     Clusterings = results,

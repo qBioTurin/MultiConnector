@@ -7,12 +7,12 @@
 #' @return a plot of splines for each data
 #'
 
-#' @import dplyr ggplot2 patchwork rlist
+#' @importFrom dplyr filter
+#' @import ggplot2 patchwork rlist
 #' @export
 #'
 setGeneric("splinePlot", function(CONNECTORDataClustered) standardGeneric("splinePlot"))
-#' @rdname splinePlot
-#' @export
+
 setMethod("splinePlot", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered) {
 
   if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {

@@ -11,10 +11,8 @@
 #' @param measure Measure on which to perform the Truncation.
 #' @return  truncate returns a list containing the truncated data and the plot of the truncated curves.
 #'
-#'
 #' @import ggplot2 tibble dplyr tidyr
 #' @export
-
 
 setGeneric("truncate", function(data,
                                       feature=NULL,
@@ -22,8 +20,7 @@ setGeneric("truncate", function(data,
                                       labels = NULL,
                                       measure = NULL)
   standardGeneric("truncate"))
-#' @rdname truncate
-#' @export
+
 setMethod("truncate",
           signature ("CONNECTORData"), function(data,
                                                 feature=NULL,

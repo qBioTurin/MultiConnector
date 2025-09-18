@@ -2,12 +2,9 @@
 % Please edit documentation in R/truncate.R
 \name{truncate}
 \alias{truncate}
-\alias{truncate,CONNECTORData-method}
 \title{truncate}
 \usage{
 truncate(data, feature = NULL, truncTime = NULL, labels = NULL, measure = NULL)
-
-\S4method{truncate}{CONNECTORData}(data, feature = NULL, truncTime = NULL, labels = NULL, measure = NULL)
 }
 \arguments{
 \item{data}{CONNECTORData. (see \code{\link{ConnectorData}})}

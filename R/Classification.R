@@ -15,7 +15,10 @@
 
 #' @seealso CONNECTORDataClustered()
 #'
-#' @import parallel ggplot2 dplyr
+#' @import parallel ggplot2
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom tidyr gather spread
 #' @export 
 #'
 

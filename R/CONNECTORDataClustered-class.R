@@ -19,20 +19,39 @@ setClass(
   )
 )
 
-# Method to print annotations for CONNECTORDataClustered
+# Method to extract annotations for both classes
 #' @title getAnnotations
-#' @description Extract and display annotations from CONNECTORDataClustered object
-#' @param object CONNECTORDataClustered object
-#' @return The annotations tibble with cluster assignments
+#' @description Extract and display annotations from CONNECTORData or CONNECTORDataClustered object.
+#' Shows all available features (annotation columns) in both cases.
+#' @param object CONNECTORData or CONNECTORDataClustered object
+#' @return A vector of annotation names for CONNECTORData objects.
+#' @details 
+#' This method provides the features available in the annotations of the provided object.
+#' @examples
+#' \dontrun{
+#' # For CONNECTORData
+#' getAnnotations(my_connector_data)
+#' 
+#' # For CONNECTORDataClustered 
+#' getAnnotations(my_clustered_data)
+#' }
+#' @import dplyr
 #' @export
 setGeneric("getAnnotations", function(object) {
   standardGeneric("getAnnotations")
 })
 
-#' @rdname getAnnotations
 setMethod("getAnnotations", signature(object = "CONNECTORDataClustered"), function(object) {
   # Get annotations from KData
   annotations <- object@KData$annotations
-  return(names(annotations %>% select(-subjID, -measureID)))
- 
+  feature_cols <- colnames(annotations)[!colnames(annotations) %in% c("subjID", "measureID")]
+
+  return(feature_cols)
+})
+
+setMethod("getAnnotations", signature(object = "CONNECTORData"), function(object) {
+  # Get annotations directly from CONNECTORData object
+  annotations <- names(object@annotations)
+  
+  return(annotations)
 })

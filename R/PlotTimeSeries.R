@@ -9,13 +9,13 @@
 #' @return PlotTimeSeries returns a ggplot object.
 #'
 #' @import ggplot2 tibble dplyr
-#' 
+#' @export
+#' @rdname plotTimeSeries
+
 setGeneric("PlotTimeSeries", function(data,
                                       feature=NULL,
                                       labels)
   standardGeneric("PlotTimeSeries"))
-
-#' @rdname PlotTimeSeries
 
 setMethod("PlotTimeSeries", signature("CONNECTORData"),
           function(data, feature=NULL, labels) {

@@ -2,19 +2,29 @@
 % Please edit documentation in R/CONNECTORDataClustered-class.R
 \name{getAnnotations}
 \alias{getAnnotations}
-\alias{getAnnotations,CONNECTORDataClustered-method}
 \title{getAnnotations}
 \usage{
 getAnnotations(object)
-
-\S4method{getAnnotations}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{CONNECTORData or CONNECTORDataClustered object}
 }
 \value{
-The annotations tibble with cluster assignments
+A vector of annotation names for CONNECTORData objects.
 }
 \description{
-Extract and display annotations from CONNECTORDataClustered object
+Extract and display annotations from CONNECTORData or CONNECTORDataClustered object.
+Shows all available features (annotation columns) in both cases.
+}
+\details{
+This method provides the features available in the annotations of the provided object.
+}
+\examples{
+\dontrun{
+# For CONNECTORData
+getAnnotations(my_connector_data)
+
+# For CONNECTORDataClustered 
+getAnnotations(my_clustered_data)
+}
 }

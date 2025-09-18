@@ -2,12 +2,9 @@
 % Please edit documentation in R/plotTimes.R
 \name{plotTimes}
 \alias{plotTimes}
-\alias{plotTimes,CONNECTORData-method}
 \title{plotTimes}
 \usage{
 plotTimes(data, large = FALSE, measureIDs = NULL)
-
-\S4method{plotTimes}{CONNECTORData}(data, large = FALSE, measureIDs = NULL)
 }
 \arguments{
 \item{data}{CONNECTORData. (see \code{\link{DataImport}})}

@@ -2,12 +2,9 @@
 % Please edit documentation in R/estimatepDimension.R
 \name{estimatepDimension}
 \alias{estimatepDimension}
-\alias{estimatepDimension,CONNECTORData-method}
 \title{estimatepDimension}
 \usage{
 estimatepDimension(data, i = NULL, p, cores = 1)
-
-\S4method{estimatepDimension}{CONNECTORData}(data, i = NULL, p, cores = 1)
 }
 \arguments{
 \item{data}{CONNECTORData. See CONNECTORData for details.}

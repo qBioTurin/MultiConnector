@@ -46,7 +46,11 @@
 #' \code{\link{selectCluster}} for creating CONNECTORDataClustered objects,
 #' \code{\link{plot}} for the main plotting dispatch function
 #'
-#' @import ggplot2 plotly geometry grDevices RColorBrewer
+#' @importFrom MASS ginv
+#' @importFrom plotly plot_ly layout add_trace
+#' @import ggplot2 geometry grDevices RColorBrewer
+#' @importFrom dplyr select filter mutate group_by arrange
+#' @importFrom magrittr %>%
 #' @export
 
 setGeneric("DiscriminantPlot", function(CONNECTORDataClustered,
