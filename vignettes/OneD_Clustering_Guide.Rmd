@@ -266,11 +266,14 @@ Based on quality metrics, we select the optimal configuration:
 # Select optimal clustering (G=4 based on quality metrics)
 ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
 
-cat("Selected Configuration:\n")
-cat("- Number of clusters: 4\n")
-cat("- Selection criterion: Minimum fDB\n")
-cat("- This represents the most compact and well-separated clustering\n")
 ```
+
+
+Selected Configuration:
+
+  - Number of clusters: 4
+  - Selection criterion: Minimum fDB
+  - This represents the most compact and well-separated clustering
 
 ---
 
