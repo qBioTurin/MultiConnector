@@ -1,3 +1,4 @@
+library(MultiConnector)
 # Description: This script demonstrates the use of the MultiConnector package for clustering time series data.
 TimeSeries = readRDS(system.file("Data/MCL/TimeSeries.rds", package="MultiConnector"))
 Annotations = readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConnector"))
