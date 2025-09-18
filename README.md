@@ -1,5 +1,8 @@
 # MultiConnector
 
+> **⚠️ CONFIDENTIAL - UNPUBLISHED PACKAGE**  
+> This package is currently under development and has not been published yet. All content, code, and documentation are confidential and proprietary. Please do not distribute or share without explicit permission.
+
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/qBioTurin/MultiConnector/workflows/R-CMD-check/badge.svg)](https://github.com/qBioTurin/MultiConnector/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/MultiConnector)](https://CRAN.R-project.org/package=MultiConnector)
