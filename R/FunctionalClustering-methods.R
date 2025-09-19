@@ -779,7 +779,6 @@
   }
   
   for (gei in 1:J) {
-    
     a_new <- q[gei] + a_old - 1
     
     Gamma1 <- Gamma[(a_old:a_new), (a_old:a_new)]

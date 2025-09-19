@@ -1,13 +1,16 @@
 # MultiConnector
 
-> **⚠️ CONFIDENTIAL - UNPUBLISHED PACKAGE**  
-> This package is currently under development and has not been published yet. All content, code, and documentation are confidential and proprietary. Please do not distribute or share without explicit permission.
 
-<!-- badges: start -->
+> **⚠️ CONFIDENTIAL - UNPUBLISHED PACKAGE**  
+> This package is currently under development and has not been published yet. All content, code, and documentation are confidential and proprietary. Please do not distribute or share without explicit permissresults <- estimateCluster(ovarian_data, G = 2:4, p = 3, runs = 20)
+best_model <- selectCluster(results, G = 3, best = "MinfDB")
+validation <- validateCluster(best_model)
+
+
 [![R-CMD-check](https://github.com/qBioTurin/MultiConnector/workflows/R-CMD-check/badge.svg)](https://github.com/qBioTurin/MultiConnector/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/MultiConnector)](https://CRAN.R-project.org/package=MultiConnector)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-<!-- badges: end -->
+
 
 ## Overview
 
@@ -44,64 +47,6 @@ MultiConnector requires R ≥ 4.0.0 and several packages that will be automatica
 packages <- c("dplyr", "ggplot2", "splines", "Matrix", "parallel", 
               "readxl", "readr", "tibble", "magrittr", "patchwork")
 install.packages(packages)
-```
-
-## Quick Start
-
-### Basic Workflow
-
-```r
-library(MultiConnector)
-library(dplyr)
-
-# 1. Load your data
-data <- ConnectorData("timeseries.xlsx", "annotations.csv")
-
-# 2. Explore the data
-plot(data)
-plot(data, feature = "treatment_group")
-
-# 3. Estimate optimal spline dimensions
-dimension_results <- estimatepDimension(data, p = 2:8, cores = 2)
-
-# 4. Perform clustering analysis
-cluster_results <- estimateCluster(
-  data, 
-  G = 2:5,           # Test 2-5 clusters
-  p = 4,             # Spline dimension from step 3
-  runs = 50,         # Multiple runs for stability
-  cores = 4          # Parallel processing
-)
-
-# 5. Select optimal configuration
-final_clusters <- selectCluster(cluster_results, G = 3, best = "MinfDB")
-
-# 6. Visualize results
-plot(final_clusters)
-plot(final_clusters, feature = "treatment_group")
-
-# 7. Validate clustering quality
-validation <- validateCluster(final_clusters)
-print(validation$plot)
-```
-
-### Example with Built-in Data
-
-```r
-# Load example ovarian cancer data
-system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package="MultiConnector") -> time_series_path
-system.file("Data/OvarianCancer/Ovarian_Annotations.txt", package="MultiConnector") -> annotations_path
-
-# Create data object
-ovarian_data <- ConnectorData(time_series_path, annotations_path)
-
-# Quick visualization
-plot(ovarian_data, feature = "Progeny")
-
-# Full analysis pipeline
-results <- estimateCluster(ovarian_data, G = 2:4, p = 3, runs = 20)
-best_model <- selectCluster(results, G = 3, best = "MinfDB")
-validation <- validateCluster(best_model)
 ```
 
 ## Data Format Requirements
@@ -173,6 +118,9 @@ Subject (subjID) ──┬── Measure 1 (measureID) ──── Observations
 | `plot()` | Intelligent plotting dispatch |
 | `DiscriminantPlot()` | Discriminant analysis visualization |
 | `splinePlot()` | Spline-based curve visualization |
+| `SubjectInfo()` | : Detailed subject analysis with cluster highlighting |
+| `clusterDistribution()` | : Cross-tabulation of features vs clusters |
+| `generateReport()` | : Comprehensive analysis report generation |
 
 ## S4 Classes and Methods
 
@@ -232,6 +180,9 @@ The `CONNECTORDataClustered` class represents the results of clustering analysis
 - `splinePlot()`: Visualize cluster-specific spline representations
 - `MaximumDiscriminationFunction()`: Show optimal discrimination weights
 - `getAnnotations()`: Extract features with cluster assignments
+- `getClusters()`: Extract subjID with cluster assignments
+- `SubjectInfo()`: Get detailed information about specific subjects
+- `clusterDistribution()`: Analyze feature distribution across clusters
 
 ```r
 # Create clustered object (from estimateCluster results)
@@ -248,6 +199,12 @@ DiscriminantPlot(clustered_data)               # Discriminant analysis
 validateCluster(clustered_data)                # Quality assessment
 splinePlot(clustered_data)                     # Spline-based plots
 getAnnotations(clustered_data)                 # Features + clusters
+
+# NEW: Advanced analysis methods
+SubjectInfo(clustered_data, "subject_123")     # Single subject analysis
+SubjectInfo(clustered_data, c("s1", "s2"))     # Multiple subjects
+clusterDistribution(clustered_data, "treatment") # Feature distribution table
+report <- generateReport(clustered_data = clustered_data) # Comprehensive report
 ```
 
 ### Method Dispatch System
@@ -261,6 +218,147 @@ The package uses S4 method dispatch to provide intelligent function behavior bas
 | `summary()` | Data summary statistics | *(inherited from base)* |
 
 This design ensures that the same function name (`plot()`, `getAnnotations()`) automatically does the right thing based on whether you're working with raw data or clustering results.
+
+
+## Quick Start
+
+### Basic Workflow
+
+```r
+library(MultiConnector)
+library(dplyr)
+
+# 1. Load your data
+data <- ConnectorData("timeseries.xlsx", "annotations.csv")
+
+# 2. Explore the data
+plot(data)
+plot(data, feature = "treatment_group")
+
+# 3. Estimate optimal spline dimensions
+dimension_results <- estimatepDimension(data, p = 2:8, cores = 2)
+
+# 4. Perform clustering analysis
+cluster_results <- estimateCluster(
+  data, 
+  G = 2:5,           # Test 2-5 clusters
+  p = 4,             # Spline dimension from step 3
+  runs = 50,         # Multiple runs for stability
+  cores = 4          # Parallel processing
+)
+
+# 5. Select optimal configuration
+final_clusters <- selectCluster(cluster_results, G = 3, best = "MinfDB")
+
+# 6. Visualize results
+plot(final_clusters)
+plot(final_clusters, feature = "treatment_group")
+
+# 7. Validate clustering quality
+validation <- validateCluster(final_clusters)
+print(validation$plot)
+```
+
+### Example with Built-in Data
+
+```r
+# Load example ovarian cancer data
+system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package="MultiConnector") -> time_series_path
+system.file("Data/OvarianCancer/Ovarian_Annotations.txt", package="MultiConnector") -> annotations_path
+
+# Create data object
+ovarian_data <- ConnectorData(time_series_path, annotations_path)
+
+# Quick visualization
+plot(ovarian_data, feature = "Progeny")
+
+# Full analysis pipeline
+results <- estimateCluster(ovarian_data, G = 2:4, p = 3, runs = 20)
+best_model <- selectCluster(results, G = 3, best = "MinfDB")
+validation <- validateCluster(best_model)
+```
+
+### Subject-Level Analysis with SubjectInfo()
+
+The `SubjectInfo()` function provides detailed analysis of specific subjects within their clustering context:
+
+```r
+# Single subject analysis
+subject_analysis <- SubjectInfo(clustered_data, subjIDs = "patient_001")
+
+# Multiple subjects comparison
+multi_analysis <- SubjectInfo(clustered_data, 
+                             subjIDs = c("patient_001", "patient_045", "patient_123"))
+
+# With feature-based coloring
+feature_analysis <- SubjectInfo(clustered_data, 
+                               subjIDs = "patient_001",
+                               feature = "treatment",
+                               feature_type = "discrete")
+
+# Access results
+subject_analysis$cluster_assignments    # "Subject patient_001 belongs to Cluster 2"
+subject_analysis$highlighted_plot       # Plot with subject highlighted
+subject_analysis$quality_metrics        # Silhouette/entropy table
+subject_analysis$subjects_data          # Subject's time series data
+```
+
+### Cluster Composition Analysis with clusterDistribution()
+
+Analyze how different features are distributed across clusters:
+
+```r
+# Basic distribution table
+dist_table <- clusterDistribution(clustered_data, "treatment")
+
+# Detailed table with percentages
+detailed_table <- clusterDistribution(clustered_data, "age_group",
+                                     include_percentages = TRUE,
+                                     include_totals = TRUE)
+
+# View results
+print(dist_table)
+#   treatment  Cluster1  Cluster2  Cluster3  Total
+#   Control    25        15        10        50
+#   Treatment  20        30        25        75
+#   TOTAL      45        45        35        125
+
+# Check table metadata
+attr(dist_table, "total_subjects")  # Total number of subjects
+attr(dist_table, "missing_values")  # Count of missing values
+```
+
+### Comprehensive Reporting with generateReport()
+
+Generate complete analysis reports including all plots and tables:
+
+```r
+# Basic report
+report <- generateReport(clustered_data = clustered_data)
+
+# Advanced report with features
+comprehensive_report <- generateReport(
+  data = original_data,                    # Include dimension analysis
+  clustered_data = clustered_data,         # Include clustering results
+  report_title = "Clinical Trial Analysis",
+  features = c("treatment", "age", "gender"),
+  include_dimension_analysis = TRUE,
+  include_cluster_analysis = TRUE
+)
+
+# View report summary
+printReportSummary(comprehensive_report)
+
+# Access specific elements
+comprehensive_report$plots$cluster_plot_basic      # Basic cluster plot
+comprehensive_report$plots$dimension_analysis      # Dimension selection plot
+comprehensive_report$tables$cluster_assignments    # Cluster size table
+comprehensive_report$tables$quality_metrics        # Silhouette/entropy metrics
+
+# Feature-specific plots
+comprehensive_report$plots$cluster_plots_by_feature$treatment
+comprehensive_report$plots$cluster_plots_by_feature$age
+```
 
 ## Advanced Features
 

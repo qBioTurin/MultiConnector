@@ -31,7 +31,11 @@ setMethod("GridTimeOfPoints", signature = c("CONNECTORData"),
               geom_boxplot(orientation = "y")  +
               theme(plot.title = element_text(hjust = 0.5),
                          title = element_text(size = 10, face = 'bold')) +
-              theme_bw()
+              theme_bw()+
+              labs(fill = "Measure",
+                   x = "Time",
+                   y = "") 
+            
             return(p1 / p2)
           })
 setGeneric("LargeGridTimeOfPoints", function(data)
@@ -67,8 +71,9 @@ setMethod("LargeGridTimeOfPoints", signature = c("CONNECTORData"),
             
             p1 <- ggplot(nTime, aes(x = time, y = distinct_IDs, fill = measureID)) +
               geom_bar(stat = "identity", position = "dodge") +
-              labs(title = "Number of distinct IDs per time by MeasureID",
+              labs(title = "Number of distinct IDs per time by Measure",
                    x = "Time",
+                   fill = "Measure",
                    y = "Number of distinct IDs") +
               theme(plot.title = element_text(hjust = 0.5),
                     title = element_text(size = 10, face = 'bold')) +
@@ -78,7 +83,11 @@ setMethod("LargeGridTimeOfPoints", signature = c("CONNECTORData"),
               geom_boxplot(orientation = "y")  +
               theme(plot.title = element_text(hjust = 0.5),
                     title = element_text(size = 10, face = 'bold')) +
-              theme_bw()
+              theme_bw()+
+              labs(fill = "Measure",
+                   x = "Time",
+                   y = "") 
+            
             p1 <-
               p1 + coord_flip() + theme(
                 legend.position = "left",
@@ -89,7 +98,8 @@ setMethod("LargeGridTimeOfPoints", signature = c("CONNECTORData"),
             return(p1 + p3 + plot_spacer() + p2 + plot_layout(
               ncol = 2,
               widths = c(1, 5),
-              heights = c(3, 1)
+              heights = c(3, 1),
+              guides = "collect"
             ))
           })
 setGeneric("timeCombinationSummarise", function(data)

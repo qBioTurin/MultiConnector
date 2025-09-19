@@ -1,7 +1,7 @@
 #' @title estimatepDimension
 #' @description Generates a line plot reporting the cross-validated loglikelihood value for each number of knots. In details, for each number of knots 10% of the curves from the whole data are removed and treated as a test set, then the remaing curves are fitted using the FCM and the loglikelihood on the test set is calculated. The process is then repeated nine more times.
 #' @param data CONNECTORData. See CONNECTORData for details.
-#' @param i an integer indicating the index of the observation to be used for the analysis. For example, if i=1 the first observation of the data set will be used for the analysis. If i=c(1,2) the first and the second observation of the data set will be used for the analysis. Column ID and time are not considered when indicate the index of the observation. Default value is 1.
+#' @param i the measure name to be used for the analysis. For example, if i="measure1" the first measure of the data set will be used for the analysis. If i=c("measure1","measure2") the first and the second measures of the data set will be used for the analysis. Default value is NULL.
 #' @param p The vector of the dimensions of the natural cubic spline basis
 #' @param cores The number of Cores to be used for parallel computation. Maximum number is 10.
 #' @return Returns a list containing for each element a line plot of the cross-validated loglikelihood for each value of p, in grey the result of all ten repetitions of the likelihood calculation and in black the mean of them.
@@ -21,11 +21,18 @@ setMethod("estimatepDimension", signature = c("CONNECTORData"),
                    p,
                    cores = 1) {
 
+            start <- Sys.time()
             res <- list()
             measures <- unique(data@curves$measureID)
             
             if (length(measures) == 1) {
-              return(estimatepDimensionPerObs(data, p, cores))
+              result <- estimatepDimensionPerObs(data, p, cores)
+              
+              time_diff <- Sys.time() - start
+              time_value <- round(as.numeric(time_diff), 2)
+              time_unit <- attr(time_diff, "units")
+              print(paste("Total time:", time_value, time_unit))
+              return(result)
             }
             else if (is.null(i)) {
               res <- lapply(measures, function(j) {
@@ -49,6 +56,13 @@ setMethod("estimatepDimension", signature = c("CONNECTORData"),
             else{
               stop("measures given is not present in the CONNETCTORData object")
             }
+            
+            time_diff <- Sys.time() - start
+            
+            # Estrai il valore numerico e l'unità
+            time_value <- round(as.numeric(time_diff), 2)
+            time_unit <- attr(time_diff, "units")
+            print(paste("Total time:", time_value, time_unit))
             return(res)
           })
 
@@ -57,6 +71,8 @@ setGeneric("estimatepDimensionPerObs", function(data, p, cores)
 
 setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
           function(data, p, cores) {
+            
+            start <- Sys.time()
             
             if(length(unique(data@dimensions$curvesID))>9){
               splits=10
@@ -336,6 +352,13 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
                                     values = c("solid", "dashed")) +
               theme(legend.title = element_blank(),
                     plot.title = element_text(hjust = 0.5))
+            
+            time_diff <- Sys.time() - start
+            time_value <- round(as.numeric(time_diff), 2)
+            time_unit <- attr(time_diff, "units")
+            print(paste("Total time for ",unique(data@curves$measureID[data@curves$curvesID %in% curve]),
+                        ":", time_value, time_unit))
+            
             return((GrowthCurve / Knots.Plot) | ValidationPlot)
           })
 

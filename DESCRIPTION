@@ -29,7 +29,8 @@ Imports:
     splines,
     statmod,
     tibble,
-    tidyr
+    tidyr,
+    viridis
 Suggests:
     knitr,
     rmarkdown,

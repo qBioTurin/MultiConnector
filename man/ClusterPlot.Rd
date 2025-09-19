@@ -4,12 +4,14 @@
 \alias{ClusterPlot}
 \title{ClusterPlot}
 \usage{
-ClusterPlot(CONNECTORDataClustered, feature = NULL)
+ClusterPlot(CONNECTORDataClustered, feature = NULL, feature_type = "auto")
 }
 \arguments{
 \item{CONNECTORDataClustered}{Connector object created with ConnectorData}
 
 \item{feature}{dunno}
+
+\item{feature_type}{Character string specifying how to treat the feature: "auto" (default), "discrete", or "continuous"}
 }
 \value{
 ...

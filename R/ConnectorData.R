@@ -163,6 +163,18 @@ setMethod("ConnectorData", signature("tbl_df"),
             curves <-
               curves[complete.cases(curves[, c("subjID", "time", "measureID")]),]
             
+            #check if all the subjID have all the measures
+            NumMeasures = length(unique(curves$measureID))
+            subjIDMeasure = curves %>% select(subjID, measureID) %>% distinct() %>% count(subjID) %>% filter(n != NumMeasures) %>% pull(subjID)
+            if (length(subjIDMeasure)> 0) {
+              warning(
+                paste0("\n Not all the subjID have all the measures.\n The following IDs will be removed: ",
+                       paste(subjIDMeasure, collapse = ", "),  ".")
+              )
+              curves <- curves[!curves$subjID %in% subjIDMeasure, ]
+              annotations <- annotations[!annotations$subjID %in% subjIDMeasure,]
+            }
+            ######
             if (sum(colnames(annotations) == "subjID") != 1) {
               stop("The column name 'subjID' is not present or is present more than once in the AnnotationFile")
             }
@@ -240,7 +252,7 @@ setMethod("ConnectorData", signature("tbl_df"),
             
              if(length(unique(curves$measureID))==1){
                cat("############################### \n######## Summary ##############\n")
-               cat("\n Number of curves:")
+               cat("\n Number of Observations:")
                print(dimensions %>%
                        select(-curvesID) %>%
                        summarise_all(function(x)
@@ -262,7 +274,7 @@ setMethod("ConnectorData", signature("tbl_df"),
             else{
               cat("############################### \n")
               cat("Data loaded...\n")
-              cat("Number of curves:")
+              cat("Number of Observations:")
               cat(sum(dimensions %>%
                       select(-curvesID) %>%
                       unlist()!=0))
@@ -274,12 +286,12 @@ setMethod("ConnectorData", signature("tbl_df"),
                       select(-curvesID) %>%
                       unlist() %>%
                       mean())
-              cat("\nMeasure with highest length:")
-              print(dimensions %>%
-                      filter(nTimePoints==max(nTimePoints)))
-              cat("\nMeasure with lowest length:")
-              print(dimensions %>%
-                      filter(nTimePoints==min(nTimePoints)))
+              # cat("\nMeasure with highest length:")
+              # print(dimensions %>%
+              #         filter(nTimePoints==max(nTimePoints)))
+              # cat("\nMeasure with lowest length:")
+              # print(dimensions %>%
+              #         filter(nTimePoints==min(nTimePoints)))
             }
             
             

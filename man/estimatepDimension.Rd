@@ -9,7 +9,7 @@ estimatepDimension(data, i = NULL, p, cores = 1)
 \arguments{
 \item{data}{CONNECTORData. See CONNECTORData for details.}
 
-\item{i}{an integer indicating the index of the observation to be used for the analysis. For example, if i=1 the first observation of the data set will be used for the analysis. If i=c(1,2) the first and the second observation of the data set will be used for the analysis. Column ID and time are not considered when indicate the index of the observation. Default value is 1.}
+\item{i}{the measure name to be used for the analysis. For example, if i="measure1" the first measure of the data set will be used for the analysis. If i=c("measure1","measure2") the first and the second measures of the data set will be used for the analysis. Default value is NULL.}
 
 \item{p}{The vector of the dimensions of the natural cubic spline basis}
 

@@ -42,9 +42,12 @@ setGeneric("ConnectorData", function(TimeSeriesFile, AnnotationFile) {
 # show method
 setMethod("show", "CONNECTORData", function(object) {
   cat("CONNECTORData object with:\n")
-  cat("- Curves:", nrow(object@curves), "\n")
   cat("- Subjects:", length(unique(object@curves$subjID)), "\n")
   cat("- Measures:", length(unique(object@curves$measureID)), "\n")
+  cat("\nLengths summary:")
+  summcounts = summary(object@curves %>% count(curvesID) %>% pull(n))
+  cat("\n", names(summcounts),"\n" )
+  cat(summcounts,"\n")
 })
 
 #' @rdname ConnectorData

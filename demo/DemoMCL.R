@@ -1,4 +1,5 @@
 library(MultiConnector)
+library(tibble)
 # Description: This script demonstrates the use of the MultiConnector package for clustering time series data.
 TimeSeries = readRDS(system.file("Data/MCL/TimeSeries.rds", package="MultiConnector"))
 Annotations = readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConnector"))
@@ -10,6 +11,7 @@ Annotations = readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConn
 # Create the main data object for analysis
 Data <- ConnectorData( tibble(TimeSeries), tibble(Annotations) )
 summary(Data)
+show(Data)
 
 # ------------------------------------------------------------------------------
 # STEP 2: INITIAL DATA EXPLORATION
@@ -38,10 +40,13 @@ plotTimes(Data, large=FALSE)  # Summary time analysis
 
 # Cross-validation to find optimal p
 # Test p values from 2 to 6
+# "Total time: 50.05 secs" PB
+# "Total time: 1.29 mins" BM
+
 CrossLogLikePlot <- estimatepDimension(Data, p=2:6, cores=5)
 
 # Display results
-print(CrossLogLikePlot)
+CrossLogLikePlot
 
 # Set optimal p value
 optimal_p <- c("PB"= 4, "BM" = 4)
@@ -50,7 +55,7 @@ optimal_p <- c("PB"= 4, "BM" = 4)
 # STEP 4: CLUSTERING ANALYSIS
 # ------------------------------------------------------------------------------
 
-# Estimated time with 5 cores: ~23 seconds
+# Estimated time with 5 cores: ~5.28 mins
 
 # Perform clustering with multiple G values
 # This is the core clustering step - most computationally intensive
@@ -71,12 +76,11 @@ plot(clusters)
 # STEP 6: CLUSTER SELECTION
 # ------------------------------------------------------------------------------
 
-# Using G = 4 clusters based on quality metrics
+# Using G = 3 clusters based on quality metrics
 # Selection criterion: MinfDB (minimum functional Data Depth)
 
 # Select the best configuration
-# G=4 often provides good balance between complexity and interpretability
-ClusterData <- selectCluster(clusters, G=4, "MinfDB")
+ClusterData <- selectCluster(clusters, G=3, "MinfDB")
 
 # ------------------------------------------------------------------------------
 # STEP 7: CLUSTER VISUALIZATION AND INTERPRETATION
@@ -84,13 +88,26 @@ ClusterData <- selectCluster(clusters, G=4, "MinfDB")
 
 # Plot 7.1: Basic cluster visualization
 plot(ClusterData)
+getAnnotations(ClusterData)
 
-# Plot 7.2: View cluster assignments with annotations
-annotations_summary <- getAnnotations(ClusterData)
-print(annotations_summary)
 
-# Plot 7.3: Cluster visualization colored by progeny
-plot(ClusterData, feature="Progeny")
+# Plot 7.2: Cluster visualization colored by progeny
+plot(ClusterData, feature="TTP")
+plot(ClusterData, feature="Arm")
+
+getClusters(ClusterData)
+clusterDistribution(ClusterData, feature="TTP")
+
+
+info <- SubjectInfo(ClusterData, subjIDs = "Subject 201")
+info$cluster_assignment   
+info$highlighted_plot     
+info$quality_metrics      # entropy/silhouette table
+info$subjects_data         # subject's time series data
+
+info <- SubjectInfo(ClusterData, subjIDs = c("Subject 201", "Subject 1105") )
+info$highlighted_plot
+info$quality_metrics 
 
 # Interpretation notes:
 # - Each cluster represents a distinct growth pattern
@@ -120,11 +137,10 @@ print(Metrics$plot)
 
 # Plot 9.1: Discriminant analysis plots
 # This shows clusters in reduced dimensional space
-Discr <- DiscriminantPlot(ClusterData)
+Discr <- DiscriminantPlot(ClusterData,feature = "TTP")
 
 Discr$ColCluster
 Discr$ColFeature
-
 # Plot 9.2: Spline-based cluster representations
 
 splinePlots <- splinePlot(ClusterData)
@@ -132,4 +148,24 @@ print(splinePlots$`1`)
 
 # Plot 9.3: Maximum discrimination analysis
 MaximumDiscriminationFunction(ClusterData)
+
+# ------------------------------------------------------------------------------
+# STEP 10: ADVANCED CLUSTER ANALYSIS - subclustering "Total time: 10 mins"
+# ------------------------------------------------------------------------------
+library(dplyr)
+getClusters(ClusterData) -> dfClusters
+subjIDCL3 = dfClusters %>% filter(Cluster == 3) %>% pull(subjID)
+subData <- ConnectorData( tibble(TimeSeries) %>% filter(subjID %in% subjIDCL3), 
+                          tibble(Annotations) %>% filter(subjID %in% subjIDCL3) )
+show(subData)
+
+subClusters <- estimateCluster(subData, 
+                            G = 2:6,           # Test 2-6 clusters
+                            p = optimal_p,     # Use optimal spline dimension
+                            runs = 20,         # Multiple runs for stability
+                            cores = 5) # Parallel processing
+plot(subClusters)
+subClusterData <- selectCluster(subClusters, G=3, "MinfDB")
+plot(subClusterData,feature = "TTP")
+clusterDistribution(subClusterData, feature="TTP")
 
