@@ -87,20 +87,6 @@ print(CrossLogLikePlot)
 optimal_p <- 3
 cat("Selected optimal p =", optimal_p, "\n")
 
-## ----clustering-analysis, fig.cap="Clustering quality metrics across different numbers of clusters (G).", cache=TRUE----
-# Perform clustering analysis
-# Note: This is computationally intensive
-clusters <- estimateCluster(
-  DataTrunc, 
-  G = 2:6,              # Test 2-6 clusters
-  p = optimal_p,        # Use optimal spline dimension
-  runs = 20,            # Reduced for demonstration (use 100+ for final analysis)
-  cores = workers       # Parallel processing
-)
-
-# Display quality metrics
-plot(clusters)
-
 ## ----cluster-selection--------------------------------------------------------
 # Select optimal clustering (G=4 based on quality metrics)
 ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
@@ -168,6 +154,52 @@ if (length(splinePlots) > 0) {
 ## ----discrimination-analysis--------------------------------------------------
 # Identify most discriminative features
 MaximumDiscriminationFunction(ClusterData)
+
+## ----subject-analysis, fig.width=12, fig.height=8-----------------------------
+# Select some subjects for detailed analysis
+selected_subjects <- unique(DataTrunc@annotations$subjID)[1:3]
+
+# Single subject analysis
+subject_info <- SubjectInfo(ClusterData, subjIDs = selected_subjects[1])
+
+# Display cluster assignment
+cat("Cluster Assignment:")
+cat(subject_info$cluster_assignments)
+
+# Show the highlighted plot
+subject_info$highlighted_plot
+
+# Multiple subjects comparison
+multi_subject_info <- SubjectInfo(ClusterData, subjIDs = selected_subjects)
+multi_subject_info$highlighted_plot
+
+
+## ----cluster-distribution-----------------------------------------------------
+
+progeny_dist <- clusterDistribution(ClusterData, "Progeny")
+  
+cat("Progeny Distribution Across Clusters:")
+print(progeny_dist)
+
+# If other features are available, analyze them too
+available_features <- getAnnotations(ClusterData)
+cat("\nAvailable features for distribution analysis:")
+print(available_features)
+
+# Example with any numeric feature converted to categories
+if (length(available_features) > 1) {
+  # Take the first available feature for demonstration
+  demo_feature <- available_features[1]
+  if (demo_feature != "Progeny") {  # Avoid duplicate analysis
+    tryCatch({
+      feature_dist <- clusterDistribution(ClusterData, demo_feature)
+      cat("\nDistribution of", demo_feature, "across clusters:")
+      print(feature_dist)
+    }, error = function(e) {
+      cat("\nCannot analyze feature", demo_feature, ":", e$message)
+    })
+  }
+}
 
 ## ----session-info-------------------------------------------------------------
 sessionInfo()

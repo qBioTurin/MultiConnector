@@ -18,7 +18,6 @@
 #' @importFrom dplyr select filter mutate
 #' @importFrom tidyr gather
 #' @importFrom rlang sym
-#' @importFrom viridis scale_color_viridis_d
 #' @export
 
 setGeneric("SubjectInfo", function(CONNECTORDataClustered,

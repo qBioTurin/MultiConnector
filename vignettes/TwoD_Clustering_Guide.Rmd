@@ -1,0 +1,573 @@
+---
+title: "MultiConnector: Two-Dimensional Functional Clustering Analysis"
+subtitle: "Advanced Multi-Measure Time Series Clustering with MCL Dataset"
+author: "MultiConnector Development Team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+    fig_caption: true
+    fig_width: 12
+    fig_height: 8
+vignette: >
+  %\VignetteIndexEntry{Two-Dimensional Functional Clustering Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  cache = FALSE,
+  comment = "#>",
+  fig.width = 12,
+  fig.height = 8
+)
+
+# Set up better figure output for PDF
+if (knitr::is_latex_output()) {
+  knitr::opts_chunk$set(
+    fig.pos = "H",
+    out.extra = ""
+  )
+}
+```
+
+# Introduction
+
+This comprehensive guide demonstrates **two-dimensional functional clustering analysis** using the **MultiConnector** package. Unlike one-dimensional analysis that focuses on a single measurement type, two-dimensional analysis simultaneously models multiple related measurements, providing richer insights into complex biological or clinical patterns.
+
+We use the **MCL (Multiple Correspondence Longitudinal)** dataset as our case study, which contains two simultaneous measurements (**PB** and **BM**) tracked over time. This approach is particularly valuable for:
+
+- **Multi-biomarker studies**: Analyzing multiple biomarkers simultaneously
+- **Clinical monitoring**: Tracking multiple clinical parameters
+- **Biological systems**: Understanding coordinated responses across measurements
+- **Complex phenotyping**: Identifying patterns across multiple phenotypic measures
+
+---
+
+## Background
+
+### Two-Dimensional Functional Clustering
+
+Traditional clustering often treats each measurement independently, potentially missing important relationships between variables. Two-dimensional functional clustering:
+
+1. **Preserves relationships**: Maintains correlations between measurements
+2. **Reduces dimensionality**: Clusters based on joint patterns rather than individual variables
+3. **Improves interpretation**: Identifies coordinated patterns across measurements
+4. **Enhances stability**: Uses more information for robust clustering
+
+### The MCL Dataset
+
+The MCL dataset contains:
+
+- **Subjects**: Multiple individuals tracked over time
+- **Measurements**: Two coordinated measures (PB and BM)
+- **Annotations**: Subject-level features (TTP, Arm, etc.)
+- **Time structure**: Longitudinal observations across time points
+
+---
+
+# Package Setup and Data Loading
+
+```{r package-setup}
+# Load required packages
+library(MultiConnector)
+library(tibble)
+library(dplyr)
+library(ggplot2)
+
+# Load the MCL dataset
+# This dataset contains two-dimensional time series data
+TimeSeries <- readRDS(system.file("Data/MCL/TimeSeries.rds", package="MultiConnector"))
+Annotations <- readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConnector"))
+
+# Display basic dataset information
+cat("Dataset Overview:")
+cat("\n- Time series data dimensions:", dim(TimeSeries))
+cat("\n- Annotations dimensions:", dim(Annotations))
+cat("\n- Unique subjects:", length(unique(TimeSeries$subjID)))
+cat("\n- Measurement types:", paste(unique(TimeSeries$measureID), collapse = ", "))
+cat("\n- Time range:", range(TimeSeries$time))
+```
+
+# Step 1: Data Object Creation
+
+The first step is creating a `CONNECTORData` object that properly structures our two-dimensional time series data.
+
+```{r data-creation}
+# Create the main data object for two-dimensional analysis
+Data <- ConnectorData(tibble(TimeSeries), tibble(Annotations))
+
+# Display comprehensive summary
+summary(Data)
+show(Data)
+
+```
+
+# Step 2: Initial Data Exploration
+
+Comprehensive exploration of the two-dimensional time series structure and patterns.
+
+## Basic Time Series Visualization
+
+```{r basic-visualization, fig.width=14, fig.height=8}
+# Plot 2.1: Overview of all time series (both measurements)
+plot(Data)
+```
+
+This plot shows the raw time series for both PB and BM measurements, providing an initial view of the data structure and variability patterns.
+
+## Feature-Based Exploration
+
+```{r feature-exploration, fig.width=14, fig.height=10}
+# Examine available features
+available_features <- getAnnotations(Data)
+cat("Available features for analysis:")
+print(available_features)
+
+# Plot 2.2: Time series colored by key features
+# This helps identify potential relationships between features and temporal patterns
+
+# TTP (Time To Progression) analysis
+plot(Data, feature="TTP")
+
+# Treatment arm analysis  
+plot(Data, feature="Arm")
+```
+
+These visualizations reveal how different clinical features (TTP, treatment arms) may relate to the temporal patterns in our two measurements.
+
+## Temporal Structure Analysis
+
+```{r temporal-analysis, fig.width=14, fig.height=6}
+# Plot 2.3: Detailed time distribution analysis
+# This is crucial for two-dimensional data to understand sampling patterns
+
+# Comprehensive time analysis
+plotTimes(Data, large=TRUE)
+
+# Summary time analysis
+plotTimes(Data, large=FALSE)
+```
+
+The time distribution analysis is particularly important for two-dimensional data as it reveals:
+
+- **Sampling consistency**: Whether both measurements are sampled similarly
+- **Missing data patterns**: Potential gaps in either measurement
+- **Temporal coverage**: The time span and density of observations
+
+# Step 3: Spline Dimension Estimation
+
+For two-dimensional analysis, we need to determine optimal spline dimensions for both measurements simultaneously.
+
+```{r dimension-estimation, fig.width=14, fig.height=10}
+# Cross-validation for optimal spline basis dimensions
+# This step is crucial as each measurement type may require different flexibility
+
+cat("Estimating optimal spline dimensions...")
+cat("\nThis process may take several minutes for two-dimensional data...")
+
+# Estimate dimensions for both measurements
+# Testing p values from 2 to 6 for both PB and BM
+CrossLogLikePlot <- estimatepDimension(Data, p=2:6, cores=5)
+
+# Display the results
+CrossLogLikePlot
+```
+
+The dimension estimation plot shows cross-validation results for both measurements:
+
+- **Separate curves**: Each measurement (PB, BM) has its own optimal dimension
+- **Validation pattern**: Look for clear minima or plateaus in the cross-validation curves
+- **Computational cost**: Two-dimensional analysis requires more computation time
+
+```{r optimal-dimensions}
+# Based on the cross-validation results, select optimal dimensions
+# These values would typically be chosen based on the plotted results
+optimal_p <- c("PB" = 4, "BM" = 4)
+
+```
+
+Selected optimal dimensions:
+  - PB measurement: p = 4
+  - BM measurement: p = 4
+
+Dimension selection rationale:
+  - Higher p: More flexible curves, captures fine details
+  - Lower p: Smoother curves, reduces overfitting
+  - Optimal p: Balance between flexibility and generalization
+
+# Step 4: Two-Dimensional Clustering Analysis
+
+The core clustering step that simultaneously models both measurements to identify coordinated patterns.
+
+Starting two-dimensional clustering analysis.
+Estimated computation time: ~5-10 minutes with 5 cores
+Time increases significantly with number of subjects and measurements
+
+```{r clustering-analysis}
+
+
+# Perform clustering with multiple cluster numbers
+# This is computationally intensive for two-dimensional data
+clusters <- estimateCluster(Data, 
+                           G = 2:6,           # Test 2-6 clusters
+                           p = optimal_p,     # Use optimal spline dimensions for both measurements
+                           runs = 20,         # Multiple runs for stability
+                           cores = 5)         # Parallel processing
+
+cat("\nClustering analysis completed!")
+```
+
+```{r clustering-results, fig.width=14, fig.height=8}
+# Plot clustering quality metrics
+plot(clusters)
+```
+
+The clustering quality plot shows:
+
+- **fDB (functional Davies-Bouldin)**: Lower values indicate better cluster separation
+- **Computational time**: Processing time for each cluster configuration
+- **Stability measures**: Consistency across multiple runs
+
+Key interpretations:
+- **Optimal G**: Look for elbow points or clear minima in fDB
+- **Stability**: Consistent results across runs indicate robust solutions
+- **Computational scaling**: Time increases with cluster number and data complexity
+
+# Step 5: Cluster Selection and Validation
+
+Select the optimal clustering configuration based on quality metrics.
+
+```{r cluster-selection}
+# Select optimal configuration based on quality metrics
+# For demonstration, using G=3 clusters with MinfDB criterion
+
+optimal_G <- 3
+selection_criterion <- "MinfDB"
+
+cat("Cluster selection:")
+cat("\n- Number of clusters (G):", optimal_G)
+cat("\n- Selection criterion:", selection_criterion)
+cat("\n- Rationale: Minimum functional Davies-Bouldin index")
+
+# Create the final clustered data object
+ClusterData <- selectCluster(clusters, G=optimal_G, selection_criterion)
+
+cat("\n\nFinal clustering solution:")
+cat("\n- Clusters identified:", length(unique(ClusterData@cluster.names)))
+cat("\n- Cluster labels:", paste(ClusterData@cluster.names, collapse = ", "))
+```
+
+# Step 6: Two-Dimensional Cluster Visualization
+
+Comprehensive visualization of clustering results across both measurements.
+
+## Basic Cluster Visualization
+
+```{r basic-cluster-viz, fig.width=14, fig.height=10}
+# Plot 6.1: Basic cluster visualization across both measurements
+plot(ClusterData)
+```
+
+This plot reveals:
+
+- **Coordinated patterns**: How PB and BM measurements cluster together
+- **Cluster separation**: Visual assessment of cluster distinctness
+- **Measurement relationships**: Correlations between the two measurements within clusters
+
+## Feature-Based Cluster Analysis
+
+```{r feature-cluster-viz, fig.width=14, fig.height=10}
+# Plot 6.2: Clusters colored by clinical features
+# This reveals associations between clusters and clinical characteristics
+
+# TTP (Time To Progression) patterns
+plot(ClusterData, feature="TTP")
+
+# Treatment arm associations
+plot(ClusterData, feature="Arm")
+```
+
+These visualizations help identify:
+
+- **Clinical relevance**: Which clusters associate with clinical outcomes
+- **Treatment effects**: Whether treatment arms segregate into clusters
+- **Prognostic value**: Cluster relationships with progression times
+
+## Cluster Composition Analysis
+
+```{r cluster-composition}
+# Analyze cluster composition across features
+available_features <- getAnnotations(ClusterData)
+cat("Features available for composition analysis:")
+print(available_features)
+
+# Detailed composition analysis for key features
+cat("\n=== CLUSTER COMPOSITION ANALYSIS ===")
+
+# TTP distribution across clusters
+if ("TTP" %in% available_features) {
+  cat("\n\n1. TTP Distribution Across Clusters:")
+  ttp_dist <- clusterDistribution(ClusterData, feature="TTP")
+  print(ttp_dist)
+}
+
+# Treatment arm distribution
+if ("Arm" %in% available_features) {
+  cat("\n\n2. Treatment Arm Distribution:")
+  arm_dist <- clusterDistribution(ClusterData, feature="Arm")
+  print(arm_dist)
+}
+
+# Display cluster assignments
+cluster_assignments <- getClusters(ClusterData)
+cat("\n\n3. Cluster Assignment Summary:")
+cat("\n- Total subjects clustered:", nrow(cluster_assignments))
+cluster_summary <- table(cluster_assignments$Cluster)
+for (i in names(cluster_summary)) {
+  cat("\n- Cluster", i, ":", cluster_summary[i], "subjects")
+}
+```
+
+# Step 7: Advanced Subject-Level Analysis
+
+Detailed analysis of individual subjects within the two-dimensional clustering context.
+
+## Single Subject Analysis
+
+```{r single-subject-analysis, fig.width=14, fig.height=10}
+# Select a representative subject for detailed analysis
+example_subjects <- unique(cluster_assignments$subjID)[1:3]
+selected_subject <- example_subjects[1]
+
+cat("Detailed analysis for subject:", selected_subject)
+
+# Comprehensive subject information
+subject_info <- SubjectInfo(ClusterData, subjIDs = selected_subject)
+
+cat("\nSubject cluster assignment:")
+cat("\n", subject_info$cluster_assignments)
+
+# Display highlighted visualization
+subject_info$highlighted_plot
+```
+
+## Multi-Subject Comparison
+
+```{r multi-subject-analysis, fig.width=14, fig.height=10}
+# Compare multiple subjects across clusters
+multi_subject_info <- SubjectInfo(ClusterData, subjIDs = example_subjects)
+
+cat("Multi-subject comparison:")
+cat("\nSubjects analyzed:", paste(example_subjects, collapse = ", "))
+
+# Show cluster assignments
+for (i in 1:nrow(multi_subject_info$cluster_table)) {
+  cat("\n- Subject", multi_subject_info$cluster_table$subjID[i], 
+      "-> Cluster", multi_subject_info$cluster_table$cluster[i])
+}
+
+# Display comparative visualization
+multi_subject_info$highlighted_plot
+```
+
+# Step 8: Cluster Validation and Quality Assessment
+
+Comprehensive validation of the two-dimensional clustering solution.
+
+```{r cluster-validation, fig.width=14, fig.height=10}
+# Comprehensive cluster validation
+cat("Performing cluster validation...")
+
+validation_metrics <- validateCluster(ClusterData)
+
+# Display validation plot
+validation_metrics$plot
+
+```
+
+Validation Metrics Interpretation:
+
+- Silhouette Analysis: Measures how well subjects fit their assigned clusters
+  * Values near +1: Well-clustered subjects
+  * Values near 0: Borderline cases
+  * Negative values: Potentially misclassified subjects
+
+- Entropy Analysis: Measures uncertainty in cluster assignments
+  * Lower entropy: More confident assignments
+  * Higher entropy: More uncertain assignments
+
+```{r validation-summary}
+# Extract and summarize validation metrics
+if (!is.null(validation_metrics$metrics)) {
+  cat("\n\nValidation Summary:")
+  print(validation_metrics$metrics)
+}
+
+# Additional quality assessment
+quality_metrics <- ClusterData@TTandfDBandSil
+cat("\n\nClustering Quality Metrics:")
+print(quality_metrics)
+```
+
+# Step 9: Advanced Visualizations and Interpretations
+
+Specialized visualizations for understanding two-dimensional clustering patterns.
+
+## Discriminant Analysis
+
+```{r discriminant-analysis, fig.width=14, fig.height=10}
+# Discriminant analysis visualization
+# This projects the high-dimensional functional data into lower-dimensional space
+
+cat("Generating discriminant analysis plots...")
+
+# Basic discriminant plot
+discr_basic <- DiscriminantPlot(ClusterData)
+discr_basic$ColCluster
+
+# Feature-enhanced discriminant plot
+if ("TTP" %in% available_features) {
+  discr_feature <- DiscriminantPlot(ClusterData, feature = "TTP")
+  discr_feature$ColFeature
+}
+```
+
+The discriminant plots show:
+
+- **Cluster separation**: How well clusters separate in reduced space
+- **Feature relationships**: How clinical features relate to cluster structure
+- **Dimensionality**: Effective dimensions needed for cluster separation
+
+
+## Maximum Discrimination Analysis
+
+Analyzing maximum discrimination functions.
+
+```{r max-discrimination, fig.width=14, fig.height=8}
+# Maximum discrimination function analysis
+# Identifies the most discriminative aspects of the functional data
+
+max_discr <- MaximumDiscriminationFunction(ClusterData)
+max_discr
+```
+
+This analysis reveals:
+
+- **Discriminative time periods**: When clusters are most different
+- **Measurement importance**: Which measurement (PB/BM) drives separation
+- **Functional patterns**: The shapes that distinguish clusters
+
+# Step 10: Subclustering Analysis
+
+Advanced analysis involving subclustering of identified clusters.
+
+Performing subclustering analysis on Cluster 3.
+
+```{r subclustering-setup}
+
+# Get cluster assignments
+cluster_assignments <- getClusters(ClusterData)
+
+# Select subjects from cluster 3
+cluster3_subjects <- cluster_assignments %>% 
+  filter(Cluster == 3) %>% 
+  pull(subjID)
+
+cat("\n- Subjects in Cluster 3:", length(cluster3_subjects))
+cat("\n- First few subjects:", paste(head(cluster3_subjects), collapse = ", "))
+
+# Create subset data for subclustering
+subData <- ConnectorData(
+  tibble(TimeSeries) %>% filter(subjID %in% cluster3_subjects), 
+  tibble(Annotations) %>% filter(subjID %in% cluster3_subjects)
+)
+
+cat("\n\nSubset data for subclustering:")
+show(subData)
+```
+
+Performing subclustering analysis.
+Estimated time: ~5-10 minutes
+
+```{r subclustering-analysis}
+
+
+# Subcluster analysis within Cluster 3
+subClusters <- estimateCluster(subData, 
+                              G = 2:4,           # Test fewer clusters for subset
+                              p = optimal_p,     # Use same spline dimensions
+                              runs = 20,         # Multiple runs for stability
+                              cores = 5)
+
+# Plot subclustering results
+plot(subClusters)
+
+# Select optimal subclustering
+subClusterData <- selectCluster(subClusters, G=3, "MinfDB")
+
+```
+
+Subclustering results:
+
+```{r subclustering-visualization, fig.width=14, fig.height=10}
+
+
+# Basic subcluster visualization
+plot(subClusterData, feature = "TTP")
+
+# Subcluster composition
+if ("TTP" %in% getAnnotations(subClusterData)) {
+  subcluster_dist <- clusterDistribution(subClusterData, feature="TTP")
+  cat("\n\nSubcluster composition (TTP):")
+  print(subcluster_dist)
+}
+```
+
+# Session Information
+
+```{r session-info}
+sessionInfo()
+```
+
+
+# Appendix: Technical Details
+
+## Data Structure Requirements
+
+For two-dimensional functional clustering, the data must contain:
+
+- **subjID**: Subject identifiers (consistent across measurements)
+- **measureID**: Measurement type identifiers (e.g., "PB", "BM")
+- **time**: Time points (can vary across subjects and measurements)
+- **value**: Measured values at each time point
+- **Annotations**: Subject-level features for interpretation
+
+## Algorithm Details
+
+The two-dimensional clustering approach:
+
+1. **Spline fitting**: Fits natural cubic splines to each measurement separately
+2. **Joint modeling**: Combines spline coefficients across measurements
+3. **Clustering**: Groups subjects based on joint spline patterns
+4. **Validation**: Assesses quality using multi-dimensional metrics
+
+## Parameter Selection Guidelines
+
+- **Spline dimensions (p)**: Start with 3-5, adjust based on cross-validation
+- **Cluster numbers (G)**: Test 2-8 clusters, select based on quality metrics
+- **Runs**: Use 20-50 runs for stability assessment
+- **Cores**: Use 4-8 cores for optimal performance
+
+---
+
+*This comprehensive guide demonstrates the power of two-dimensional functional clustering for complex longitudinal data analysis. The MultiConnector package provides robust tools for identifying coordinated patterns across multiple measurements, enabling deeper insights into biological and clinical processes.*

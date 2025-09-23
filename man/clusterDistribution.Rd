@@ -7,7 +7,7 @@
 clusterDistribution(
   object,
   feature,
-  include_percentages = TRUE,
+  include_percentages = FALSE,
   include_totals = TRUE
 )
 }

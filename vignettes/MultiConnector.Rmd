@@ -1,0 +1,53 @@
+---
+title: "MultiConnector Vignettes"
+subtitle: "Index and quick links to analysis guides"
+author: "MultiConnector Development Team"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    highlight: tango
+    code_folding: show
+vignette: >
+  %\VignetteIndexEntry{MultiConnector}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Welcome
+
+This is the index vignette for the MultiConnector package. Use the links below to open the detailed analysis guides.
+
+## Available Guides
+
+- One-dimensional analysis: `vignette("One-Dimensional Functional Clustering Guide", package = "MultiConnector")`
+- Two-dimensional analysis: `vignette("Two-Dimensional Functional Clustering Analysis", package = "MultiConnector")`
+
+## How to view vignettes
+
+If vignettes are not showing after installation, make sure you installed the package with vignettes built.
+
+```r
+# From a local checkout
+# (build vignettes during install)
+devtools::install_local(".", build_vignettes = TRUE)
+
+# From GitHub
+devtools::install_github("qBioTurin/MultiConnector", build_vignettes = TRUE)
+
+# Or, inside the repo, build vignettes only
+devtools::build_vignettes()
+
+# Then browse
+browseVignettes("MultiConnector")
+# Or open by name
+vignette("MultiConnector")
+```
+
+## Troubleshooting
+
+- Ensure DESCRIPTION contains `VignetteBuilder: knitr` and Suggests `knitr, rmarkdown` (this package does).
+- If you installed without vignettes, rebuild with `build_vignettes = TRUE` or run `devtools::build_vignettes()`.
+- For binary installs (e.g., on some platforms), source vignettes may be omitted; install from source to include them.

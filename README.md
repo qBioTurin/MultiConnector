@@ -403,7 +403,7 @@ MaximumDiscriminationFunction(clustered_data)  # Discrimination weights
 
 ### Comprehensive Demos
 - `demo/DemoOvarianCancer.R`: Complete one-dimensional clustering analysis
-- `demo/DemoMCL.R`: Multi-dimensional clustering example
+- `demo/DemoMCL.R`: Two-dimensional clustering example
 - `demo/DemoEmoCovid.R`: COVID-19 emotional data analysis
 
 ### Vignettes
@@ -447,12 +447,15 @@ Explore comprehensive HTML tutorials with interactive examples and detailed expl
 
 ### Available Vignettes
 
-📖 **[Complete Guide to One-Dimensional Functional Clustering](vignettes/OneD_Clustering_Guide.html)**
+**[Complete Guide to One-Dimensional Functional Clustering](vignettes/OneD_Clustering_Guide.html)**
 - **Title**: MultiConnector: Complete Guide to One-Dimensional Functional Clustering
-- **Subtitle**: Step-by-Step Analysis of Time Series Data
-- **Content**: Comprehensive tutorial covering the entire workflow from data import to biological interpretation
-- **Features**: Interactive plots, code folding, detailed explanations
+- **Subtitle**: Step-by-Step Analysis of Longitudinal Data
 - **Dataset**: Ovarian cancer cell growth data analysis
+
+**[Complete Guide to Two-Dimensional Functional Clustering](vignettes/TwoD_Clustering_Guide.html)**
+- **Title**: MultiConnector: Complete Guide to Two-Dimensional Functional Clustering
+- **Subtitle**: Step-by-Step Analysis of Longitudinal Data
+- **Dataset**: MCL MRD data 
 
 ### How to Access Demo Tutorials
 

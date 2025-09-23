@@ -25,6 +25,7 @@ Imports:
     plotly,
     readr,
     readxl,
+    rlang,
     rlist,
     splines,
     statmod,
