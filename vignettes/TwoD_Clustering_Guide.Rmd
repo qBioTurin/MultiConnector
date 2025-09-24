@@ -177,7 +177,13 @@ cat("\nThis process may take several minutes for two-dimensional data...")
 
 # Estimate dimensions for both measurements
 # Testing p values from 2 to 6 for both PB and BM
+file_crosslog = system.file("Data/MCL/MCLTwoD_CrossLog.rds", package="MultiConnector")
+if(file.exists(file_crosslog)){
+  CrossLogLikePlot = readRDS(file_crosslog)
+} else {
 CrossLogLikePlot <- estimatepDimension(Data, p=2:6, cores=5)
+saveRDS(CrossLogLikePlot, paste0(system.file("Data/MCL/", package="MultiConnector"), "MCLTwoD_CrossLog.rds" ) )
+}
 
 # Display the results
 CrossLogLikePlot
@@ -215,8 +221,11 @@ Time increases significantly with number of subjects and measurements
 
 ```{r clustering-analysis}
 
-
-# Perform clustering with multiple cluster numbers
+file_cluster = system.file("Data/MCL/MCLTwoD_Clustering.rds", package="MultiConnector")
+if(file.exists(file_cluster)){
+  clusters = readRDS(file_cluster)
+} else {
+  # Perform clustering with multiple cluster numbers
 # This is computationally intensive for two-dimensional data
 clusters <- estimateCluster(Data, 
                            G = 2:6,           # Test 2-6 clusters
@@ -224,7 +233,9 @@ clusters <- estimateCluster(Data,
                            runs = 20,         # Multiple runs for stability
                            cores = 5)         # Parallel processing
 
-cat("\nClustering analysis completed!")
+saveRDS(clusters, paste0(system.file("Data/MCL/", package="MultiConnector"), "MCLTwoD_Clustering.rds" ) )
+}
+
 ```
 
 ```{r clustering-results, fig.width=14, fig.height=8}
@@ -501,13 +512,19 @@ Estimated time: ~5-10 minutes
 
 ```{r subclustering-analysis}
 
-
+file_cluster = system.file("Data/MCL/MCLTwoD_SubClustering.rds", package="MultiConnector")
+if(file.exists(file_cluster)){
+  subClusters = readRDS(file_cluster)
+} else {
 # Subcluster analysis within Cluster 3
 subClusters <- estimateCluster(subData, 
-                              G = 2:4,           # Test fewer clusters for subset
+                              G = 2:5,           # Test fewer clusters for subset
                               p = optimal_p,     # Use same spline dimensions
                               runs = 20,         # Multiple runs for stability
                               cores = 5)
+
+saveRDS(clusters, paste0(system.file("Data/MCL/", package="MultiConnector"), "MCLTwoD_SubClustering.rds" ) )
+}
 
 # Plot subclustering results
 plot(subClusters)

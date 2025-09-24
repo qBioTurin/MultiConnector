@@ -90,6 +90,64 @@ setMethod("getClusters", signature(object = "CONNECTORDataClustered"), function(
 })
 
 
+# Method to extract Clusters Centroids
+#' @title getClustersCentroids
+#' @description Extract and display clusters centroids from  CONNECTORDataClustered object.
+#' Shows all available features (annotation columns) in both cases.
+#' @param object CONNECTORDataClustered object
+#' @return A dataframe with the cluster association for each subjID.
+#' @details 
+#' This method provides the features available in the annotations of the provided object.
+#' @examples
+#' \dontrun{
+#' 
+#' # For CONNECTORDataClustered 
+#' getClustersCentroids(my_clustered_data)
+#' }
+#' @import dplyr
+#' @export
+setGeneric("getClustersCentroids", function(object) {
+  standardGeneric("getClustersCentroids")
+})
+
+setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), function(object) {
+
+  TimeGrids = object@KData$TimeGrids
+  # Get number of features per measure
+  q <- sapply(object@KData$FullS, function(x)
+    dim(x)[2])
+  # Get number of clusters from CONNECTORDataClustered
+  G = object@TTandfDBandSil$G[1]
+  
+  # Compute curve predictions
+  curvepred = fclust.curvepred(
+    object@CfitandParameters,
+    object@KData,
+    tau = 0.95,
+    tau1 = 0.975,
+    q = q
+  )
+  
+  MeanC = do.call(rbind, lapply(names(curvepred), function(x) {
+    as.data.frame(curvepred[[x]]$meancurves) -> Mean
+    
+    # Ensure column names match number of clusters
+    colnames(Mean) = as.character(1:G)
+    
+    Mean$measureID = x
+    Mean$time = TimeGrids[[x]]
+    return(Mean)
+  })) %>%
+    tidyr::gather(-time, -measureID, value = "value", key = "cluster")
+  
+  MeanC$cluster <- factor(MeanC$cluster)
+  MeanC = MeanC %>% rename(Cluster = cluster)
+  return(MeanC )
+})
+
+
+
+
 #' @title clusterDistribution
 #' @description Generate a table showing the distribution of subjects across clusters 
 #' based on a specified feature

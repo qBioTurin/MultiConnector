@@ -30,45 +30,20 @@ setMethod("ClusterPlot", signature(CONNECTORDataClustered = "CONNECTORDataCluste
           function(CONNECTORDataClustered,
                                                feature= NULL,
                                                feature_type = "auto") {
-  # Get number of clusters from CONNECTORDataClustered
-  G = CONNECTORDataClustered@TTandfDBandSil$G[1]
+ 
   
   # Get predicted clusters
   resClust = CONNECTORDataClustered@CfitandParameters$pred$class.pred
   df = CONNECTORDataClustered@KData$CData
   
-  # Get number of features per measure
-  q <- sapply(CONNECTORDataClustered@KData$FullS, function(x)
-    dim(x)[2])
-  
   # Merge data
   combined_df = merge(CONNECTORDataClustered@KData$annotations, df)
   combined_df$cluster = resClust[combined_df$jamesID]
+  combined_df$cluster <- factor(combined_df$cluster)
   
   TimeGrids = CONNECTORDataClustered@KData$TimeGrids
   
-  # Compute curve predictions
-  curvepred = fclust.curvepred(
-    CONNECTORDataClustered@CfitandParameters,
-    CONNECTORDataClustered@KData,
-    tau = 0.95,
-    tau1 = 0.975,
-    q = q
-  )
-  
-  MeanC = do.call(rbind, lapply(names(curvepred), function(x) {
-    as.data.frame(curvepred[[x]]$meancurves) -> Mean
-    
-    # Ensure column names match number of clusters
-    colnames(Mean) = as.character(1:G)
-    
-    Mean$measureID = x
-    Mean$time = TimeGrids[[x]]
-    return(Mean)
-  })) %>%
-    tidyr::gather(-time, -measureID, value = "value", key = "cluster")
-  combined_df$cluster <- factor(combined_df$cluster)
-  MeanC$cluster <- factor(MeanC$cluster)
+  MeanC = getClustersCentroids(CONNECTORDataClustered)
   
   # Plot with cluster-specific mean curves
   if (is.null(feature)) {

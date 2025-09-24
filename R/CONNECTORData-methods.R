@@ -156,27 +156,41 @@ setMethod("ConnectorData", signature("tbl_df"),
               )
             }
             
-            #remove lines in annotation if same ID is not present in curves
-            annotations <-
-              annotations[annotations$subjID %in% curves$subjID,]
-            #remove all lanes with less than 2 values
-            curves <- curves[rowSums(!is.na(curves)) > 2, ]
+            #check length of the curves
+            dimensions    <- curves %>%
+              select(-time, -subjID, -measureID) %>%
+              group_by(curvesID) %>%
+              summarise_all(~ sum(!is.na(.)))
+            if (any(dimensions$value < 2)) {
+              warning(
+                sum(dimensions$value < 2),
+                " curves have less than 1 point.  The curves are removed"
+              )
+              dimensions <- dimensions %>%
+                filter(value >= 2)
+              curves <- curves[curves$curvesID %in% dimensions$curvesID, ]
+              annotations <- annotations[annotations$subjID %in% unique(curves$subjID), ]
+            }
+            names(dimensions)[names(dimensions) == "value"] <- "nTimePoints"
+            
+            # check if all the subjID have all the measures
+            NumMeasures = length(unique(curves$measureID))
+            subjIDMeasure = curves %>% select(subjID, measureID) %>% distinct() %>% count(subjID) %>% filter(n != NumMeasures) %>% pull(subjID)
+            if (length(subjIDMeasure)> 0) {
+              warning(
+                paste0("\n", length(subjIDMeasure)," subjID do not have all the measures.\n The following IDs will be removed: ",
+                       paste(subjIDMeasure, collapse = ", "),  ".")
+              )
+              curves <- curves[!curves$subjID %in% subjIDMeasure, ]
+              annotations <- annotations[!annotations$subjID %in% subjIDMeasure,]
+            }
+            ######
+  
             
             ### Inizialize :
             
             ### vector for curves lenghts
             
-            dimensions    <- curves %>%
-              select(-time, -subjID, -measureID) %>%
-              group_by(curvesID) %>%
-              summarise_all(~ sum(!is.na(.)))
-            if (any(dimensions$value <= 2)) {
-              stop(
-                "Some curves have less than 2 observations. Please check the data. The curves with less than 2 observations are: ",
-                paste(dimensions$curvesID[dimensions$value < 2], collapse = ", ")
-              )
-            }
-            names(dimensions)[names(dimensions) == "value"] <- "nTimePoints"
             #order the column placing ID and time at the beginning
             curves <- curves[, c("subjID", "measureID", "time", "curvesID", setdiff(names(curves), c("subjID", "measureID", "time", "curvesID")))]
             #create a tibble with all columns of curves from the 3rd
@@ -206,51 +220,49 @@ setMethod("ConnectorData", signature("tbl_df"),
                 TimeGrids = grid
               )
             
-            
-             if(length(unique(curves$measureID))==1){
-               cat("############################### \n######## Summary ##############\n")
-               cat("\n Number of curves:")
-               print(dimensions %>%
-                       select(-curvesID) %>%
-                       summarise_all(function(x)
-                         sum(x != 0, na.rm = TRUE)))
-               cat(";\n Min curve length: ")
-               print(dimensions %>%
-                       select(-curvesID) %>%
-                       summarise_all(function(x)
-                         min(x, na.rm = TRUE)))
-               
-               cat("; Max curve length: ")
-               print(dimensions %>%
-                       select(-curvesID) %>%
-                       summarise_all(function(x)
-                         max(x, na.rm = TRUE)))
-               
-               cat("############################### \n")
-             }
+            if(length(unique(curves$measureID))==1){
+              cat("############################### \n######## Summary ##############\n")
+              cat("\n Number of Observations:")
+              print(dimensions %>%
+                      select(-curvesID) %>%
+                      summarise_all(function(x)
+                        sum(x != 0, na.rm = TRUE)))
+              cat(";\n Min curve length: ")
+              print(dimensions %>%
+                      select(-curvesID) %>%
+                      summarise_all(function(x)
+                        min(x, na.rm = TRUE)))
+              
+              cat("; Max curve length: ")
+              print(dimensions %>%
+                      select(-curvesID) %>%
+                      summarise_all(function(x)
+                        max(x, na.rm = TRUE)))
+              
+              cat("############################### \n")
+            }
             else{
               cat("############################### \n")
               cat("Data loaded...\n")
-              cat("Number of curves:")
+              cat("Number of Observations:")
               cat(sum(dimensions %>%
-                      select(-curvesID) %>%
-                      unlist()!=0))
+                        select(-curvesID) %>%
+                        unlist()!=0))
               cat("\nNumber of distinct measures:")
               cat(curves$measureID %>% unique() %>% length())
               
               cat("\nAverage length:")
               cat(dimensions %>%
-                      select(-curvesID) %>%
-                      unlist() %>%
-                      mean())
-              cat("\nMeasure with highest length:")
-              print(dimensions %>%
-                      filter(nTimePoints==max(nTimePoints)))
-              cat("\nMeasure with lowest length:")
-              print(dimensions %>%
-                      filter(nTimePoints==min(nTimePoints)))
+                    select(-curvesID) %>%
+                    unlist() %>%
+                    mean())
+              # cat("\nMeasure with highest length:")
+              # print(dimensions %>%
+              #         filter(nTimePoints==max(nTimePoints)))
+              # cat("\nMeasure with lowest length:")
+              # print(dimensions %>%
+              #         filter(nTimePoints==min(nTimePoints)))
             }
-            
             
             return(ConnectorData)
           })

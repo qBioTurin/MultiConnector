@@ -183,6 +183,7 @@ The `CONNECTORDataClustered` class represents the results of clustering analysis
 - `getClusters()`: Extract subjID with cluster assignments
 - `SubjectInfo()`: Get detailed information about specific subjects
 - `clusterDistribution()`: Analyze feature distribution across clusters
+- `getClustersCentroids()`: Get the cluster centroids (mean curves per cluster)
 
 ```r
 # Create clustered object (from estimateCluster results)

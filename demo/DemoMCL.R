@@ -169,3 +169,33 @@ subClusterData <- selectCluster(subClusters, G=3, "MinfDB")
 plot(subClusterData,feature = "TTP")
 clusterDistribution(subClusterData, feature="TTP")
 
+getClusters(subClusterData) -> subClusters
+subClusters %>% mutate(Cluster = paste0("3.",Cluster)) -> subClusters
+getClustersCentroids(subClusterData) -> submeanC
+submeanC %>% mutate(Cluster = paste0("3.",Cluster)) -> submeanC
+
+getClusters(ClusterData) -> Clusters
+Clusters = Clusters %>% mutate(Cluster = ifelse(Cluster=="3", subClusters$Cluster[match(subjID,subClusters$subjID)], as.character(Cluster)))
+
+saveRDS(list(ClusterData=ClusterData, subClusterData=subClusterData), file="DemoMCL_ClusterData.rds")
+write.csv(Clusters, file="MultiConnector_MCL_Clusters.csv", row.names=FALSE,quote = F)
+
+#########
+
+merge(Data@curves, Clusters, by="subjID") -> newCurves
+
+getClustersCentroids(ClusterData) -> meanC
+meanC = rbind(meanC %>% filter(Cluster != "3"),submeanC)
+
+
+library(ggplot2)
+newCurves %>% ggplot() + 
+  geom_line(aes(x=time, y=value, group=subjID, color=Cluster), alpha=0.3)+
+  geom_line(data = meanC,  aes(x=time, y=value))+
+  facet_grid( measureID ~ Cluster)
+
+
+
+
+
+
