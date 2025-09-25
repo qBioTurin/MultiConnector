@@ -84,9 +84,9 @@ setMethod("getClusters", signature(object = "CONNECTORDataClustered"), function(
   df = object@KData$CData
   # Merge data
   combined_df = merge(object@KData$annotations, df)
-  combined_df$Cluster = resClust[combined_df$jamesID]
+  combined_df$cluster = resClust[combined_df$jamesID]
   
-  return(combined_df %>% select(subjID, Cluster) %>% distinct() )
+  return(combined_df %>% select(subjID, cluster) %>% distinct() )
 })
 
 
@@ -141,7 +141,6 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
     tidyr::gather(-time, -measureID, value = "value", key = "cluster")
   
   MeanC$cluster <- factor(MeanC$cluster)
-  MeanC = MeanC %>% rename(Cluster = cluster)
   return(MeanC )
 })
 
@@ -203,7 +202,7 @@ setMethod("clusterDistribution", signature(object = "CONNECTORDataClustered"),
             }
             
             # Create contingency table
-            cont_table <- table(combined_data[[feature]], combined_data$Cluster)
+            cont_table <- table(combined_data[[feature]], combined_data$cluster)
             
             # Convert to data frame for better formatting
             result_df <- as.data.frame.matrix(cont_table)
@@ -214,7 +213,7 @@ setMethod("clusterDistribution", signature(object = "CONNECTORDataClustered"),
               as_tibble()
             
             # Ensure cluster columns are properly named
-            cluster_cols <- paste("Cluster", 1:ncol(cont_table))
+            cluster_cols <- paste("cluster", 1:ncol(cont_table))
             colnames(result_df)[-1] <- cluster_cols
             
             # Add totals if requested
