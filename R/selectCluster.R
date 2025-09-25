@@ -62,6 +62,13 @@ setGeneric("selectCluster", function(results, G, best) {
 })
 setMethod("selectCluster", signature(), function(results, G, best) {
   
+  error_indices <- sapply(results$Clusterings, function(res) {
+    is.list(res) && "Error" %in% names(res$TTandfDBandSil)
+  })
+  if(length(which(error_indices)) > 0)
+    results$Clusterings <- results$Clusterings[-which(error_indices)]
+  
+  
   indexes =
     do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
         xx = results$Clusterings[[x]]

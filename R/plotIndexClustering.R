@@ -19,6 +19,13 @@ setGeneric("IndexPlotExtrapolation", function(results) {
   standardGeneric("IndexPlotExtrapolation")
 })
 setMethod("IndexPlotExtrapolation",signature(), function(results) {
+  
+  error_indices <- sapply(results$Clusterings, function(res) {
+    is.list(res) && "Error" %in% names(res$TTandfDBandSil)
+  })
+  if(length(which(error_indices)) > 0)
+    results$Clusterings <- results$Clusterings[-which(error_indices)]
+  
   indexes = do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
         xx = results$Clusterings[[x]]
         df = data.frame(xx$TTandfDBandSil)

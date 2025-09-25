@@ -170,12 +170,12 @@ plot(subClusterData,feature = "TTP")
 clusterDistribution(subClusterData, feature="TTP")
 
 getClusters(subClusterData) -> subClusters
-subClusters %>% mutate(Cluster = paste0("3.",Cluster)) -> subClusters
+subClusters %>% mutate(cluster = paste0("3.",cluster)) -> subClusters
 getClustersCentroids(subClusterData) -> submeanC
-submeanC %>% mutate(Cluster = paste0("3.",Cluster)) -> submeanC
+submeanC %>% mutate(cluster = paste0("3.",cluster)) -> submeanC
 
 getClusters(ClusterData) -> Clusters
-Clusters = Clusters %>% mutate(Cluster = ifelse(Cluster=="3", subClusters$Cluster[match(subjID,subClusters$subjID)], as.character(Cluster)))
+Clusters = Clusters %>% mutate(cluster = ifelse(cluster=="3", subClusters$cluster[match(subjID,subClusters$subjID)], as.character(cluster)))
 
 saveRDS(list(ClusterData=ClusterData, subClusterData=subClusterData), file="DemoMCL_ClusterData.rds")
 write.csv(Clusters, file="MultiConnector_MCL_Clusters.csv", row.names=FALSE,quote = F)
@@ -185,14 +185,36 @@ write.csv(Clusters, file="MultiConnector_MCL_Clusters.csv", row.names=FALSE,quot
 merge(Data@curves, Clusters, by="subjID") -> newCurves
 
 getClustersCentroids(ClusterData) -> meanC
-meanC = rbind(meanC %>% filter(Cluster != "3"),submeanC)
+meanC = rbind(meanC %>% filter(cluster != "3"),submeanC)
 
 
 library(ggplot2)
 newCurves %>% ggplot() + 
-  geom_line(aes(x=time, y=value, group=subjID, color=Cluster), alpha=0.3)+
+  geom_line(aes(x=time, y=value, group=subjID, color=cluster), alpha=0.3)+
   geom_line(data = meanC,  aes(x=time, y=value))+
-  facet_grid( measureID ~ Cluster)
+  facet_grid( measureID ~ cluster)+
+  theme_bw() +
+  theme(
+    axis.title.x = element_text(
+      size = 14,
+      face = "bold",
+      family = "Times"
+    ),
+    axis.text.x = element_text(size = 14, family = "Times"),
+    axis.title.y = element_text(
+      size = 14,
+      face = "bold",
+      family = "Times"
+    ),
+    axis.text.y = element_text(size = 14, family = "Times"),
+    strip.text = element_text(
+      color = "black",
+      size = 14,
+      face = "bold",
+      family = "Times"
+    ),
+    plot.margin = unit(c(0, 0, 0, 0), "cm")
+  )
 
 
 
