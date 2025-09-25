@@ -180,17 +180,19 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
           err <- paste("ERROR in intfclust:", conditionMessage(e), "\n")
           return(list(Error = err))
         })
-        fcm.prediction <- fclust.curvepred(data = result,
-                                           q = p,
-                                           KData = KmData)
+        
         if (!is.null(result$Error)) {
           h = h - 1
           tentative = tentative + 1
         }
         else{
+          
+          fcm.prediction <- fclust.curvepred(data = result,
+                                             q = p,
+                                             KData = KmData)
           cluster <- result$pred$class.pred
           if (length(unique(cluster)) != combo$K) {
-            results <- list(
+            result <- list(
               Error = paste0(
                 "ERROR in prediction: number of clusters obtained is different from ",
                 combo$K
@@ -209,11 +211,13 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
             tentative = tentative + 1
           }
         }
+        
         if (h == 0) {
           h.found = T
           h.out = 1
         }
-        if (h.found == T) {
+        
+        if ( h.found == T && is.null(result$Error) ) {
           TTandfDBandSil <- TTandfDBandSilfunction(
             result = result,
             KData = KmData,
@@ -221,7 +225,10 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
             G = combo$K
           )
           result$pred$subjID <- unique(CData$subjID)
+        }else if( h.found == T && !is.null(result$Error)){
+          TTandfDBandSil <- list(Error = "Could not compute quality metrics due to previous errors.")
         }
+        
       }
       return(list(
         TTandfDBandSil = TTandfDBandSil,
@@ -294,17 +301,18 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
           err <- paste("ERROR in intfclust:", conditionMessage(e), "\n")
           return(list(Error = err))
         })
-        fcm.prediction <- fclust.curvepred(data = result,
-                                           q = p,
-                                           KData = KmData)
+
         if (!is.null(result$Error)) {
           h = h - 1
           tentative = tentative + 1
         }
         else{
+          fcm.prediction <- fclust.curvepred(data = result,
+                                             q = p,
+                                             KData = KmData)
           cluster <- result$pred$class.pred
           if (length(unique(cluster)) != combo$K) {
-            results <- list(
+            result <- list(
               Error = paste0(
                 "ERROR in prediction: number of clusters obtained is different from ",
                 combo$K
@@ -316,18 +324,19 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
           if (is.null(result$Error)) {
             h.found = T
             h.out = h
-            
           }
           else{
             h = h - 1
             tentative = tentative + 1
           }
         }
+        
         if (h == 0) {
           h.found = T
           h.out = 1
         }
-        if (h.found == T) {
+        
+        if ( h.found == T && is.null(result$Error) ) {
           TTandfDBandSil <- TTandfDBandSilfunction(
             result = result,
             KData = KmData,
@@ -335,7 +344,10 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
             G = combo$K
           )
           result$pred$subjID <- unique(CData$subjID)
+        }else if( h.found == T && !is.null(result$Error)){
+          TTandfDBandSil <- list(Error = "Could not compute quality metrics due to previous errors.")
         }
+        
       }
       return(list(
         TTandfDBandSil = TTandfDBandSil,
@@ -346,6 +358,15 @@ setMethod("estimateCluster", signature ("CONNECTORData"), function(CONNECTORData
     })
     
     stopCluster(cl)
+  }
+  
+  # Check possible errors in results
+  error_indices <- sapply(results, function(res) {
+    is.list(res) && "Error" %in% names(res$TTandfDBandSil)
+  })
+  
+  if(any(error_indices)) {
+    warning("Some clustering runs encountered errors. Check the 'Error' messages in the results for details.")
   }
   
   KmData$annotations = CONNECTORData@annotations
