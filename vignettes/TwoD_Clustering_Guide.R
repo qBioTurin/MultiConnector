@@ -18,7 +18,7 @@ if (knitr::is_latex_output()) {
   )
 }
 
-## ----package-setup------------------------------------------------------------
+## ----package-setup, echo = FALSE----------------------------------------------
 # Load required packages
 library(MultiConnector)
 library(tibble)
@@ -29,6 +29,8 @@ library(ggplot2)
 # This dataset contains two-dimensional time series data
 TimeSeries <- readRDS(system.file("Data/MCL/TimeSeries.rds", package="MultiConnector"))
 Annotations <- readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConnector"))
+
+## ----package-setup2, echo = FALSE---------------------------------------------
 
 # Display basic dataset information
 cat("Dataset Overview:")
@@ -131,14 +133,11 @@ plot(clusters)
 optimal_G <- 3
 selection_criterion <- "MinfDB"
 
-cat("Cluster selection:")
-cat("\n- Number of clusters (G):", optimal_G)
-cat("\n- Selection criterion:", selection_criterion)
-cat("\n- Rationale: Minimum functional Davies-Bouldin index")
-
 # Create the final clustered data object
 ClusterData <- selectCluster(clusters, G=optimal_G, selection_criterion)
 
+
+## ----cluster-selection2, echo = FALSE-----------------------------------------
 cat("\n\nFinal clustering solution:")
 cat("\n- Clusters identified:", length(unique(ClusterData@cluster.names)))
 cat("\n- Cluster labels:", paste(ClusterData@cluster.names, collapse = ", "))
@@ -160,25 +159,22 @@ plot(ClusterData, feature="Arm")
 ## ----cluster-composition------------------------------------------------------
 # Analyze cluster composition across features
 available_features <- getAnnotations(ClusterData)
+
 cat("Features available for composition analysis:")
 print(available_features)
 
-# Detailed composition analysis for key features
-cat("\n=== CLUSTER COMPOSITION ANALYSIS ===")
 
 # TTP distribution across clusters
-if ("TTP" %in% available_features) {
-  cat("\n\n1. TTP Distribution Across Clusters:")
-  ttp_dist <- clusterDistribution(ClusterData, feature="TTP")
-  print(ttp_dist)
-}
+cat("\n\n1. TTP Distribution Across Clusters:")
+ttp_dist <- clusterDistribution(ClusterData, feature="TTP")
+print(ttp_dist)
+
 
 # Treatment arm distribution
-if ("Arm" %in% available_features) {
-  cat("\n\n2. Treatment Arm Distribution:")
-  arm_dist <- clusterDistribution(ClusterData, feature="Arm")
-  print(arm_dist)
-}
+cat("\n\n2. Treatment Arm Distribution:")
+arm_dist <- clusterDistribution(ClusterData, feature="Arm")
+print(arm_dist)
+
 
 # Display cluster assignments
 cluster_assignments <- getClusters(ClusterData)
@@ -222,8 +218,6 @@ for (i in 1:nrow(multi_subject_info$cluster_table)) {
 multi_subject_info$highlighted_plot
 
 ## ----cluster-validation, fig.width=14, fig.height=10--------------------------
-# Comprehensive cluster validation
-cat("Performing cluster validation...")
 
 validation_metrics <- validateCluster(ClusterData)
 
@@ -245,19 +239,15 @@ print(quality_metrics)
 
 ## ----discriminant-analysis, fig.width=14, fig.height=10-----------------------
 # Discriminant analysis visualization
-# This projects the high-dimensional functional data into lower-dimensional space
-
-cat("Generating discriminant analysis plots...")
 
 # Basic discriminant plot
 discr_basic <- DiscriminantPlot(ClusterData)
 discr_basic$ColCluster
 
 # Feature-enhanced discriminant plot
-if ("TTP" %in% available_features) {
-  discr_feature <- DiscriminantPlot(ClusterData, feature = "TTP")
-  discr_feature$ColFeature
-}
+discr_feature <- DiscriminantPlot(ClusterData, feature = "TTP")
+discr_feature$ColFeature
+
 
 ## ----max-discrimination, fig.width=14, fig.height=8---------------------------
 # Maximum discrimination function analysis
@@ -273,11 +263,8 @@ cluster_assignments <- getClusters(ClusterData)
 
 # Select subjects from cluster 3
 cluster3_subjects <- cluster_assignments %>% 
-  filter(Cluster == 3) %>% 
+  filter(cluster == 3) %>% 
   pull(subjID)
-
-cat("\n- Subjects in Cluster 3:", length(cluster3_subjects))
-cat("\n- First few subjects:", paste(head(cluster3_subjects), collapse = ", "))
 
 # Create subset data for subclustering
 subData <- ConnectorData(
@@ -285,7 +272,6 @@ subData <- ConnectorData(
   tibble(Annotations) %>% filter(subjID %in% cluster3_subjects)
 )
 
-cat("\n\nSubset data for subclustering:")
 show(subData)
 
 ## ----subclustering-analysis---------------------------------------------------
@@ -318,11 +304,11 @@ subClusterData <- selectCluster(subClusters, G=3, "MinfDB")
 plot(subClusterData, feature = "TTP")
 
 # Subcluster composition
-if ("TTP" %in% getAnnotations(subClusterData)) {
-  subcluster_dist <- clusterDistribution(subClusterData, feature="TTP")
-  cat("\n\nSubcluster composition (TTP):")
-  print(subcluster_dist)
-}
+
+subcluster_dist <- clusterDistribution(subClusterData, feature="TTP")
+cat("\n\nSubcluster composition (TTP):")
+print(subcluster_dist)
+
 
 ## ----session-info-------------------------------------------------------------
 sessionInfo()
