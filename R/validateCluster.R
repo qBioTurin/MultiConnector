@@ -135,10 +135,11 @@ setMethod("validateCluster", signature(CONNECTORDataClustered = "CONNECTORDataCl
     mutate(max_si = max(si)) %>%
     ungroup() %>%
     arrange(max_si, cluster, si) %>%
-    dplyr::select(-max_si, -jamesID) %>%
-    mutate(Order = factor(1:n(), levels = 1:n()))
+    dplyr::select(-max_si, -jamesID)
   
-  p1 <- ggplot(tbl_entropy_silhouette, aes(x = Order, y = si, fill = as.factor(cluster))) +
+  tbl_entropy_silhouette$curvesID <- factor(tbl_entropy_silhouette$curvesID, levels = tbl_entropy_silhouette$curvesID )
+  
+  p1 <- ggplot(tbl_entropy_silhouette, aes(x = curvesID, y = si, fill = as.factor(cluster))) +
     geom_bar(stat = "identity") +
     theme_minimal() +
     labs(title = "Silhouette Plot",
@@ -148,7 +149,7 @@ setMethod("validateCluster", signature(CONNECTORDataClustered = "CONNECTORDataCl
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
     coord_flip()
   
-  p2 <- ggplot(tbl_entropy_silhouette, aes(x = Order)) +
+  p2 <- ggplot(tbl_entropy_silhouette, aes(x = curvesID)) +
     geom_segment(aes(yend = Entropy, y = 0)) +
     geom_point(aes(y = Entropy, color = as.factor(ClusterType), fill = as.factor(ClusterType)),
                alpha = 0.4, shape = 21, stroke = 2, size = 4) +

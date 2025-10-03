@@ -88,6 +88,17 @@ optimal_p <- 3
 cat("Selected optimal p =", optimal_p, "\n")
 
 ## ----cluster-selection--------------------------------------------------------
+clusters <- estimateCluster(
+  DataTrunc, 
+  G = 2:6,              # Test 2-6 clusters
+  p = optimal_p,        # Use optimal spline dimension
+  runs = 20,            # Reduced for demonstration (use 100+ for final analysis)
+  cores = workers       # Parallel processing
+)
+
+# Display quality metrics
+plot(clusters)
+
 # Select optimal clustering (G=4 based on quality metrics)
 ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
 

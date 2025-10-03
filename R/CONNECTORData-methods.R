@@ -89,6 +89,16 @@ setMethod("ConnectorData", signature ("character"),
           })
           
 #' @rdname ConnectorData
+#' @export
+#Definition of method ConnectorData
+setMethod("ConnectorData", signature ("data.frame"),
+          function(TimeSeriesFile, AnnotationFile) {
+
+            return(ConnectorData(tibble(curves), tibble(annotations) ))
+            
+          })
+
+#' @rdname ConnectorData
 #' @import readxl methods readr
 #' @importFrom dplyr select filter group_by mutate arrange
 #' @importFrom tidyr gather spread
