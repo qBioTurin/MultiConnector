@@ -61,7 +61,7 @@ setMethod("ConnectorData", signature ("character"),
                 grepl(".xls", TimeSeriesFile, ignore.case = TRUE) == TRUE) {
               curves <- readxl::read_excel(TimeSeriesFile)
             }
-            else if (grepl(".txt", TimeSeriesFile, ignore.case = TRUE) == TRUE) {
+            else if (grepl(".csv", TimeSeriesFile, ignore.case = TRUE) == TRUE) {
               curves <-
                 readr::read_csv(TimeSeriesFile,
                                 col_names = TRUE,
@@ -75,7 +75,7 @@ setMethod("ConnectorData", signature ("character"),
                 grepl(".xls", AnnotationFile, ignore.case = TRUE) == TRUE) {
               annotations <- readxl::read_excel(AnnotationFile)
             }
-            else if (grepl(".txt", AnnotationFile, ignore.case = TRUE) == TRUE) {
+            else if (grepl(".csv", AnnotationFile, ignore.case = TRUE) == TRUE) {
               annotations <-
                 readr::read_csv(AnnotationFile,
                                 col_names = TRUE,
