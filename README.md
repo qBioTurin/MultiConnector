@@ -1,55 +1,36 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # MultiConnector
 
-> **⚠️ CONFIDENTIAL - UNPUBLISHED PACKAGE**\
-> This package is currently under development and has not been published
-> yet. All content, code, and documentation are confidential and
-> proprietary. Please do not distribute or share without explicit
-> permissresults \<- estimateCluster(ovarian_data, G = 2:4, p = 3, runs
-> = 20) best_model \<- selectCluster(results, G = 3, best = "MinfDB")
-> validation \<- validateCluster(best_model)
 
-[![CRAN
-status](https://www.r-pkg.org/badges/version/MultiConnector)](https://CRAN.R-project.org/package=MultiConnector)
-[![License: GPL
-v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+> **⚠️ CONFIDENTIAL - UNPUBLISHED PACKAGE**  
+> This package is currently under development and has not been published yet. All content, code, and documentation are confidential and proprietary. Please do not distribute or share without explicit permissresults <- estimateCluster(ovarian_data, G = 2:4, p = 3, runs = 20)
+best_model <- selectCluster(results, G = 3, best = "MinfDB")
+validation <- validateCluster(best_model)
 
-![](inst/Images/multiconnectorLogo.png){width="461"}
+
+[![R-CMD-check](https://github.com/qBioTurin/MultiConnector/workflows/R-CMD-check/badge.svg)](https://github.com/qBioTurin/MultiConnector/actions)
+[![CRAN status](https://www.r-pkg.org/badges/version/MultiConnector)](https://CRAN.R-project.org/package=MultiConnector)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 
 ## Overview
 
-**MultiConnector** is an R package for functional clustering analysis of
-multi-dimensional time series data. It implements the James & Sugar
-(2003) functional clustering model to identify distinct patterns in
-longitudinal data, making it particularly useful for biomedical
-research, growth studies, and longitudinal data analysis where curves
-need to be grouped based on their shape and temporal behavior.
+**MultiConnector** is an R package for functional clustering analysis of multi-dimensional time series data. It implements the James & Sugar (2003) functional clustering model to identify distinct patterns in longitudinal data, making it particularly useful for biomedical research, growth studies, and longitudinal data analysis where curves need to be grouped based on their shape and temporal behavior.
 
 ### Key Features
 
--   **Functional Clustering**: Advanced clustering based on curve shapes
-    rather than individual time points
--   **Multi-dimensional Support**: Handle multiple measurements per
-    subject simultaneously
--   **Spline-based Modeling**: Natural cubic splines capture complex
-    curve patterns
--   **Comprehensive Validation**: Built-in quality metrics including
-    silhouette analysis and entropy measures
--   **Rich Visualizations**: Specialized plots for cluster exploration,
-    validation, and interpretation
--   **Parallel Processing**: Speed up analysis with multi-core support
--   **Flexible Data Input**: Support for Excel, CSV files, and R tibbles
+- **Functional Clustering**: Advanced clustering based on curve shapes rather than individual time points
+- **Multi-dimensional Support**: Handle multiple measurements per subject simultaneously
+- **Spline-based Modeling**: Natural cubic splines capture complex curve patterns
+- **Comprehensive Validation**: Built-in quality metrics including silhouette analysis and entropy measures
+- **Rich Visualizations**: Specialized plots for cluster exploration, validation, and interpretation
+- **Parallel Processing**: Speed up analysis with multi-core support
+- **Flexible Data Input**: Support for Excel, CSV files, and R tibbles
 
 ## Installation
 
 ### From GitHub (Recommended)
 
-``` r
+```r
 # Install devtools if you haven't already
 install.packages("devtools")
 
@@ -59,10 +40,9 @@ devtools::install_github("qBioTurin/MultiConnector")
 
 ### Dependencies
 
-MultiConnector requires R ≥ 4.0.0 and several packages that will be
-automatically installed:
+MultiConnector requires R ≥ 4.0.0 and several packages that will be automatically installed:
 
-``` r
+```r
 # Core dependencies
 packages <- c("dplyr", "ggplot2", "splines", "Matrix", "parallel", 
               "readxl", "readr", "tibble", "magrittr", "patchwork")
@@ -75,32 +55,30 @@ install.packages(packages)
 
 Your time series data should contain:
 
--   `subjID`: Subject/sample identifier
--   `time`: Time points
--   `measureID`: Measurement type identifier (for multi-dimensional
-    data)
--   `value`: Observed values
+- `subjID`: Subject/sample identifier
+- `time`: Time points
+- `measureID`: Measurement type identifier (for multi-dimensional data)
+- `value`: Observed values
 
 ### Annotations File
-
 Your annotations should contain:
 
--   `subjID`: Subject identifier (matching time series)
+- `subjID`: Subject identifier (matching time series)
 
--   Additional feature columns (e.g., treatment, gender, outcome)
+- Additional feature columns (e.g., treatment, gender, outcome)
 
 ### Supported Formats
 
--   Excel files (`.xlsx`, `.xls`)
--   CSV/text files (`.csv`, `.txt`)
--   R tibbles (for programmatic use)
+- Excel files (`.xlsx`, `.xls`)
+- CSV/text files (`.csv`, `.txt`)
+- R tibbles (for programmatic use)
 
 ## Terminology and Notation
 
 Understanding the key terms and notation used throughout MultiConnector:
 
 | Term | Definition |
-|-------------------------|-----------------------------------------------|
+|------|------------|
 | **Measure** | A given dimension of the functional data (identified by `measureID`) |
 | **Observation** | The discrete sampled curve of a specific measure |
 | **Subject** | The connection of the samples among the different measures (identified by `subjID`) |
@@ -114,22 +92,24 @@ Understanding the key terms and notation used throughout MultiConnector:
 
 ### Data Structure Relationships
 
-```         
+```
 Subject (subjID) ──┬── Measure 1 (measureID) ──── Observations (time, value)
                    ├── Measure 2 (measureID) ──── Observations (time, value)
                    ├── ...
                    └── Features (annotations)
 ```
 
-**Example:** - **Subject**: Patient_001 - **Measures**: Blood pressure,
-Heart rate, Temperature - **Observations**: Time series of values for
-each measure - **Features**: Age, Gender, Treatment group - **Functional
-Data**: All measures combined for Patient_001
+**Example:**
+- **Subject**: Patient_001
+- **Measures**: Blood pressure, Heart rate, Temperature
+- **Observations**: Time series of values for each measure
+- **Features**: Age, Gender, Treatment group
+- **Functional Data**: All measures combined for Patient_001
 
 ## Key Functions
 
 | Function | Purpose |
-|--------------------------------------|----------------------------------|
+|----------|---------|
 | `ConnectorData()` | Import and prepare data for analysis |
 | `estimatepDimension()` | Determine optimal spline dimensions |
 | `estimateCluster()` | Perform clustering analysis |
@@ -139,37 +119,32 @@ Data**: All measures combined for Patient_001
 | `DiscriminantPlot()` | Discriminant analysis visualization |
 | `splinePlot()` | Spline-based curve visualization |
 | `SubjectInfo()` | : Detailed subject analysis with cluster highlighting |
-| `clusterDistribution()` | : Cross-tabulation of features vs clusters |
+| `clusterDistribution()` | : Cross-tabulation of single or multiple features vs clusters |
 | `generateReport()` | : Comprehensive analysis report generation |
 
 ## S4 Classes and Methods
 
-MultiConnector is built around two main S4 classes that provide a
-structured object-oriented approach to functional clustering:
+MultiConnector is built around two main S4 classes that provide a structured object-oriented approach to functional clustering:
 
 ### CONNECTORData Class
 
-The `CONNECTORData` class represents preprocessed time series data ready
-for clustering analysis.
+The `CONNECTORData` class represents preprocessed time series data ready for clustering analysis.
 
 **Slots:**
 
--   `@curves`: Tibble containing time series data (subjID, measureID,
-    time, value)
--   `@dimensions`: Tibble with observation counts per sample
--   `@annotations`: Tibble with subject annotations and features
--   `@TimeGrids`: List of time grids for each measurement type
+- `@curves`: Tibble containing time series data (subjID, measureID, time, value)
+- `@dimensions`: Tibble with observation counts per sample
+- `@annotations`: Tibble with subject annotations and features
+- `@TimeGrids`: List of time grids for each measurement type
 
 **Key Methods:**
 
--   `ConnectorData()`: Constructor method to create objects from files
-    or tibbles
--   `plot()`: Visualize time series data, dispatches to
-    `PlotTimeSeries()`
--   `show()`: Display basic object summary
--   `getAnnotations()`: Extract available feature names
+- `ConnectorData()`: Constructor method to create objects from files or tibbles
+- `plot()`: Visualize time series data, dispatches to `PlotTimeSeries()`
+- `show()`: Display basic object summary
+- `getAnnotations()`: Extract available feature names
 
-``` r
+```r
 # Create CONNECTORData object
 data <- ConnectorData("timeseries.xlsx", "annotations.csv")
 
@@ -186,40 +161,30 @@ getAnnotations(data)     # Lists available features
 
 ### CONNECTORDataClustered Class
 
-The `CONNECTORDataClustered` class represents the results of clustering
-analysis with cluster assignments and parameters.
+The `CONNECTORDataClustered` class represents the results of clustering analysis with cluster assignments and parameters.
 
 **Slots:**
 
--   `@TTandfDBandSil`: Tibble with quality metrics (TT, fDB, Silhouette,
-    G)  
--   `@CfitandParameters`: List containing clustering fit and estimated
-    parameters
--   `@h`: Latent factor dimension used in clustering
--   `@freq`: Frequency of the clustering configuration
--   `@cluster.names`: Character vector of cluster labels (e.g., "A",
-    "B", "C")
--   `@KData`: List containing original data and preprocessing results
+- `@TTandfDBandSil`: Tibble with quality metrics (TT, fDB, Silhouette, G)
+- `@CfitandParameters`: List containing clustering fit and estimated parameters
+- `@h`: Latent factor dimension used in clustering
+- `@freq`: Frequency of the clustering configuration
+- `@cluster.names`: Character vector of cluster labels (e.g., "A", "B", "C")
+- `@KData`: List containing original data and preprocessing results
 
 **Key Methods:**
 
--   `plot()`: Visualize clustering results, dispatches to
-    `ClusterPlot()`
--   `DiscriminantPlot()`: Create discriminant analysis plots for cluster
-    interpretation
--   `validateCluster()`: Compute and plot clustering quality metrics
--   `splinePlot()`: Visualize cluster-specific spline representations
--   `MaximumDiscriminationFunction()`: Show optimal discrimination
-    weights
--   `getAnnotations()`: Extract features with cluster assignments
--   `getClusters()`: Extract subjID with cluster assignments
--   `SubjectInfo()`: Get detailed information about specific subjects
--   `clusterDistribution()`: Analyze feature distribution across
-    clusters
--   `getClustersCentroids()`: Get the cluster centroids (mean curves per
-    cluster)
+- `plot()`: Visualize clustering results, dispatches to `ClusterPlot()`
+- `DiscriminantPlot()`: Create discriminant analysis plots for cluster interpretation
+- `validateCluster()`: Compute and plot clustering quality metrics
+- `splinePlot()`: Visualize cluster-specific spline representations
+- `MaximumDiscriminationFunction()`: Show optimal discrimination weights
+- `getAnnotations()`: Extract features with cluster assignments
+- `getClusters()`: Extract subjID with cluster assignments
+- `SubjectInfo()`: Get detailed information about specific subjects
+- `clusterDistribution()`: Analyze feature distribution across clusters
 
-``` r
+```r
 # Create clustered object (from estimateCluster results)
 clustered_data <- selectCluster(cluster_results, G = 3, best = "MinfDB")
 
@@ -244,24 +209,22 @@ report <- generateReport(clustered_data = clustered_data) # Comprehensive report
 
 ### Method Dispatch System
 
-The package uses S4 method dispatch to provide intelligent function
-behavior based on object class:
+The package uses S4 method dispatch to provide intelligent function behavior based on object class:
 
 | Method | CONNECTORData | CONNECTORDataClustered |
-|------------------|---------------------|---------------------------------|
+|--------|---------------|------------------------|
 | `plot()` | Time series plots via `PlotTimeSeries()` | Cluster plots via `ClusterPlot()` |
 | `getAnnotations()` | Lists available feature names | Shows features with cluster assignments |
 | `summary()` | Data summary statistics | *(inherited from base)* |
 
-This design ensures that the same function name (`plot()`,
-`getAnnotations()`) automatically does the right thing based on whether
-you're working with raw data or clustering results.
+This design ensures that the same function name (`plot()`, `getAnnotations()`) automatically does the right thing based on whether you're working with raw data or clustering results.
+
 
 ## Quick Start
 
 ### Basic Workflow
 
-``` r
+```r
 library(MultiConnector)
 library(dplyr)
 
@@ -298,7 +261,7 @@ print(validation$plot)
 
 ### Example with Built-in Data
 
-``` r
+```r
 # Load example ovarian cancer data
 system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package="MultiConnector") -> time_series_path
 system.file("Data/OvarianCancer/Ovarian_Annotations.txt", package="MultiConnector") -> annotations_path
@@ -317,10 +280,9 @@ validation <- validateCluster(best_model)
 
 ### Subject-Level Analysis with SubjectInfo()
 
-The `SubjectInfo()` function provides detailed analysis of specific
-subjects within their clustering context:
+The `SubjectInfo()` function provides detailed analysis of specific subjects within their clustering context:
 
-``` r
+```r
 # Single subject analysis
 subject_analysis <- SubjectInfo(clustered_data, subjIDs = "patient_001")
 
@@ -345,32 +307,44 @@ subject_analysis$subjects_data          # Subject's time series data
 
 Analyze how different features are distributed across clusters:
 
-``` r
-# Basic distribution table
+```r
+# Single feature distribution
 dist_table <- clusterDistribution(clustered_data, "treatment")
 
-# Detailed table with percentages
+# Multiple features distribution (multi-dimensional analysis)
+multi_dist <- clusterDistribution(clustered_data, c("treatment", "age_group"))
+
+# With totals
 detailed_table <- clusterDistribution(clustered_data, "age_group",
-                                     include_percentages = TRUE,
                                      include_totals = TRUE)
 
 # View results
 print(dist_table)
-#   treatment  Cluster1  Cluster2  Cluster3  Total
+#   treatment  cluster1  cluster2  cluster3  Total
 #   Control    25        15        10        50
 #   Treatment  20        30        25        75
 #   TOTAL      45        45        35        125
 
+# Multi-feature example output
+print(multi_dist)
+#   treatment  age_group  cluster1  cluster2  cluster3  Total
+#   Control    Young      10        5         3         18
+#   Control    Old        15        10        7         32
+#   Treatment  Young      8         15        10        33
+#   Treatment  Old        12        15        15        42
+#   TOTAL      TOTAL      45        45        35        125
+
 # Check table metadata
-attr(dist_table, "total_subjects")  # Total number of subjects
-attr(dist_table, "missing_values")  # Count of missing values
+attr(dist_table, "total_subjects")    # Total number of subjects
+attr(dist_table, "missing_values")    # Count of missing values per feature
+attr(dist_table, "n_complete_cases")  # Subjects with complete data
 ```
 
 ### Comprehensive Reporting with generateReport()
 
 Generate complete analysis reports including all plots and tables:
 
-``` r
+```r
 # Basic report
 report <- generateReport(clustered_data = clustered_data)
 
@@ -402,7 +376,7 @@ comprehensive_report$plots$cluster_plots_by_feature$age
 
 ### Custom Analysis Parameters
 
-``` r
+```r
 # Advanced clustering with custom parameters
 advanced_results <- estimateCluster(
   data = my_data,
@@ -418,7 +392,7 @@ advanced_results <- estimateCluster(
 
 ### Classification of New Samples
 
-``` r
+```r
 # Classify new data using existing model
 new_classifications <- ClassificationCurves(
   newdata = new_connector_data,
@@ -429,7 +403,7 @@ new_classifications <- ClassificationCurves(
 
 ### Comprehensive Visualization Suite
 
-``` r
+```r
 # Multiple visualization options
 plot(clustered_data)                           # Basic cluster plot
 DiscriminantPlot(clustered_data, feature = "treatment")  # Discriminant analysis
@@ -440,23 +414,18 @@ MaximumDiscriminationFunction(clustered_data)  # Discrimination weights
 ## Documentation and Examples
 
 ### Comprehensive Demos
-
--   `demo/DemoOvarianCancer.R`: Complete one-dimensional clustering
-    analysis
--   `demo/DemoMCL.R`: Two-dimensional clustering example
--   `demo/DemoEmoCovid.R`: COVID-19 emotional data analysis
+- `demo/DemoOvarianCancer.R`: Complete one-dimensional clustering analysis
+- `demo/DemoMCL.R`: Two-dimensional clustering example
+- `demo/DemoEmoCovid.R`: COVID-19 emotional data analysis
 
 ### Vignettes
-
 Access detailed tutorials with:
-
-``` r
+```r
 browseVignettes("MultiConnector")
 ```
 
 ### Help Documentation
-
-``` r
+```r
 # Function-specific help
 ?ConnectorData
 ?estimateCluster
@@ -470,72 +439,64 @@ help(package = "MultiConnector")
 
 If you use MultiConnector in your research, please cite:
 
-```         
+```
 Soon.....
 ```
 
 ## Authors and Contributors
 
--   **Pernice Simone** - Developer\
--   **Sirovich Roberta** - Developer
--   **Frattarola Marco** - Developer
+- **Pernice Simone** - Developer  
+- **Sirovich Roberta** - Developer
+- **Frattarola Marco** - Developer
 
 ## License
 
-This project is licensed under the GPL-3 License - see the
-[LICENSE](LICENSE) file for details.
+This project is licensed under the GPL-3 License - see the [LICENSE](LICENSE) file for details.
 
 ## Interactive Demo Tutorials
 
-Explore comprehensive HTML tutorials with interactive examples and
-detailed explanations:
+Explore comprehensive HTML tutorials with interactive examples and detailed explanations:
 
 ### Available Vignettes
 
-[**Complete Guide to One-Dimensional Functional
-Clustering**](vignettes/OneD_Clustering_Guide.html) - **Title**:
-MultiConnector: Complete Guide to One-Dimensional Functional
-Clustering - **Subtitle**: Step-by-Step Analysis of Longitudinal Data -
-**Dataset**: Ovarian cancer cell growth data analysis
+**[Complete Guide to One-Dimensional Functional Clustering](vignettes/OneD_Clustering_Guide.html)**
+- **Title**: MultiConnector: Complete Guide to One-Dimensional Functional Clustering
+- **Subtitle**: Step-by-Step Analysis of Longitudinal Data
+- **Dataset**: Ovarian cancer cell growth data analysis
 
-[**Complete Guide to Two-Dimensional Functional
-Clustering**](vignettes/TwoD_Clustering_Guide.html) - **Title**:
-MultiConnector: Complete Guide to Two-Dimensional Functional
-Clustering - **Subtitle**: Step-by-Step Analysis of Longitudinal Data -
-**Dataset**: MCL MRD data
+**[Complete Guide to Two-Dimensional Functional Clustering](vignettes/TwoD_Clustering_Guide.html)**
+- **Title**: MultiConnector: Complete Guide to Two-Dimensional Functional Clustering
+- **Subtitle**: Step-by-Step Analysis of Longitudinal Data
+- **Dataset**: MCL MRD data 
 
 ### How to Access Demo Tutorials
 
-**Method 1: Direct File Access (Recommended)** Navigate to the
-`vignettes/` folder in the GitHub repository and open the HTML files in
-your browser:
-
-``` r
+**Method 1: Direct File Access (Recommended)**
+Navigate to the `vignettes/` folder in the GitHub repository and open the HTML files in your browser:
+```r
 # Clone or download the repository, then open in browser:
 # MultiConnector/vignettes/OneD_Clustering_Guide.html
 ```
-
 or
 
-``` r
+```r
 # Open in browser:
 browseVignettes("MultiConnector")
 ```
 
-**Method 2: R Script Demos** Run the comprehensive demo scripts
-available in the `demo/` folder:
-
-``` r
+**Method 2: R Script Demos**
+Run the comprehensive demo scripts available in the `demo/` folder:
+```r
 # After installing the package, run example demos
 demo("DemoOvarianCancer", package = "MultiConnector")  # Complete 1D analysis
 ```
 
-**Method 3: GitHub Pages (Future)** Interactive tutorials will be
-available online once the package is fully published.
+**Method 3: GitHub Pages (Future)**
+Interactive tutorials will be available online once the package is fully published.
 
 ## Related Packages
 
--   **cluster**: Classical clustering methods
--   **mixtools**: Mixture model clustering
--   **fda**: Functional data analysis
--   **funclust**: Alternative functional clustering approaches
+- **cluster**: Classical clustering methods
+- **mixtools**: Mixture model clustering
+- **fda**: Functional data analysis
+- **funclust**: Alternative functional clustering approaches

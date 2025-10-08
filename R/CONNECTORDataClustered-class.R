@@ -149,26 +149,28 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
 
 #' @title clusterDistribution
 #' @description Generate a table showing the distribution of subjects across clusters 
-#' based on a specified feature
+#' based on one or more features
 #' @param object CONNECTORDataClustered object
-#' @param feature Feature name to analyze (must be present in annotations)
-#' @param include_percentages Include percentage columns (default: TRUE)
+#' @param feature Feature name(s) to analyze - can be a single feature or vector of features (must be present in annotations)
 #' @param include_totals Include total row and column (default: TRUE)
 #' @return A contingency table showing feature values vs clusters with subject counts
 #' @details 
 #' This method creates a cross-tabulation showing how subjects with different 
-#' feature values are distributed across clusters. Useful for understanding 
+#' feature values are distributed across clusters. Can handle multiple features
+#' simultaneously for multi-dimensional analysis. Useful for understanding 
 #' cluster composition and feature associations.
 #' @examples
 #' \dontrun{
-#' # Basic distribution table
+#' # Single feature distribution
 #' clusterDistribution(clustered_data, "treatment")
 #' 
-#' # With percentages and totals
-#' clusterDistribution(clustered_data, "age_group", 
-#'                    include_percentages = TRUE, include_totals = TRUE)
+#' # Multiple features distribution
+#' clusterDistribution(clustered_data, c("treatment", "age_group"))
+#' 
+#' # With totals
+#' clusterDistribution(clustered_data, "age_group", include_totals = TRUE)
 #' }
-#' @import dplyr
+#' @import dplyr plyr
 #' @import tibble
 #' @export
 setGeneric("clusterDistribution", function(object, feature, 
@@ -179,100 +181,86 @@ setGeneric("clusterDistribution", function(object, feature,
 
 setMethod("clusterDistribution", signature(object = "CONNECTORDataClustered"), 
           function(object, feature, 
-                   include_percentages = FALSE,
                    include_totals = TRUE) {
             
             # Get annotations and cluster assignments
             annotations <- object@KData$annotations
             
-            # Check if feature exists
-            if (!feature %in% colnames(annotations)) {
-              available_features <- colnames(annotations)[!colnames(annotations) %in% c("subjID", "measureID", "jamesID")]
-              stop(paste("Feature '", feature, "' not found in annotations.\n",
-                        "Available features: ", paste(available_features, collapse = ", "), sep = ""))
+            # Validate that all features exist
+            for(f in feature){
+              if (!f %in% colnames(annotations)) {
+                available_features <- colnames(annotations)[!colnames(annotations) %in% c("subjID", "measureID", "jamesID")]
+                stop(paste("Feature '", f, "' not found in annotations.\n",
+                          "Available features: ", paste(available_features, collapse = ", "), sep = ""))
+              }
             }
             
-            getClusters(object) -> clusters_df
+            # Get cluster assignments
+            clusters_df <- getClusters(object)
             combined_data <- merge(annotations, clusters_df, by = "subjID")
-            # Remove rows with missing values for the feature
-            combined_data <- combined_data[!is.na(combined_data[[feature]]), ]
             
-            if (nrow(combined_data) == 0) {
-              stop(paste("No valid data found for feature '", feature, "'"))
+            # Remove rows with missing values for any of the requested features
+            combined_data_clean <- combined_data[complete.cases(combined_data[, feature, drop = FALSE]), ]
+            
+            if (nrow(combined_data_clean) == 0) {
+              stop(paste("No valid data found after removing missing values for feature(s):", paste(feature, collapse = ", ")))
             }
             
-            # Create contingency table
-            cont_table <- table(combined_data[[feature]], combined_data$cluster)
+            # Create contingency table using plyr::count
+            cont_table <- plyr::count(combined_data_clean[, c("cluster", feature)])
             
-            # Convert to data frame for better formatting
-            result_df <- as.data.frame.matrix(cont_table)
+            # Pivot wider to get clusters as columns
+            cont_table <- tidyr::pivot_wider(cont_table, 
+                                            names_from = cluster, 
+                                            values_from = freq, 
+                                            values_fill = 0)
             
-            # Add feature values as a column
-            result_df <- result_df %>%
-              tibble::rownames_to_column(var = feature) %>%
-              as_tibble()
+            # Identify cluster columns (all columns except the feature columns)
+            cluster_cols <- colnames(cont_table)[!colnames(cont_table) %in% feature]
             
-            # Ensure cluster columns are properly named
-            cluster_cols <- paste("cluster", 1:ncol(cont_table))
-            colnames(result_df)[-1] <- cluster_cols
+            # Rename cluster columns with "cluster" prefix
+            for (i in seq_along(cluster_cols)) {
+              old_name <- cluster_cols[i]
+              new_name <- paste0("cluster", old_name)
+              colnames(cont_table)[colnames(cont_table) == old_name] <- new_name
+            }
+            
+            # Update cluster_cols with new names
+            cluster_cols <- paste0("cluster", cluster_cols)
+            
+            # Start with cont_table as result
+            result_df <- cont_table
             
             # Add totals if requested
             if (include_totals) {
-              # Add total row
-              total_row <- result_df %>%
-                select(-1) %>%
-                summarise(across(everything(), sum)) %>%
-                mutate(!!feature := "TOTAL", .before = 1)
+              # Calculate total row: sum across all cluster columns
+              total_values <- result_df %>%
+                select(all_of(cluster_cols)) %>%
+                summarise(across(everything(), sum))
               
+              # Create total row with "TOTAL" for feature columns
+              total_row <- data.frame(matrix("TOTAL", nrow = 1, ncol = length(feature)))
+              colnames(total_row) <- feature
+              total_row <- cbind(total_row, total_values)
+              
+              # Bind the total row
               result_df <- bind_rows(result_df, total_row)
               
-              # Add total column
+              # Add total column: sum across all cluster columns for each row
               result_df <- result_df %>%
-                mutate(Total = rowSums(select(., -1)))
+                mutate(Total = rowSums(select(., all_of(cluster_cols)), na.rm = TRUE))
             }
             
-            # Add percentages if requested
-            if (include_percentages) {
-              total_subjects <- sum(cont_table)
-              
-              # Create percentage table
-              perc_df <- result_df
-              
-              if (include_totals) {
-                # Calculate percentages excluding total row/column
-                for (i in 2:(ncol(result_df) - 1)) {  # Exclude feature column and Total column
-                  perc_df[[paste0(names(result_df)[i], "_pct")]] <- 
-                    round((result_df[[i]] / total_subjects) * 100, 2)
-                }
-              } else {
-                for (i in 2:ncol(result_df)) {  # Exclude feature column
-                  perc_df[[paste0(names(result_df)[i], "_pct")]] <- 
-                    round((result_df[[i]] / total_subjects) * 100, 2)
-                }
-              }
-              
-              # Reorder columns to alternate between count and percentage
-              cluster_names <- cluster_cols
-              new_order <- c(feature)
-              
-              for (cluster in cluster_names) {
-                new_order <- c(new_order, cluster, paste0(cluster, "_pct"))
-              }
-              
-              if (include_totals) {
-                new_order <- c(new_order, "Total")
-              }
-              
-              # Select and reorder columns
-              existing_cols <- new_order[new_order %in% names(perc_df)]
-              result_df <- perc_df %>% select(all_of(existing_cols))
-            }
+            # Calculate missing values count for each feature
+            missing_count <- sapply(feature, function(f) sum(is.na(annotations[[f]])))
             
             # Add metadata as attributes
             attr(result_df, "feature") <- feature
-            attr(result_df, "n_clusters") <- ncol(cont_table)
-            attr(result_df, "total_subjects") <- sum(cont_table)
-            attr(result_df, "missing_values") <- sum(is.na(annotations[[feature]]))
+            attr(result_df, "n_clusters") <- length(cluster_cols)
+            attr(result_df, "total_subjects") <- sum(result_df[nrow(result_df), cluster_cols], na.rm = TRUE)
+            attr(result_df, "missing_values") <- missing_count
+            attr(result_df, "n_complete_cases") <- nrow(combined_data_clean)
             
             return(result_df)
           })
+            

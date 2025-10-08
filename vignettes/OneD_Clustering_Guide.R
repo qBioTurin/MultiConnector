@@ -35,7 +35,7 @@ cat("- Cores used for analysis:", workers, "\n")
 
 ## ----create-data-object-------------------------------------------------------
 system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package="MultiConnector") -> time_series_path
-system.file("Data/OvarianCancer/Ovarian_Annotations.txt", package="MultiConnector") -> annotations_path
+system.file("Data/OvarianCancer/Ovarian_Annotations.csv", package="MultiConnector") -> annotations_path
 # Create the main data object
 Data <- ConnectorData(time_series_path,annotations_path)
 
@@ -187,7 +187,7 @@ multi_subject_info$highlighted_plot
 
 ## ----cluster-distribution-----------------------------------------------------
 
-progeny_dist <- clusterDistribution(ClusterData, "Progeny")
+progeny_dist <- clusterDistribution(ClusterData, c("Progeny", "Source") )
   
 cat("Progeny Distribution Across Clusters:")
 print(progeny_dist)
