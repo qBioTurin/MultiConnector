@@ -215,6 +215,7 @@ setMethod("clusterDistribution", signature(object = "CONNECTORDataClustered"),
                                             values_from = freq, 
                                             values_fill = 0)
             
+            
             # Identify cluster columns (all columns except the feature columns)
             cluster_cols <- colnames(cont_table)[!colnames(cont_table) %in% feature]
             
@@ -242,6 +243,12 @@ setMethod("clusterDistribution", signature(object = "CONNECTORDataClustered"),
               total_row <- data.frame(matrix("TOTAL", nrow = 1, ncol = length(feature)))
               colnames(total_row) <- feature
               total_row <- cbind(total_row, total_values)
+              
+              for (f in feature) {
+                result_df[[f]] <- as.character(result_df[[f]])
+                total_row[[f]] <- as.character(total_row[[f]])
+              }
+              result_df <- bind_rows(result_df, total_row)
               
               # Bind the total row
               result_df <- bind_rows(result_df, total_row)
