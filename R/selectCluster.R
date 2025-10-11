@@ -61,12 +61,10 @@ setGeneric("selectCluster", function(results, G, best) {
   standardGeneric("selectCluster")
 })
 setMethod("selectCluster", signature(), function(results, G, best) {
-  
   error_indices <- sapply(results$Clusterings, function(res) {
     is.list(res) && "Error" %in% names(res$TTandfDBandSil)
   })
-  if(length(which(error_indices)) > 0)
-    results$Clusterings <- results$Clusterings[-which(error_indices)]
+  results$Clusterings <- results$Clusterings[!error_indices]
   
   
   indexes =
