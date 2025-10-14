@@ -70,9 +70,10 @@ setMethod("MaximumDiscriminationFunction", signature(CONNECTORDataClustered = "C
       DiscrNumber = paste0("DiscrFunc", x)
     ))
   
-  q <- sapply(1:length(CONNECTORDataClustered@KData$TimeGrids), function(i) {
+  q <- lapply(1:length(CONNECTORDataClustered@KData$TimeGrids), function(i) {
     rep(names(CONNECTORDataClustered@KData$TimeGrids[i]), length(CONNECTORDataClustered@KData$TimeGrids[[i]]))
   })
+  
   measureID <- unlist(q)
   
   # Aggiungi measureID a tutti gli elementi di DiscrList (non solo al primo)
