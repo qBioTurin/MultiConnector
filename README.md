@@ -2,10 +2,7 @@
 
 
 > **⚠️ CONFIDENTIAL - UNPUBLISHED PACKAGE**  
-> This package is currently under development and has not been published yet. All content, code, and documentation are confidential and proprietary. Please do not distribute or share without explicit permissresults <- estimateCluster(ovarian_data, G = 2:4, p = 3, runs = 20)
-best_model <- selectCluster(results, G = 3, best = "MinfDB")
-validation <- validateCluster(best_model)
-
+> This package is currently under development and has not been published yet. All content, code, and documentation are confidential and proprietary. Please do not distribute or share without explicit permission.
 
 [![R-CMD-check](https://github.com/qBioTurin/MultiConnector/workflows/R-CMD-check/badge.svg)](https://github.com/qBioTurin/MultiConnector/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/MultiConnector)](https://CRAN.R-project.org/package=MultiConnector)
