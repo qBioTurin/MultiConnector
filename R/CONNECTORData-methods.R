@@ -16,7 +16,7 @@
 #' annotations is a tibble that contains the ID of each curve
 #' TimeGrid is a vector that contains the time points of the curves
 #' @import readxl methods readr
-#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom dplyr select filter group_by mutate arrange distinct count
 #' @importFrom tidyr gather spread
 #' @import tibble
 #' @importFrom magrittr %>%
