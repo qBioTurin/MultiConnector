@@ -27,15 +27,15 @@ setMethod("IndexPlotExtrapolation",signature(), function(results) {
     results$Clusterings <- results$Clusterings[-which(error_indices)]
   
   indexes = do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
-        xx = results$Clusterings[[x]]
-        df = data.frame(xx$TTandfDBandSil)
-        df$freq = xx$freq
-        df$which = x
-        return(df)
-    }))
+    xx = results$Clusterings[[x]]
+    df = data.frame(xx$TTandfDBandSil)
+    df$freq = xx$freq
+    df$which = x
+    return(df)
+  }))
   
   # palette di colori picasso
-  pastel_colors <- met.brewer("VanGogh1", max(indexes$G))
+  pastel_colors <- MetBrewer::met.brewer("VanGogh1", max(indexes$G))
   
   #uncount di tidyverse per replicare le frequenze
   indexesfull = indexes[rep(row.names(indexes), times = indexes$freq), ] %>% 
@@ -66,7 +66,7 @@ setMethod("IndexPlotExtrapolation",signature(), function(results) {
     arrange(G, Indexes, IndexesV) %>% 
     slice(1) %>%  
     ungroup()
-
+  
   
   a<-indexes%>%filter(G==6)
   # Creiamo un dataframe per la legenda dei G
@@ -74,14 +74,23 @@ setMethod("IndexPlotExtrapolation",signature(), function(results) {
   g_labels <- paste("G =", g_values)
   names(pastel_colors) <- g_labels[1:length(pastel_colors)]
   
-  return(suppressWarnings(
-    indexesfull %>% 
+  if (packageVersion("ggplot2") < "4.0.0") {
+    pl = indexesfull %>% 
+      ggplot(aes(x = G, y = IndexesV)) + 
+      gghalves::geom_half_point(aes(color = paste("G =", G)), width = 0.8, alpha = 1, 
+                                side = "l", transformation = position_jitter(height = 0), size = 2)
+  } else {
+    pl = indexesfull %>% 
       ggplot(aes(x = G, y = IndexesV)) +
-      geom_half_point(aes(color = paste("G =", G)), width = 0.8, alpha = 1, 
-                      side = "l", transformation = position_jitter(height = 0), size = 2) +
-      geom_half_violin(aes(fill = paste("G =", G)), side = "r", alpha = 0.7, scale = "width") +
-      geom_half_boxplot(aes(fill = paste("G =", G)), alpha = 0.7, fatten = 1) +
-      
+      geom_jitter(aes(color = paste("G =", G)), 
+                  position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.6), 
+                  size = 2, alpha = 0.8) 
+  }
+  
+  return(suppressWarnings(
+    pl +
+      gghalves::geom_half_violin(aes(fill = paste("G =", G)), side = "r", alpha = 0.7, scale = "width") +
+      gghalves::geom_half_boxplot(aes(fill = paste("G =", G)), alpha = 0.7, fatten = 1) +
       geom_point(data = indexesfilteredMaxFreq, 
                  aes(x = G, y = IndexesV, color = "MaxFreq"), 
                  shape = 8, size = 4, stroke=1.5, position = position_nudge(x = -0.3)) +

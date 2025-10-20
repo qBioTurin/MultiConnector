@@ -30,8 +30,8 @@ cat("Detected", nworkers, "CPU cores. Will use", nworkers-1, "for parallel proce
 # ------------------------------------------------------------------------------
 
 # Create the main data object for analysis
-Data <- ConnectorData("./inst/Data/OvarianCancer/Ovarian_TimeSeries.xlsx",
-                      "./inst/Data/OvarianCancer/Ovarian_Annotations.txt")
+Data <- ConnectorData(system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx",package = "MultiConnector"),
+                      system.file("Data/OvarianCancer/Ovarian_Annotations.csv",package = "MultiConnector"))
 
 # ------------------------------------------------------------------------------
 # STEP 2: INITIAL DATA EXPLORATION
@@ -94,8 +94,8 @@ optimal_p <- 3
 clusters <- estimateCluster(DataTrunc, 
                            G = 2:6,           # Test 2-6 clusters
                            p = optimal_p,     # Use optimal spline dimension
-                           runs = 50,         # Multiple runs for stability
-                           cores = nworkers-1) # Parallel processing
+                           runs = 10,         # Multiple runs for stability
+                           cores = 1) # Parallel processing
 
 # Plot clustering quality metrics
 plot(clusters)

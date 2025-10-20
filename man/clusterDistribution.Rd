@@ -14,9 +14,7 @@ clusterDistribution(
 \arguments{
 \item{object}{CONNECTORDataClustered object}
 
-\item{feature}{Feature name to analyze (must be present in annotations)}
-
-\item{include_percentages}{Include percentage columns (default: TRUE)}
+\item{feature}{Feature name(s) to analyze - can be a single feature or vector of features (must be present in annotations)}
 
 \item{include_totals}{Include total row and column (default: TRUE)}
 }
@@ -25,20 +23,23 @@ A contingency table showing feature values vs clusters with subject counts
 }
 \description{
 Generate a table showing the distribution of subjects across clusters
-based on a specified feature
+based on one or more features
 }
 \details{
 This method creates a cross-tabulation showing how subjects with different
-feature values are distributed across clusters. Useful for understanding
+feature values are distributed across clusters. Can handle multiple features
+simultaneously for multi-dimensional analysis. Useful for understanding
 cluster composition and feature associations.
 }
 \examples{
 \dontrun{
-# Basic distribution table
+# Single feature distribution
 clusterDistribution(clustered_data, "treatment")
 
-# With percentages and totals
-clusterDistribution(clustered_data, "age_group", 
-                   include_percentages = TRUE, include_totals = TRUE)
+# Multiple features distribution
+clusterDistribution(clustered_data, c("treatment", "age_group"))
+
+# With totals
+clusterDistribution(clustered_data, "age_group", include_totals = TRUE)
 }
 }
