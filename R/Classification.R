@@ -51,7 +51,7 @@ setMethod("ClassificationCurves", signature(data = "CONNECTORData", CONNECTORDat
             # qua è da controllare che abbia le stesse misure dei clustered data
             ######
             
-            nworkers <- detectcores()
+            nworkers <- detectCores()
             if(nworkers<cores) cores <- nworkers
             
             parameters <- CONNECTORDataClustered@CfitandParameters$cfit$parameters
@@ -100,22 +100,22 @@ setMethod("ClassificationCurves", signature(data = "CONNECTORData", CONNECTORDat
             ###
             IDcurves = unique(CData$subjID)
             
-            #cl <- makeCluster(cores)
-            #clusterCall(cl, function(){
-            #   library(dplyr)
-            #   library(ggplot2)
-            #   library(mvtnorm)
-            #   library(tidyr)
-            # })
-            #clusterExport(cl,list("CData","Lambda.alpha","Snew","sigma",
-            #                      "Gamma","ClassificationSingleCurve","Nclusters"),envir = environment() )
-            
-            ALL.runs<-lapply(IDcurves, function(x_id){
-              #parLapply(cl,IDcurves, function(x_id){
+            cl <- makeCluster(cores)
+            clusterCall(cl, function(){
+              library(dplyr)
+              library(ggplot2)
+              library(mvtnorm)
+              library(tidyr)
+            })
+            clusterExport(cl,list("CData","Lambda.alpha","Snew","sigma",
+                                 "Gamma","ClassificationSingleCurve","Nclusters"),envir = environment() )
+
+            ALL.runs<-#lapply(IDcurves, function(x_id){
+              parLapply(cl,IDcurves, function(x_id){
               tryCatch({
                 do.call(rbind,
                         lapply(1:J,function(j) {
-                          CData_x = CData %>% filter(jamesID == x_id,measureID == M[j])
+                          CData_x = CData %>% filter(subjID == x_id,measureID == M[j])
                           CData_x$timeindex<- match(CData_x$time, newGrid[[j]])
                           CData_x
                         })
@@ -137,7 +137,8 @@ setMethod("ClassificationCurves", signature(data = "CONNECTORData", CONNECTORDat
               })
             })
             
-            #stopCluster(cl)
+            stopCluster(cl)
+            #remove errors
             
             names(ALL.runs) = paste0("ID_",IDcurves)
             df = as.data.frame(t(sapply(ALL.runs,"[[",3)),row.names = F)
