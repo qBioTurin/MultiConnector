@@ -4,7 +4,7 @@
 #'
 #'  
 #'
-#' @param newdata new set of data
+#' @param data CONNECTORData. See CONNECTORData for details.
 #' @param CONNECTORDataClustered Configuration choosen by ConfigSelection()
 #' @param cores number of cores used
 #' @param entropyCutoff ...
@@ -23,24 +23,27 @@
 #'
 
 
-setGeneric("ClassificationCurves", function(newdata,
+setGeneric("ClassificationCurves", function(data,
                                             CONNECTORDataClustered,
                                             cores =1,
                                             entropyCutoff =1,probCutoff = 0.6)
   standardGeneric("ClassificationCurves"))
 
 #' @export
-setMethod("ClassificationCurves", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), 
-          function(newdata,
+setMethod("ClassificationCurves", signature(data = "CONNECTORData", CONNECTORDataClustered = "CONNECTORDataClustered"), 
+          function(data,
                    CONNECTORDataClustered,
                    cores =1,
                    entropyCutoff =1,probCutoff = 0.6){
             
             if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {
-              stop("Input must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))
+              stop("CONNECTORDataClustered must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))
+            }
+            if (!inherits(data, "CONNECTORData")) {
+              stop("data must be of class 'CONNECTORData'. Current class: ", class(data))
             }
             
-            CData = newdata@curves
+            CData = data@curves
             CData$jamesID <- as.integer(factor(CData$subjID, levels = unique(CData$subjID)))
             M <- sort(unique(CData$measureID))
             
@@ -59,7 +62,7 @@ setMethod("ClassificationCurves", signature(CONNECTORDataClustered = "CONNECTORD
             #
             # for(i in names(grid)){print(i)
             #   gridM = grid[[i]]
-            #   DataTruncation(newdata, measure = i, feature = "gender", truncTime = c(min(gridM),max(gridM)))
+            #   DataTruncation(data, measure = i, feature = "gender", truncTime = c(min(gridM),max(gridM)))
             # }
             
             ### Lets obtain the new S of the new curves exploiting the S from FCM
@@ -81,7 +84,7 @@ setMethod("ClassificationCurves", signature(CONNECTORDataClustered = "CONNECTORD
             
             # Lets calculate the new S of the new curves
             
-            newGrid <- newdata@TimeGrids
+            newGrid <- data@TimeGrids
             
             Snew = lapply(1:J, function(j) {
               FullSm <- FullS[[j]]

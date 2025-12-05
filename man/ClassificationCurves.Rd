@@ -5,7 +5,7 @@
 \title{ClassificationCurves}
 \usage{
 ClassificationCurves(
-  newdata,
+  data,
   CONNECTORDataClustered,
   cores = 1,
   entropyCutoff = 1,
@@ -13,7 +13,7 @@ ClassificationCurves(
 )
 }
 \arguments{
-\item{newdata}{new set of data}
+\item{data}{CONNECTORData. See CONNECTORData for details.}
 
 \item{CONNECTORDataClustered}{Configuration choosen by ConfigSelection()}
 

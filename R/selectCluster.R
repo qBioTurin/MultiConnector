@@ -103,7 +103,7 @@ setMethod("selectCluster", signature(), function(results, G, best) {
       ungroup()
   }
   else{
-    stop("Error: 'best' must be 'MaxFeq' or 'MinfDB' or 'maxSilhouette")
+    stop("Error: 'best' must be 'MaxFeq' or 'MinfDB' or 'MaxSilhouette'")
   }
   pos = indexesfiltered %>% filter(.data[[sym("G")]] == !!G, Indexes == "fDB") %>% pull(which)
   res = results$Clusterings[[pos]]
