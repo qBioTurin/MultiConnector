@@ -249,6 +249,7 @@ cluster_results <- estimateCluster(
 )
 
 # 5. Select optimal configuration
+plot(cluster_results) # chose G based on the plot)
 final_clusters <- selectCluster(cluster_results, G = 3, best = "MinfDB")
 
 # 6. Visualize results
