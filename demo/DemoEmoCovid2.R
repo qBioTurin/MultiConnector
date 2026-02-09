@@ -6,40 +6,35 @@ rm(list=ls())
 library(MultiConnector)
 library(dplyr)
 
-
-SampledCurves = readRDS("/Users/susie/Documents/Ricerca/Francesca/connprowerN/ConnectorNtodeploy/MultiConnector/inst/Data/EmoCovid/emocovid_sampleCurves.RDS")
-Annotations = readRDS("/Users/susie/Documents/Ricerca/Francesca/connprowerN/ConnectorNtodeploy/MultiConnector/inst/Data/EmoCovid/emocovid_annotations.RDS")
+getwd()
+setwd("~/Documents/MultiConnectorProve/MultiConnector/demo")
+SampledCurves = readRDS("../inst/Data/EmoCovid/emocovid_sampleCurves.RDS")
+Annotations = readRDS("../inst/Data/EmoCovid/emocovid_annotations.RDS")
 db <- ConnectorData(SampledCurves, Annotations) 
-# ok qui mi dice che ci sono dei soggetti con delle curve con meno  di due osservazioni (forse meglio dire una sola?)
-# attenzione specificare nel messaggio di errore <= perché meno di due è <
 
-SampledCurves <- SampledCurves %>%
-  group_by(measureID, subjID) %>%
-  mutate(n = n(), single_point = if_else(n<=2, TRUE, FALSE)) %>%
-  ungroup()
-  
-# ho dovuto reinstallare cli ? non so perché
-# install.packages("cli")
-
-SampledCurves <- SampledCurves %>%
-  filter(single_point == FALSE)
 
 length(unique(SampledCurves$subjID))
 length(unique(Annotations$subjID))
 
-SampledCurves <- SampledCurves %>%
-  select(-n, -single_point)
-
-db <- ConnectorData(SampledCurves, Annotations) 
-# ok ci siamo
 
 plot(db)
 plot(db, feature = "outcome")
 # ok ci siamo
 
 library(parallel)
-workers <- detectCores() - 2
-spline_dimension <- estimatepDimension(db, p = 3:5, cores =  workers)
+detectCores()
+workers <- 10
+spline_dimension <- estimatepDimension(db, p = 3:10, cores =  workers)
+spline_dimension
+getwd()
+save.image(file = "emocovidMultiSplineDim.RData")
 
-
-
+table(db@curves$measureID)
+optimal_p <- c("Basophils" = 6, "Eosinophils" = 5, "Erythrocytes" = 5,
+               "Leukocytes" = 5, "Lymphocytes" = 5, "Monocytes" = 7, "Neutrophils" = 5,
+               "Thrombocytes" = 5)
+clusters <- estimateCluster(db, 
+                            G = 2:6,           # Test 2-6 clusters
+                            p = optimal_p,     # Use optimal spline dimensions for both measurements
+                            runs = 20,         # Multiple runs for stability
+                            cores = 10) 
