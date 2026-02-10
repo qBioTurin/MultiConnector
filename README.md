@@ -44,6 +44,11 @@ MultiConnector requires R ≥ 4.0.0 and several packages that will be automatica
 packages <- c("dplyr", "ggplot2", "splines", "Matrix", "parallel", 
               "readxl", "readr", "tibble", "magrittr", "patchwork")
 install.packages(packages)
+
+if (!require(devtools)) {
+    install.packages('devtools')
+}
+devtools::install_github('erocoar/gghalves')
 ```
 
 ## Data Format Requirements
