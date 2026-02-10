@@ -8,6 +8,10 @@
 [![CRAN status](https://www.r-pkg.org/badges/version/MultiConnector)](https://CRAN.R-project.org/package=MultiConnector)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+<p align="center">
+  <img src="./inst/Images/multiconnectorLogo.png" alt="MultiConnector Logo" width="200">
+</p>
+
 
 ## Overview
 
@@ -250,6 +254,7 @@ cluster_results <- estimateCluster(
 )
 
 # 5. Select optimal configuration
+plot(cluster_results) # chose G based on the plot)
 final_clusters <- selectCluster(cluster_results, G = 3, best = "MinfDB")
 
 # 6. Visualize results
