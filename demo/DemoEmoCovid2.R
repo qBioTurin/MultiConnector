@@ -38,3 +38,5 @@ clusters <- estimateCluster(db,
                             p = optimal_p,     # Use optimal spline dimensions for both measurements
                             runs = 20,         # Multiple runs for stability
                             cores = 10) 
+
+save.image(file = "emoMultiup2clusters.RData")
