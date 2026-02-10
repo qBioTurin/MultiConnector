@@ -3,4 +3,7 @@
 .RData
 .Ruserdata
 MultiConnector.Rproj
-
+.DS_Store
+inst/.DS_Store
+R/.DS_Store
+inst/Data/.DS_Store
