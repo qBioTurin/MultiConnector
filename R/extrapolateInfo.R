@@ -7,10 +7,26 @@
 #'
 #' @param CONNECTORDataClustered Connector object created with ConnectorData
 #' @param subjIDs The subject ID(s) to analyze - can be a single ID or vector of IDs
+#' @param colors Optional character vector of colors to use for each subject in the plot.
+#'   If provided, must have the same length as subjIDs. Colors can be specified as
+#'   color names (e.g., "red", "blue") or hex codes (e.g., "#FF0000").
+#'   If NULL (default), colors are automatically generated using rainbow palette.
 #'
 #' @return A list containing: cluster assignments, highlighted plot, quality metrics, and subject data
 #'
-
+#' @examples
+#' \dontrun{
+#' # Single subject with default color
+#' SubjectInfo(clustered_data, "subject1")
+#' 
+#' # Multiple subjects with custom colors
+#' SubjectInfo(clustered_data, c("subj1", "subj2", "subj3"), 
+#'             colors = c("red", "blue", "green"))
+#' 
+#' # Using hex colors
+#' SubjectInfo(clustered_data, c("subj1", "subj2"), 
+#'             colors = c("#E41A1C", "#377EB8"))
+#' }
 #' @seealso CONNECTORDataClustered ClusterPlot
 #'
 #' @importFrom magrittr %>%
@@ -21,13 +37,15 @@
 #' @export
 
 setGeneric("SubjectInfo", function(CONNECTORDataClustered,
-                                   subjIDs) {
+                                   subjIDs,
+                                   colors = NULL) {
   standardGeneric("SubjectInfo")
 })
 
 setMethod("SubjectInfo", signature(CONNECTORDataClustered = "CONNECTORDataClustered"),
           function(CONNECTORDataClustered,
-                   subjIDs) {
+                   subjIDs,
+                   colors = NULL) {
             
             # Get basic information
             G = CONNECTORDataClustered@TTandfDBandSil$G[1]
@@ -50,6 +68,14 @@ setMethod("SubjectInfo", signature(CONNECTORDataClustered = "CONNECTORDataCluste
             missing_subjects <- subjIDs[!subjIDs %in% combined_df$subjID]
             if (length(missing_subjects) > 0) {
               stop(paste("Subject ID(s) not found:", paste(missing_subjects, collapse = ", ")))
+            }
+            
+            # Validate colors parameter if provided
+            if (!is.null(colors)) {
+              if (length(colors) != length(subjIDs)) {
+                stop(paste("Length of colors (", length(colors), 
+                           ") must match length of subjIDs (", length(subjIDs), ")", sep = ""))
+              }
             }
             
             # Get cluster assignments for the specific subjects
@@ -89,7 +115,11 @@ setMethod("SubjectInfo", signature(CONNECTORDataClustered = "CONNECTORDataCluste
             
             # Generate colors for multiple subjects
             n_subjects <- length(subjIDs)
-            if (n_subjects == 1) {
+            if (!is.null(colors)) {
+              # Use user-provided colors
+              target_colors <- colors
+              names(target_colors) <- subjIDs
+            } else if (n_subjects == 1) {
               target_colors <- "red"
               names(target_colors) <- subjIDs[1]
             } else {
@@ -111,14 +141,14 @@ setMethod("SubjectInfo", signature(CONNECTORDataClustered = "CONNECTORDataCluste
                              group = subjID),
                          color = "grey",
                          alpha = 0.5,
-                         size = 0.5) +
+                         linewidth = 0.5) +
                 # Draw colored lines on top
                 geom_line(data = colored_data,
                          aes(x = time,
                              y = value,
                              group = subjID,
                              color = subject_type),
-                         size = 1.2) +
+                         linewidth = 1.2) +
                 scale_color_manual(values = target_colors) +
                 geom_line(
                   data = MeanC,

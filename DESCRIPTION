@@ -23,6 +23,7 @@ Imports:
     parallel,
     patchwork,
     plotly,
+    plyr,
     readr,
     readxl,
     rlang,

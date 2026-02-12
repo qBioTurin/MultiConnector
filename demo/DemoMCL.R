@@ -8,6 +8,8 @@ Annotations = readRDS(system.file("Data/MCL/Annotations.rds", package="MultiConn
 # STEP 1: CREATE CONNECTOR DATA OBJECT
 # ------------------------------------------------------------------------------
 
+TimeSeries$value[1] = NA
+
 # Create the main data object for analysis
 Data <- ConnectorData( tibble(TimeSeries), tibble(Annotations) )
 summary(Data)
@@ -83,6 +85,7 @@ saveRDS(clusters, file="~/Desktop/GIT/R_packages_project/MultiConnector/inst/Dat
 # Selection criterion: MinfDB (minimum functional Data Depth)
 
 # Select the best configuration
+clusters = readRDS("~/Desktop/GIT/R_packages_project/MultiConnector/inst/Data/MCL/MCLTwoD_Clustering.rds")
 ClusterData <- selectCluster(clusters, G=3, "MinfDB")
 
 # ------------------------------------------------------------------------------
@@ -93,14 +96,17 @@ ClusterData <- selectCluster(clusters, G=3, "MinfDB")
 plot(ClusterData)
 getAnnotations(ClusterData)
 
+getClusterNames(ClusterData)  # Get cluster names and sizes
+ClusterData <- setClusterNames(ClusterData, c("High", "Medium", "Low"))
+getClusterNames(ClusterData) 
+plot(ClusterData)
 
 # Plot 7.2: Cluster visualization colored by progeny
 plot(ClusterData, feature="TTP")
 plot(ClusterData, feature="Arm")
 
-getClusters(ClusterData)
+clustersLink = getClusters(ClusterData)
 clusterDistribution(ClusterData, feature="TTP")
-
 
 info <- SubjectInfo(ClusterData, subjIDs = "Subject 201")
 info$cluster_assignment   
@@ -112,10 +118,10 @@ info <- SubjectInfo(ClusterData, subjIDs = c("Subject 201", "Subject 1105") )
 info$highlighted_plot
 info$quality_metrics 
 
-# Interpretation notes:
-# - Each cluster represents a distinct growth pattern
-# - Look for relationships between clusters and progeny information
-# - This helps understand biological meaning of discovered patterns
+# Multiple subjects with custom colors
+info <- SubjectInfo(ClusterData, c("Subject 201", "Subject 1105"), 
+            colors = c("red", "blue"))
+info$highlighted_plot
 
 # -----------------------------------------------------------------------------
 # STEP 8: CLUSTER VALIDATION
@@ -127,7 +133,8 @@ Metrics <- validateCluster(ClusterData)
 # Display validation plot
 # - Silhouette analysis: measures how well samples fit their clusters
 # - Entropy analysis: measures uncertainty in cluster assignments
-print(Metrics$plot)
+Metrics$plot
+Metrics$entropy_silhouette_table
 
 # Validation metrics interpretation:
 # - High silhouette scores (close to 1): well-separated clusters
@@ -201,11 +208,19 @@ Clusters = rbind(Clusters, subClusters)
 saveRDS(list(ClusterData=ClusterData, subClusterData=subClusterData), file="DemoMCL_ClusterData.rds")
 write.csv(Clusters, file="MultiConnector_MCL_Clusters.csv", row.names=FALSE,quote = F)
 
+######
 
+newCurves = merge(merge(ClusterData@KData$CData %>% select(-jamesID, -timeindex, -curvesID),
+                     Clusters ),ClusterData@KData$annotations)
 merge(Data@curves, Clusters, by="subjID") -> newCurves
 
 getClustersCentroids(ClusterData) -> meanC
 meanC = rbind(meanC %>% filter(cluster != "3") %>% mutate(cluster = as.numeric(cluster)),submeanC)
+
+saveRDS(list( data = merge(merge(ClusterData@KData$CData %>% select(-jamesID, -timeindex, -curvesID),
+                    Clusters ),ClusterData@KData$annotations), 
+              meanCurvesClusters = meanC),
+        file="DatiMCLmulti.RDs")
 
 newCurves %>% ggplot() + 
   geom_line(aes(x=time, y=value, group=subjID), color = "grey", alpha=0.3)+

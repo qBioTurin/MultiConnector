@@ -86,8 +86,88 @@ setMethod("getClusters", signature(object = "CONNECTORDataClustered"), function(
   combined_df = merge(object@KData$annotations, df)
   combined_df$cluster = resClust[combined_df$jamesID]
   
-  return(combined_df %>% select(subjID, cluster) %>% distinct() )
+  result <- combined_df %>% select(subjID, cluster) %>% distinct()
+  
+  # Apply cluster names if set
+  if (length(object@cluster.names) > 0) {
+    result$cluster <- factor(result$cluster, 
+                             levels = seq_along(object@cluster.names),
+                             labels = object@cluster.names)
+  }
+  
+  return(result)
 })
+
+
+# Method to set cluster names
+#' @title setClusterNames
+#' @description Set custom names for clusters in a CONNECTORDataClustered object.
+#' These names will be used in plots and dataframes.
+#' @param object CONNECTORDataClustered object
+#' @param names Character vector of cluster names. Length must match the number of clusters.
+#' @return Updated CONNECTORDataClustered object with cluster names set.
+#' @details 
+#' This method allows you to assign meaningful names to clusters instead of using
+#' numeric identifiers. The names are stored in the object and used by other methods
+#' like getClusters, getClustersCentroids, and clusterDistribution.
+#' @examples
+#' \dontrun{
+#' # Set names for a 3-cluster solution
+#' clustered_data <- setClusterNames(clustered_data, c("Low", "Medium", "High"))
+#' 
+#' # Now getClusters will return named clusters
+#' getClusters(clustered_data)
+#' }
+#' @export
+setGeneric("setClusterNames", function(object, names) {
+  standardGeneric("setClusterNames")
+})
+
+#' @rdname setClusterNames
+#' @export
+setMethod("setClusterNames", signature(object = "CONNECTORDataClustered"), 
+          function(object, names) {
+            # Get number of clusters
+            G <- object@TTandfDBandSil$G[1]
+            
+            if (length(names) != G) {
+              stop(paste("Number of names (", length(names), ") must match number of clusters (", G, ")", sep = ""))
+            }
+            
+            if (any(duplicated(names))) {
+              stop("Cluster names must be unique")
+            }
+            
+            object@cluster.names <- as.character(names)
+            return(object)
+          })
+
+
+# Method to get cluster names
+#' @title getClusterNames
+#' @description Get the custom names assigned to clusters in a CONNECTORDataClustered object.
+#' @param object CONNECTORDataClustered object
+#' @return Character vector of cluster names, or NULL if no names have been set.
+#' @examples
+#' \dontrun{
+#' # Get cluster names
+#' getClusterNames(clustered_data)
+#' }
+#' @export
+setGeneric("getClusterNames", function(object) {
+  standardGeneric("getClusterNames")
+})
+
+#' @rdname getClusterNames
+#' @export
+setMethod("getClusterNames", signature(object = "CONNECTORDataClustered"), 
+          function(object) {
+            if (length(object@cluster.names) == 0) {
+              G <- object@TTandfDBandSil$G[1]
+              return(as.character(1:G))
+            }
+            return(object@cluster.names)
+          })
 
 
 # Method to extract Clusters Centroids
@@ -128,6 +208,9 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
     q = q
   )
   
+  # Get cluster names
+  cluster_names <- getClusterNames(object)
+  
   MeanC = do.call(rbind, lapply(names(curvepred), function(x) {
     as.data.frame(curvepred[[x]]$meancurves) -> Mean
     
@@ -140,7 +223,8 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
   })) %>%
     tidyr::gather(-time, -measureID, value = "value", key = "cluster")
   
-  MeanC$cluster <- factor(MeanC$cluster)
+  # Apply cluster names
+  MeanC$cluster <- factor(MeanC$cluster, levels = as.character(1:G), labels = cluster_names)
   return(MeanC )
 })
 
@@ -170,7 +254,7 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
 #' # With totals
 #' clusterDistribution(clustered_data, "age_group", include_totals = TRUE)
 #' }
-#' @import dplyr plyr
+#' @import dplyr
 #' @import tibble
 #' @export
 setGeneric("clusterDistribution", function(object, feature, 
@@ -219,15 +303,23 @@ setMethod("clusterDistribution", signature(object = "CONNECTORDataClustered"),
             # Identify cluster columns (all columns except the feature columns)
             cluster_cols <- colnames(cont_table)[!colnames(cont_table) %in% feature]
             
-            # Rename cluster columns with "cluster" prefix
+            # Get cluster names for labeling
+            cluster_names <- getClusterNames(object)
+            
+            # Rename cluster columns with "cluster" prefix and custom names
             for (i in seq_along(cluster_cols)) {
               old_name <- cluster_cols[i]
-              new_name <- paste0("cluster", old_name)
+              cluster_idx <- as.integer(old_name)
+              if (!is.na(cluster_idx) && cluster_idx <= length(cluster_names)) {
+                new_name <- paste0(cluster_names[cluster_idx])
+              } else {
+                new_name <- paste0(old_name)
+              }
               colnames(cont_table)[colnames(cont_table) == old_name] <- new_name
             }
             
             # Update cluster_cols with new names
-            cluster_cols <- paste0("cluster", cluster_cols)
+            cluster_cols <- colnames(cont_table)[!colnames(cont_table) %in% feature]
             
             # Start with cont_table as result
             result_df <- cont_table

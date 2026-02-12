@@ -94,7 +94,7 @@ setMethod("ConnectorData", signature ("character"),
 setMethod("ConnectorData", signature ("data.frame"),
           function(TimeSeriesFile, AnnotationFile) {
 
-            return(ConnectorData(tibble(curves), tibble(annotations) ))
+            return(ConnectorData(tibble(TimeSeriesFile), tibble(AnnotationFile) ))
             
           })
 
@@ -110,7 +110,7 @@ setMethod("ConnectorData", signature("tbl_df"),
             select<-dplyr::select
             curves <- TimeSeriesFile
             annotations <- AnnotationFile
-            
+        
             
             #Check if column "time" and "ID" are present, but just once. if not throw a error and quit. time could be lowercase or uppercase
             if (sum(grepl("time", tolower(colnames(curves)), ignore.case = TRUE)) != 1) {
@@ -139,8 +139,16 @@ setMethod("ConnectorData", signature("tbl_df"),
             }
             
             #remove rows in curves where ID or time or both are NA
+            
+            rowsKeep = complete.cases(curves[, c("subjID", "time", "measureID","value")])
+            NaInRow = sum(!rowsKeep)
+            if(length(NaInRow)>0)
+              warning(
+                paste0(NaInRow, " rows with NA in ID or time or measureID or value are present in the TimeSeriesFile. The rows are removed.")
+              )
+            
             curves <-
-              curves[complete.cases(curves[, c("subjID", "time", "measureID")]),]
+              curves[rowsKeep,]
             
             if (sum(colnames(annotations) == "subjID") != 1) {
               stop("The column name 'subjID' is not present or is present more than once in the AnnotationFile")
@@ -166,11 +174,14 @@ setMethod("ConnectorData", signature("tbl_df"),
               )
             }
             
+            
+            
             #check length of the curves
             dimensions    <- curves %>%
               select(-time, -subjID, -measureID) %>%
               group_by(curvesID) %>%
               summarise_all(~ sum(!is.na(.)))
+            
             if (any(dimensions$value < 2)) {
               warning(
                 sum(dimensions$value < 2),

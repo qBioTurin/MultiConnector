@@ -14,11 +14,18 @@
 #'   \itemize{
 #'     \item \code{plot}: A combined ggplot2 visualization showing silhouette scores and entropy
 #'       distributions across clusters
-#'     \item \code{metrics}: A data frame with detailed clustering metrics including:
+#'     \item \code{entropy_silhouette_table}: A data frame with per-curve quality metrics containing:
 #'       \itemize{
-#'         \item Silhouette scores (average and per-cluster)
-#'         \item Entropy measures (indicating cluster assignment uncertainty)
-#'         \item Cluster sizes and proportions
+#'         \item \code{curvesID}: Curve identifier
+#'         \item \code{Cluster}: Assigned cluster (uses custom names if set via setClusterNames)
+#'         \item \code{Silhouette}: Silhouette score for the curve (-1 to 1, higher is better)
+#'         \item \code{Entropy}: Entropy measure (lower indicates more confident assignment)
+#'       }
+#'     \item \code{assignmentProbs}: A data frame with cluster assignment probabilities containing:
+#'       \itemize{
+#'         \item \code{curvesID}: Curve identifier
+#'         \item \code{AssignedCluster}: The cluster the curve was assigned to
+#'         \item One column per cluster with membership probabilities (column names use custom cluster names if set)
 #'       }
 #'   }
 #'
@@ -50,11 +57,14 @@
 #' # View the validation plot
 #' print(validation$plot)
 #' 
-#' # Examine numerical metrics
-#' print(validation$metrics)
+#' # Examine per-curve quality metrics (silhouette and entropy)
+#' print(validation$entropy_silhouette_table)
 #' 
 #' # Check average silhouette score
-#' mean_silhouette <- mean(validation$metrics$silhouette)
+#' mean_silhouette <- mean(validation$entropy_silhouette_table$Silhouette)
+#' 
+#' # View assignment probabilities for each curve
+#' print(validation$assignmentProbs)
 #' }
 #'
 #' @seealso 
@@ -130,16 +140,19 @@ setMethod("validateCluster", signature(CONNECTORDataClustered = "CONNECTORDataCl
   
   tbl_entropy_silhouette <- silCoeff %>%
     left_join(df1, by = c("jamesID" = "ID")) %>%
-    mutate(curvesID = CONNECTORDataClustered@KData$CData$subjID[match(jamesID, CONNECTORDataClustered@KData$CData$jamesID)]) %>%
+    mutate(subjID = CONNECTORDataClustered@KData$CData$subjID[match(jamesID, CONNECTORDataClustered@KData$CData$jamesID)]) %>%
     group_by(cluster) %>%
     mutate(max_si = max(si)) %>%
     ungroup() %>%
     arrange(max_si, cluster, si) %>%
     dplyr::select(-max_si, -jamesID)
   
-  tbl_entropy_silhouette$curvesID <- factor(tbl_entropy_silhouette$curvesID, levels = tbl_entropy_silhouette$curvesID )
+  tbl_entropy_silhouette$subjID <- factor(tbl_entropy_silhouette$subjID, levels = tbl_entropy_silhouette$subjID )
   
-  p1 <- ggplot(tbl_entropy_silhouette, aes(x = curvesID, y = si, fill = as.factor(cluster))) +
+  tbl_entropy_silhouette$ClusterType <- factor(tbl_entropy_silhouette$ClusterType, levels = getClusterNames(CONNECTORDataClustered))
+  
+  
+  p1 <- ggplot(tbl_entropy_silhouette, aes(x = subjID, y = si, fill = ClusterType )) +
     geom_bar(stat = "identity") +
     theme_minimal() +
     labs(title = "Silhouette Plot",
@@ -149,9 +162,9 @@ setMethod("validateCluster", signature(CONNECTORDataClustered = "CONNECTORDataCl
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
     coord_flip()
   
-  p2 <- ggplot(tbl_entropy_silhouette, aes(x = curvesID)) +
+  p2 <- ggplot(tbl_entropy_silhouette, aes(x = subjID)) +
     geom_segment(aes(yend = Entropy, y = 0)) +
-    geom_point(aes(y = Entropy, color = as.factor(ClusterType), fill = as.factor(ClusterType)),
+    geom_point(aes(y = Entropy, color = ClusterType, fill = ClusterType),
                alpha = 0.4, shape = 21, stroke = 2, size = 4) +
     theme_minimal() +
     labs(title = "Entropy Plot",
@@ -165,6 +178,11 @@ setMethod("validateCluster", signature(CONNECTORDataClustered = "CONNECTORDataCl
   combined_plot <- p1 + p2
   return(list(
     plot = combined_plot,
-    entropy_silhouette_table = tbl_entropy_silhouette
+    entropy_silhouette_table = tbl_entropy_silhouette %>% 
+      select(subjID,ClusterType, si, Entropy) %>%
+      rename(Silhouette = si, Cluster = ClusterType),
+    assignmentProbs = tbl_entropy_silhouette %>% 
+      select(subjID, ClusterType, !!(getClusterNames(CONNECTORDataClustered))) %>%
+      rename(AssignedCluster = ClusterType)
   ))
 })

@@ -33,13 +33,13 @@ setMethod("ClusterPlot", signature(CONNECTORDataClustered = "CONNECTORDataCluste
  
   
   # Get predicted clusters
-  resClust = CONNECTORDataClustered@CfitandParameters$pred$class.pred
   df = CONNECTORDataClustered@KData$CData
+  resClust = getClusters(CONNECTORDataClustered)
   
   # Merge data
   combined_df = merge(CONNECTORDataClustered@KData$annotations, df)
-  combined_df$cluster = resClust[combined_df$jamesID]
-  combined_df$cluster <- factor(combined_df$cluster)
+  combined_df = merge(combined_df, resClust)
+  combined_df$cluster <- factor(combined_df$cluster, levels = getClusterNames(CONNECTORDataClustered)  )
   
   TimeGrids = CONNECTORDataClustered@KData$TimeGrids
   

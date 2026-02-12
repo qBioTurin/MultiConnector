@@ -124,9 +124,11 @@ Subject (subjID) ──┬── Measure 1 (measureID) ──── Observations
 | `plot()` | Intelligent plotting dispatch |
 | `DiscriminantPlot()` | Discriminant analysis visualization |
 | `splinePlot()` | Spline-based curve visualization |
-| `SubjectInfo()` | : Detailed subject analysis with cluster highlighting |
-| `clusterDistribution()` | : Cross-tabulation of single or multiple features vs clusters |
-| `generateReport()` | : Comprehensive analysis report generation |
+| `SubjectInfo()` | Detailed subject analysis with cluster highlighting |
+| `clusterDistribution()` | Cross-tabulation of single or multiple features vs clusters |
+| `generateReport()` | Comprehensive analysis report generation |
+| `setClusterNames()` | Assign custom names to clusters |
+| `getClusterNames()` | Retrieve current cluster names |
 
 ## S4 Classes and Methods
 
@@ -182,11 +184,13 @@ The `CONNECTORDataClustered` class represents the results of clustering analysis
 
 - `plot()`: Visualize clustering results, dispatches to `ClusterPlot()`
 - `DiscriminantPlot()`: Create discriminant analysis plots for cluster interpretation
-- `validateCluster()`: Compute and plot clustering quality metrics
+- `validateCluster()`: Compute and plot clustering quality metrics (returns plot, entropy_silhouette_table, assignmentProbs)
 - `splinePlot()`: Visualize cluster-specific spline representations
 - `MaximumDiscriminationFunction()`: Show optimal discrimination weights
 - `getAnnotations()`: Extract features with cluster assignments
 - `getClusters()`: Extract subjID with cluster assignments
+- `setClusterNames()`: Assign custom names to clusters (used in plots and tables)
+- `getClusterNames()`: Retrieve current cluster names
 - `SubjectInfo()`: Get detailed information about specific subjects
 - `clusterDistribution()`: Analyze feature distribution across clusters
 
@@ -198,6 +202,10 @@ clustered_data <- selectCluster(cluster_results, G = 3, best = "MinfDB")
 clustered_data@cluster.names           # Cluster labels
 clustered_data@TTandfDBandSil         # Quality metrics
 clustered_data@CfitandParameters$pred$class.pred  # Cluster assignments
+
+# Set custom cluster names (will be used in all plots and outputs)
+clustered_data <- setClusterNames(clustered_data, c("Low", "Medium", "High"))
+getClusterNames(clustered_data)        # Returns: "Low", "Medium", "High"
 
 # Use specialized methods
 plot(clustered_data, feature = "treatment")    # Cluster visualization
@@ -264,6 +272,8 @@ plot(final_clusters, feature = "treatment_group")
 # 7. Validate clustering quality
 validation <- validateCluster(final_clusters)
 print(validation$plot)
+print(validation$entropy_silhouette_table)  # Per-curve quality metrics
+print(validation$assignmentProbs)           # Cluster membership probabilities
 ```
 
 ### Example with Built-in Data

@@ -4,12 +4,17 @@
 \alias{SubjectInfo}
 \title{SubjectInfo}
 \usage{
-SubjectInfo(CONNECTORDataClustered, subjIDs)
+SubjectInfo(CONNECTORDataClustered, subjIDs, colors = NULL)
 }
 \arguments{
 \item{CONNECTORDataClustered}{Connector object created with ConnectorData}
 
 \item{subjIDs}{The subject ID(s) to analyze - can be a single ID or vector of IDs}
+
+\item{colors}{Optional character vector of colors to use for each subject in the plot.
+If provided, must have the same length as subjIDs. Colors can be specified as
+color names (e.g., "red", "blue") or hex codes (e.g., "#FF0000").
+If NULL (default), colors are automatically generated using rainbow palette.}
 }
 \value{
 A list containing: cluster assignments, highlighted plot, quality metrics, and subject data
@@ -17,6 +22,20 @@ A list containing: cluster assignments, highlighted plot, quality metrics, and s
 \description{
 Get detailed information about specific subjects including cluster assignments,
 highlighted plot, and quality metrics
+}
+\examples{
+\dontrun{
+# Single subject with default color
+SubjectInfo(clustered_data, "subject1")
+
+# Multiple subjects with custom colors
+SubjectInfo(clustered_data, c("subj1", "subj2", "subj3"), 
+            colors = c("red", "blue", "green"))
+
+# Using hex colors
+SubjectInfo(clustered_data, c("subj1", "subj2"), 
+            colors = c("#E41A1C", "#377EB8"))
+}
 }
 \seealso{
 CONNECTORDataClustered ClusterPlot
