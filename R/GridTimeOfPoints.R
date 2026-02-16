@@ -18,25 +18,27 @@ setMethod("GridTimeOfPoints", signature = c("CONNECTORData"),
               group_by(time, measureID) %>%
               summarise(distinct_IDs = n_distinct(curvesID), .groups = "drop")
           
-            p1 <- ggplot(nTime, aes(x = time, y = distinct_IDs, fill = measureID)) +
+            p1 <- ggplot(nTime, aes(x = time, y = distinct_IDs, fill = as.factor(measureID))) +
               geom_bar(stat = "identity", position = "dodge") +
               labs(title = "Number of distinct IDs per time by MeasureID",
                    x = "Time",
-                   y = "Number of distinct IDs") +
+                   y = "Number of distinct IDs",
+                   fill = "Measure") +
               theme(plot.title = element_text(hjust = 0.5),
                     title = element_text(size = 10, face = 'bold')) +
               theme_bw()
             #Distribuzione media nei tempi
-            p2 <- ggplot(nTime, aes(x = time, fill = as.factor(measureID))) +
+            p2 <- ggplot(nTime, aes(x = time,y = as.factor(measureID), fill = as.factor(measureID))) +
               geom_boxplot(orientation = "y")  +
-              theme(plot.title = element_text(hjust = 0.5),
-                         title = element_text(size = 10, face = 'bold')) +
-              theme_bw()+
               labs(fill = "Measure",
                    x = "Time",
-                   y = "") 
+                   y = "")+
+              theme_bw() +
+              theme(plot.title = element_text(hjust = 0.5),
+                    legend.position = "none",
+                    title = element_text(size = 10, face = 'bold')) 
             
-            return(p1 / p2)
+            return( (p1 / p2) + plot_layout(heights = c(3, 1)) )
           })
 setGeneric("LargeGridTimeOfPoints", function(data)
   standardGeneric("LargeGridTimeOfPoints"))
@@ -69,24 +71,25 @@ setMethod("LargeGridTimeOfPoints", signature = c("CONNECTORData"),
               group_by(time, measureID) %>%
               summarise(distinct_IDs = n_distinct(curvesID), .groups = "drop")
             
-            p1 <- ggplot(nTime, aes(x = time, y = distinct_IDs, fill = measureID)) +
+            p1 <- ggplot(nTime, aes(x = time, y = distinct_IDs, fill = as.factor(measureID))) +
               geom_bar(stat = "identity", position = "dodge") +
-              labs(title = "Number of distinct IDs per time by Measure",
+              labs(title = "Number of distinct IDs per time by MeasureID",
                    x = "Time",
-                   fill = "Measure",
-                   y = "Number of distinct IDs") +
+                   y = "Number of distinct IDs",
+                   fill = "Measure") +
               theme(plot.title = element_text(hjust = 0.5),
                     title = element_text(size = 10, face = 'bold')) +
               theme_bw()
             #Distribuzione media nei tempi
-            p2 <- ggplot(nTime, aes(x = time, fill = as.factor(measureID))) +
+            p2 <- ggplot(nTime, aes(x = time,y = as.factor(measureID), fill = as.factor(measureID))) +
               geom_boxplot(orientation = "y")  +
-              theme(plot.title = element_text(hjust = 0.5),
-                    title = element_text(size = 10, face = 'bold')) +
-              theme_bw()+
               labs(fill = "Measure",
                    x = "Time",
-                   y = "") 
+                   y = "")+
+              theme_bw() +
+              theme(plot.title = element_text(hjust = 0.5),
+                    legend.position = "none",
+                    title = element_text(size = 10, face = 'bold'))
             
             p1 <-
               p1 + coord_flip() + theme(
@@ -97,7 +100,7 @@ setMethod("LargeGridTimeOfPoints", signature = c("CONNECTORData"),
             
             return(p1 + p3 + plot_spacer() + p2 + plot_layout(
               ncol = 2,
-              widths = c(1, 5),
+              widths = c(2, 5),
               heights = c(3, 1),
               guides = "collect"
             ))

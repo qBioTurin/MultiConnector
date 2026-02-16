@@ -142,7 +142,7 @@ setMethod("ConnectorData", signature("tbl_df"),
             
             rowsKeep = complete.cases(curves[, c("subjID", "time", "measureID","value")])
             NaInRow = sum(!rowsKeep)
-            if(length(NaInRow)>0)
+            if(NaInRow >0)
               warning(
                 paste0(NaInRow, " rows with NA in ID or time or measureID or value are present in the TimeSeriesFile. The rows are removed.")
               )
@@ -173,8 +173,6 @@ setMethod("ConnectorData", signature("tbl_df"),
                 "Samples with multiple observations at the same time point are present. One observation per time point is required"
               )
             }
-            
-            
             
             #check length of the curves
             dimensions    <- curves %>%
