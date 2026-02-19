@@ -31,8 +31,6 @@
   CData <- CData %>%
     arrange(jamesID, measureID, time)
   
-  
-  
   #Questa funzione serve ad inizializzare i parametri da usare
   # riceve i dati già ordinati per jamesID, measureID e time
   #TODO capire se serve la grid qua
@@ -41,7 +39,7 @@
   #N indica il numero di soggetti studiati
   N <- length(unique(CData$jamesID))
   #M è il vettore contente le misure, applicando l'unique
-  M <- sort(unique(CData$measureID))
+  M <- sort(as.character(unique(CData$measureID)))
   
   #Definiamo la griglia(faccio una lista i tempi per la j-esima misura)
   
@@ -72,19 +70,17 @@
   }
   #
   #Creo i timeindex, poiché nel dataset iniziale io ho solo i tempi ma non come essi siano posizionati nella griglia
-  timeindex <- NULL
+  CData$timeindex <- NA
+  
   for (i in 1:N) {
     t <- NULL
     for (j in 1:J) {
-      d <- match(CData$time[CData$measureID == M[j] &
-                              CData$jamesID == i], grid[[j]])
-      #d <- d[!is.na(d)]
-      t <- c(t, d)
+      CData$timeindex[CData$measureID == M[j] &
+                        CData$jamesID == i] <- match(CData$time[CData$measureID == M[j] & CData$jamesID == i],
+                                                     grid[[j]])
     }
-    timeindex <- c(timeindex, t)
   }
   
-  CData$timeindex <- timeindex
   #I timeindex così definiti sono un vettore, dove prima ci sono gli indici del primo soggetto, poi del secondo, ect...
   #Ora costruisco le S, matrici diagonali a blocchi, come definite in James and Sugar
   S <- NULL
@@ -759,9 +755,7 @@
   #N indica il numero di soggetti studiati
   N <- length(unique(data$jamesID))
   #M è il vettore contente le misure, applicando l'unique
-  M <- as.character(unique(data$measureID))
-  
-  
+  M <- sort(as.character(unique(data$measureID)))
   
   tau2 <- tau / tau1
   sigma <- fit$par$sigma#Questo non va toccato
@@ -814,10 +808,17 @@
                             data$measureID == M[gei]] - Sij %*% Lambda.alpha
       d <- exp(-diag(t(centx) %*% solve(covx) %*% centx) / 2) * fit$par$pi
       if(sum(d)!=0){
-        pi <- d / sum(d)}
-      else {
+        pi <- d / sum(d)
+        ord <- order(-pi)
+        numb <- sum(cumsum(pi[ord]) <= tau1) + 1
+      }else {
+        # Da controllare: prima il numb era fuori ma dava errore in  sum(cumsum(pi[ord]) <= tau1) + 1 > numero di righe di alfa
+        
         pi<-rep(0,length(d))
+        ord <- order(-pi)
+        numb <- nrow(alpha)
       }
+        
       K <- length(pi)
       mu <- lambda.zero1 + Lambda1 %*% t(alpha * pi) %*% rep(1, K)
       cov <- (
@@ -826,8 +827,7 @@
           sigma
       ) / sigma
       etapred[ind, ] <- mu + cov %*% t(Sij) %*% (y - Sij %*% mu)
-      ord <- order(-pi)
-      numb <- sum(cumsum(pi[ord]) <= tau1) + 1
+
       v <- diag(FullSj %*% (cov * sigma) %*% t(FullSj))
       pse <- sqrt(v + sigma)
       se <- sqrt(v)
