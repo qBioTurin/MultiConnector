@@ -55,12 +55,17 @@ optimal_p <- c("PB"= 4, "BM" = 4)
 # ------------------------------------------------------------------------------
 # STEP 4: CLUSTERING ANALYSIS
 # ------------------------------------------------------------------------------
+clusters <- estimateCluster(Data, 
+                            G = 2:6,           # Test 2-6 clusters
+                            p = optimal_p,     # Use optimal spline dimension
+                            runs = 20,         # Multiple runs for stability
+                            cores = 5)         # Parallel processing
 
 # Estimated time with 5 cores: ~5.28 mins
-
+plot(clusters)
 # Perform clustering with multiple G values
 # This is the core clustering step - most computationally intensive
-a
+
 
 saveRDS(clusters, file="~/Desktop/GIT/R_packages_project/MultiConnector/inst/Data/MCL/MCLTwoD_Clustering.rds")
 

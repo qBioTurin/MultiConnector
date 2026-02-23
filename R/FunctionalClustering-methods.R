@@ -97,7 +97,7 @@
         Si <- bdiag(Si, A)
       }#Questo if è necessario poiché bdiag ha bisogno di una matrice iniziale su cui attaccarsi (ovvero quella della prima misura)
     }
-
+    
     if (is.null(dim(Si))){
       Si <- matrix(Si,nrow=1)
     }  else {
@@ -257,7 +257,7 @@
   
   #Calcolo i valori che mi servono
   lambda.zero <- apply(classmean, 2, mean)
- 
+  
   Lambda <- as.matrix(svd(scale(classmean, scale = F))$v[, 1:h])
   alpha <- scale(classmean, scale = F) %*% Lambda
   
@@ -314,7 +314,7 @@
     )
     
     vars <- fclustEstep(
-      parameters = parameters,
+      par = parameters,
       curve_ok = CLUSTData$CData,
       vars = vars,
       S,
@@ -375,9 +375,8 @@
 
 
 # E step
-"fclustEstep" <- function(parameters, curve_ok, vars, S, hard) {
+"fclustEstep" <- function(par, curve_ok, vars, S, hard) {
   #Qui richiamo gli oggetti necessari per la function
-  par <- parameters
   N <- dim(vars$gamma)[1]
   K <- dim(vars$gamma)[2]
   q <- dim(vars$gamma)[3]#Così equivale alla sum q
@@ -813,12 +812,11 @@
         numb <- sum(cumsum(pi[ord]) <= tau1) + 1
       }else {
         # Da controllare: prima il numb era fuori ma dava errore in  sum(cumsum(pi[ord]) <= tau1) + 1 > numero di righe di alfa
-        
         pi<-rep(0,length(d))
         ord <- order(-pi)
         numb <- nrow(alpha)
       }
-        
+      
       K <- length(pi)
       mu <- lambda.zero1 + Lambda1 %*% t(alpha * pi) %*% rep(1, K)
       cov <- (
@@ -827,7 +825,7 @@
           sigma
       ) / sigma
       etapred[ind, ] <- mu + cov %*% t(Sij) %*% (y - Sij %*% mu)
-
+      
       v <- diag(FullSj %*% (cov * sigma) %*% t(FullSj))
       pse <- sqrt(v + sigma)
       se <- sqrt(v)
@@ -946,7 +944,7 @@
     )
     
     vars <- fclustEstep(
-      parameters = parameters,
+      par = parameters,
       curve_ok = initial$starter,
       vars = vars,
       S,
