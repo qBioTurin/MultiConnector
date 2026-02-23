@@ -1,6 +1,6 @@
 #' presetKmeans
 #'
-#'@description
+#' @description
 #'
 #'  presets data for the kmeans
 #'
@@ -20,48 +20,45 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-
 "presetKmeans" <- function(CData,
                            natural = TRUE,
                            q,
                            pert = 0.01) {
-  
   CData$jamesID <- as.integer(factor(CData$subjID, levels = unique(CData$subjID)))
-  
+
   CData <- CData %>%
     arrange(jamesID, measureID, time)
-  
-  #Questa funzione serve ad inizializzare i parametri da usare
+
+  # Questa funzione serve ad inizializzare i parametri da usare
   # riceve i dati già ordinati per jamesID, measureID e time
-  #TODO capire se serve la grid qua
+  # TODO capire se serve la grid qua
   # Definisco J come il numero di misurazioni presenti nel dataset
   J <- length(unique(CData$measureID))
-  #N indica il numero di soggetti studiati
+  # N indica il numero di soggetti studiati
   N <- length(unique(CData$jamesID))
-  #M è il vettore contente le misure, applicando l'unique
+  # M è il vettore contente le misure, applicando l'unique
   M <- sort(as.character(unique(CData$measureID)))
-  
-  #Definiamo la griglia(faccio una lista i tempi per la j-esima misura)
-  
+
+  # Definiamo la griglia(faccio una lista i tempi per la j-esima misura)
+
   grid <- list()
-  
+
   for (j in 1:J) {
     a <- sort(unique(CData$time[CData$measureID == M[j]]))
     grid <- list.append(grid, a)
   }
-  names(grid)<-M
-  
-  #Faccio una lista contente le FullS per ogni misura
+  names(grid) <- M
+
+  # Faccio una lista contente le FullS per ogni misura
   FullS <- list()
-  #Metto la condizione if, per dare la possibilità di cambiare il tipo di base usata (ns o bs)
+  # Metto la condizione if, per dare la possibilità di cambiare il tipo di base usata (ns o bs)
   if (natural == TRUE) {
     for (j in 1:J) {
-      b <- cbind(1, ns(grid[[j]], df = q[j] - 1)) #unlist serve poiché se no non mi legge il vettore (ho controllato che mantenga l'ordine e non cambi gli elemnti)
+      b <- cbind(1, ns(grid[[j]], df = q[j] - 1)) # unlist serve poiché se no non mi legge il vettore (ho controllato che mantenga l'ordine e non cambi gli elemnti)
       b <- svd(b)$u
       FullS <- list.append(FullS, b)
     }
-  }
-  else{
+  } else {
     for (j in 1:J) {
       b <- cbind(1, bs(grid[[j]], df = q[j] - 1))
       b <- svd(b)$u
@@ -69,62 +66,63 @@
     }
   }
   #
-  #Creo i timeindex, poiché nel dataset iniziale io ho solo i tempi ma non come essi siano posizionati nella griglia
+  # Creo i timeindex, poiché nel dataset iniziale io ho solo i tempi ma non come essi siano posizionati nella griglia
   CData$timeindex <- NA
-  
+
   for (i in 1:N) {
     t <- NULL
     for (j in 1:J) {
       CData$timeindex[CData$measureID == M[j] &
-                        CData$jamesID == i] <- match(CData$time[CData$measureID == M[j] & CData$jamesID == i],
-                                                     grid[[j]])
+        CData$jamesID == i] <- match(
+        CData$time[CData$measureID == M[j] & CData$jamesID == i],
+        grid[[j]]
+      )
     }
   }
-  
-  #I timeindex così definiti sono un vettore, dove prima ci sono gli indici del primo soggetto, poi del secondo, ect...
-  #Ora costruisco le S, matrici diagonali a blocchi, come definite in James and Sugar
+
+  # I timeindex così definiti sono un vettore, dove prima ci sono gli indici del primo soggetto, poi del secondo, ect...
+  # Ora costruisco le S, matrici diagonali a blocchi, come definite in James and Sugar
   S <- NULL
-  
+
   for (i in 1:N) {
     Si <- NULL
     for (j in 1:J) {
       A <- FullS[[j]][CData$timeindex[(CData$jamesID == i &
-                                         CData$measureID == M[j])], ]
+        CData$measureID == M[j])], ]
       if (j == 1) {
         Si <- A
-      }
-      else{
+      } else {
         Si <- bdiag(Si, A)
-      }#Questo if è necessario poiché bdiag ha bisogno di una matrice iniziale su cui attaccarsi (ovvero quella della prima misura)
+      } # Questo if è necessario poiché bdiag ha bisogno di una matrice iniziale su cui attaccarsi (ovvero quella della prima misura)
     }
-    
-    if (is.null(dim(Si))){
-      Si <- matrix(Si,nrow=1)
-    }  else {
+
+    if (is.null(dim(Si))) {
+      Si <- matrix(Si, nrow = 1)
+    } else {
       Si <- as.matrix(Si)
     }
-    
-    S <- rbind(S, Si) #In questo modo attacco le matrice dei vari soggetti una sotto l'altra (tanto il numero di colonne è uguale per ogni soggetto, ovvero sum(q))
+
+    S <- rbind(S, Si) # In questo modo attacco le matrice dei vari soggetti una sotto l'altra (tanto il numero di colonne è uguale per ogni soggetto, ovvero sum(q))
   }
-  
-  #S <- as.matrix(S)# è necessario perché rbind, non riempie le matrici con gli zeri
-  
-  #Calcolo i coefficienti iniziali delle spline, usando il metodo dell'errore quadratico (penso qua si usi effetivamente la svd?)
+
+  # S <- as.matrix(S)# è necessario perché rbind, non riempie le matrici con gli zeri
+
+  # Calcolo i coefficienti iniziali delle spline, usando il metodo dell'errore quadratico (penso qua si usi effetivamente la svd?)
   points <- matrix(0, N, sum(q))
   #
   for (i in 1:N) {
-    if (length(which(CData$jamesID == i)) == 1){
-      Si <- matrix( S[CData$jamesID == i, ],nrow=1)
-    }  else {
+    if (length(which(CData$jamesID == i)) == 1) {
+      Si <- matrix(S[CData$jamesID == i, ], nrow = 1)
+    } else {
       Si <- S[CData$jamesID == i, ]
     }
     yi <- CData$value[CData$jamesID == i]
-    points[i, ]  <- solve(t(Si) %*% Si + pert * diag(sum(q))) %*% t(Si) %*% 
+    points[i, ] <- solve(t(Si) %*% Si + pert * diag(sum(q))) %*% t(Si) %*%
       yi
   }
   return(list(
     CData = CData,
-    TimeGrids=grid,
+    TimeGrids = grid,
     points = points,
     N = N,
     S = S,
@@ -135,7 +133,7 @@
 
 #' justKmeans
 #'
-#'@description
+#' @description
 #'
 #'  uses kmeans
 #'
@@ -153,13 +151,11 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-#Parte randomica dell'algoritmo, è necessario avere la parte di codice per K=1, poiché serve nello stimare gli iper-parametri
+# Parte randomica dell'algoritmo, è necessario avere la parte di codice per K=1, poiché serve nello stimare gli iper-parametri
 "justKmeans" <- function(CLUSTData, K) {
   if (K > 1) {
-    
     class <- kmeans(CLUSTData$points, K, 10)$cluster
-  }
-  else{
+  } else {
     class <- rep(1, CLUSTData$N)
   }
   return(class)
@@ -169,7 +165,7 @@
 "kmeansGroup" <- function(vector_list) {
   unic_vectors <- list()
   count <- numeric()
-  
+
   for (v in vector_list) {
     found <- FALSE
     if (length(unic_vectors) == 0) {
@@ -177,30 +173,31 @@
       count[1] <- 1
       next
     }
-    
+
     for (i in 1:length(unic_vectors)) {
       if (identical(as.numeric(factor(v, levels = unique(v))), as.numeric(factor(
-        unic_vectors[[i]], levels = unique(unic_vectors[[i]])
+        unic_vectors[[i]],
+        levels = unique(unic_vectors[[i]])
       )))) {
         count[i] <- count[i] + 1
         found <- TRUE
         break
       }
     }
-    
+
     if (!found) {
       unic_vectors[[length(unic_vectors) + 1]] <- v
       count[length(count) + 1] <- 1
     }
   }
-  
+
   return(list(patterns = unic_vectors, counts = count))
 }
 
 
 #' intfclust
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
@@ -208,8 +205,8 @@
 #' @param h ...
 #' @param pert ...
 #' @param K ...
-#' @param class ... 
-#' @param CLUSTData ... 
+#' @param class ...
+#' @param CLUSTData ...
 #' @param pert1 ...
 #' @param tol ...
 #' @param maxit ...
@@ -227,7 +224,6 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-
 "intfclust" <- function(q,
                         h,
                         pert = 0,
@@ -239,47 +235,48 @@
                         maxit = 20,
                         hard = FALSE,
                         pert2 = 0) {
-  
   piigivej <- matrix(0, CLUSTData$N, K)
   piigivej[col(piigivej) == class] <- 1
-  
-  
-  
+
+
   classmean <- matrix(0, K, sum(q))
-  #Parte modificata da simone, così non si hanno problemi nel caso in cui in una classe ci sia un solo elemento
+  # Parte modificata da simone, così non si hanno problemi nel caso in cui in una classe ci sia un solo elemento
   for (l in 1:K)
   {
-    if (sum(class == l) > 1)
+    if (sum(class == l) > 1) {
       classmean[l, ] <- apply(CLUSTData$points[class == l, ], 2, mean)
-    else
+    } else {
       classmean[l, ] <- CLUSTData$points[class == l, ]
+    }
   }
-  
-  #Calcolo i valori che mi servono
+
+  # Calcolo i valori che mi servono
   lambda.zero <- apply(classmean, 2, mean)
-  
+
   Lambda <- as.matrix(svd(scale(classmean, scale = F))$v[, 1:h])
   alpha <- scale(classmean, scale = F) %*% Lambda
-  
+
   gamma <- t(t(CLUSTData$points) - lambda.zero - (Lambda %*% t(alpha[class, ])))
   gprod <- NULL
   for (i in 1:CLUSTData$N) {
     gprod <- cbind(gprod, (gamma[i, ]) %*% t(gamma[i, ]))
   }
-  b = sum(q)
+  b <- sum(q)
   gamma <- array(gamma[, rep(1:sum(q), rep(K, sum(q)))], c(CLUSTData$N, K, sum(q)))
   gcov <- matrix(0, b, CLUSTData$N * b)
-  
-  #Definisco i dati in uscita
-  
+
+  # Definisco i dati in uscita
+
   # data1 = list(
   #   # S = CLUSTData$S,
   #   # FullS = CLUSTData$FullS,
   #   #starter = CData,
-  parameters = list(lambda.zero = lambda.zero,
-                    Lambda = Lambda,
-                    alpha = alpha)
-  vars = list(
+  parameters <- list(
+    lambda.zero = lambda.zero,
+    Lambda = Lambda,
+    alpha = alpha
+  )
+  vars <- list(
     gamma = gamma,
     gprod = gprod,
     gcov = gcov,
@@ -288,20 +285,19 @@
   #   class=class,
   #   CLUSTData=CLUSTData
   # )
-  
-  
+
+
   S <- CLUSTData$S
   FullS <- CLUSTData$FullS
   sigma.old <- 0
   sigma.new <- 1
   ind <- 1
-  
-  #Iterazioni massime del ciclo EM
+
+  # Iterazioni massime del ciclo EM
   # Main loop. Iterates between M and E steps and stops when
   # sigma  has converged.
   while (abs(sigma.old - sigma.new) / sigma.new > tol &
-         (ind <= maxit)) {
-    
+    (ind <= maxit)) {
     parameters <- fclustMstep(
       parameters = parameters,
       curve_ok = CLUSTData$CData,
@@ -312,7 +308,7 @@
       pert1 = pert1,
       tol = tol
     )
-    
+
     vars <- fclustEstep(
       par = parameters,
       curve_ok = CLUSTData$CData,
@@ -324,9 +320,9 @@
     sigma.new <- parameters$sigma[1]
     ind <- ind + 1
   }
-  #starter <- initial$starter #Richiamo i valori inziali, poiché mi servono i timeindex
-  ###########starter$S<-S
-  
+  # starter <- initial$starter #Richiamo i valori inziali, poiché mi servono i timeindex
+  ########### starter$S<-S
+
   cfit <- fclustconst(parameters, vars, S)
   pred <- fclust_pred(
     fit = cfit,
@@ -334,29 +330,28 @@
     reweight = FALSE,
     pert2 = pert2
   )
-  
+
   return(
     list(
       cfit = cfit,
       pred = pred
     )
   )
-  #In uscita, ho le matrice S e FullS (la S è necessaria per tutto il resto del codice)
+  # In uscita, ho le matrice S e FullS (la S è necessaria per tutto il resto del codice)
   # Parameters contiene i parametri inizializzati che effettivamente descrivono le curve
-  #Vars
-  #starter dà in uscita il dataset originale ma avendo aggiunto i timeindex, fondamentali per altre parti di codice
-  #return(data1)
+  # Vars
+  # starter dà in uscita il dataset originale ma avendo aggiunto i timeindex, fondamentali per altre parti di codice
+  # return(data1)
 }
-
 
 
 #' fclustEstep
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
-#' @param parameters ...
+#' @param par ...
 #' @param curve_ok ...
 #' @param vars ...
 #' @param S ....
@@ -376,48 +371,94 @@
 
 # E step
 "fclustEstep" <- function(par, curve_ok, vars, S, hard) {
-  #Qui richiamo gli oggetti necessari per la function
   N <- dim(vars$gamma)[1]
   K <- dim(vars$gamma)[2]
-  q <- dim(vars$gamma)[3]#Così equivale alla sum q
-  Gamma <- par$Gamma
-  Lambda.alpha <- par$lambda.zero + par$Lambda %*% t(par$alpha)
+  q <- dim(vars$gamma)[3] # = sum(q_j) over measures
+  sigma <- par$sigma[1] # observation noise variance (scalar)
+
+  # Rank-p factorisation of Gamma = U_p diag(D_p) U_p^T stored by fclustMstep.
+  # Using full Gamma would require solve(Gamma), which fails because Gamma is
+  # rank-deficient (all but p singular values were zeroed in the M-step).
+  U_p <- par$Gamma_U # [q x p]
+  D_p <- par$Gamma_d # [p]  (positive eigenvalues only)
+
+  Lambda.alpha <- par$lambda.zero + par$Lambda %*% t(par$alpha) # [q x K]
   vars$gprod <- vars$gcov <- NULL
+
   for (j in 1:N) {
-    # Calculate expected value of gamma.
-    if (length(which(curve_ok$jamesID == j)) == 1){
-      Sj <- matrix( S[curve_ok$jamesID == j, ],nrow=1)
-    }  else {
+    # Extract rows of S belonging to subject j
+    if (length(which(curve_ok$jamesID == j)) == 1) {
+      Sj <- matrix(S[curve_ok$jamesID == j, ], nrow = 1)
+    } else {
       Sj <- S[curve_ok$jamesID == j, ]
     }
-    
-    # Sj <- S[curve_ok$jamesID == j, ]
-    nj <- sum(curve_ok$jamesID == j) #determina quanti dati del soggetto j
-    invvar <- diag(1 / rep(par$sigma, nj))
-    Cgamma <- Gamma - Gamma %*% t(Sj) %*% solve(diag(nj) + Sj %*%
-                                                  Gamma %*% t(Sj) %*% invvar) %*% invvar %*% Sj %*% Gamma
-    centx <- curve_ok$value[curve_ok$jamesID == j] - Sj %*% Lambda.alpha
-    vars$gamma[j, , ] <- t(Cgamma %*% t(Sj) %*% invvar %*% centx)
-    # Calculate pi i given j.
-    covx <- Sj %*% par$Gamma %*% t(Sj) + solve(invvar)
-    d <- exp(-diag(t(centx) %*% solve(covx) %*% centx) / 2) * par$pi
-    #vars$piigivej[j,  ] <- d/sum(d)
-    #Qui ci sono delle aggiunte di simone, servono nel caso in cui sum(d) == 0,
-    #così da non avere errori ponendo quel caso uguale a zero per definizione
-    if (sum(d) != 0)
+
+    # -----------------------------------------------------------------------
+    # Rank-p Woodbury identity
+    # -----------------------------------------------------------------------
+    # The original code inverts:  diag(nj) + Sj Gamma Sj^T (1/sigma)
+    # which is nj x nj -- expensive for large nj.
+    #
+    # Since Gamma = U_p D_p U_p^T, write W = Sj U_p  [nj x p].  Then:
+    #   Sj Gamma Sj^T = W D_p W^T
+    # and the Woodbury identity gives:
+    #
+    #   Cgamma = (Gamma^{-1} + Sj^T Sj / sigma)^{-1}
+    #          = U_p  (D_p^{-1} + W^T W / sigma)^{-1}  U_p^T
+    #
+    # Inner matrix M = diag(1/D_p) + W^T W / sigma is only p x p and is
+    # always positive-definite (sigma > 0, D_p > 0).
+    # -----------------------------------------------------------------------
+    W <- Sj %*% U_p # [nj x p]
+    WtW <- crossprod(W) # [p x p]
+    M <- diag(1 / D_p) + WtW / sigma # [p x p]  -- always invertible
+    M_inv <- solve(M) # [p x p]  -- cheap
+    C_inner <- M_inv # alias for clarity
+
+    # Full q x q posterior covariance:  Cgamma = U_p C_inner U_p^T
+    Cgamma <- U_p %*% C_inner %*% t(U_p) # [q x q]
+
+    # -----------------------------------------------------------------------
+    # Posterior mean of gamma_j:  Cgamma Sj^T (1/sigma) centx
+    #   = (1/sigma) U_p C_inner W^T centx            [q x K]
+    # -----------------------------------------------------------------------
+    centx <- curve_ok$value[curve_ok$jamesID == j] - Sj %*% Lambda.alpha # [nj x K]
+    Wt_centx <- t(W) %*% centx # [p x K]
+    vars$gamma[j, , ] <- t((1 / sigma) * U_p %*% (C_inner %*% Wt_centx))
+
+    # -----------------------------------------------------------------------
+    # Cluster membership weights via Woodbury on covx:
+    #   covx     = Sj Gamma Sj^T + sigma I  =  W D_p W^T + sigma I
+    #   covx^{-1}= (1/sigma)(I - (1/sigma) W C_inner W^T)
+    #
+    # Quadratic form per cluster k:
+    #   c_k^T covx^{-1} c_k = (1/sigma)(||c_k||^2 - (1/sigma) c_k^T W C_inner W^T c_k)
+    # No nj x nj matrix is ever formed.
+    # -----------------------------------------------------------------------
+    Ci_Wt_cx <- C_inner %*% Wt_centx # [p x K]
+    quad_forms <- (1 / sigma) *
+      (colSums(centx^2) - colSums(Wt_centx * Ci_Wt_cx) / sigma) # [K]
+    d <- exp(-quad_forms / 2) * par$pi
+
+    # Assign cluster probabilities (guard against numerical underflow)
+    if (sum(d) != 0) {
       vars$piigivej[j, ] <- d / sum(d)
-    else
+    } else {
       vars$piigivej[j, ] <- 0
-    
+    }
+
     if (hard) {
       m <- order(-d)[1]
       vars$piigivej[j, ] <- 0
       vars$piigivej[j, m] <- 1
     }
-    
-    # Calculate expected value of gamma %*% t(gamma).
-    vars$gprod <- cbind(vars$gprod,
-                        t(matrix(vars$gamma[j, , ], K, q)) %*% (matrix(vars$gamma[j, , ], K, q) * vars$piigivej[j, ]) + Cgamma)
+
+    # E[gamma gamma^T] and covariance accumulation (unchanged logic)
+    vars$gprod <- cbind(
+      vars$gprod,
+      t(matrix(vars$gamma[j, , ], K, q)) %*%
+        (matrix(vars$gamma[j, , ], K, q) * vars$piigivej[j, ]) + Cgamma
+    )
     vars$gcov <- cbind(vars$gcov, Cgamma)
   }
   return(vars)
@@ -426,7 +467,7 @@
 
 #' fclustMstep
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
@@ -450,8 +491,7 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-
-#M step
+# M step
 "fclustMstep" <- function(parameters,
                           curve_ok,
                           S,
@@ -460,40 +500,45 @@
                           p,
                           pert1,
                           tol) {
-  #Prova del M step
-  #Richiamo i paramentri che mi servono
+  # Prova del M step
+  # Richiamo i paramentri che mi servono
   K <- dim(parameters$alpha)[1]
   alpha <- parameters$alpha
   Lambda <- parameters$Lambda
   gamma <- vars$gamma
   gcov <- vars$gcov
-  curve <- curve_ok$jamesID #Così faccio coincidere la mia notazione con quella di James and Sugar
+  curve <- curve_ok$jamesID # Così faccio coincidere la mia notazione con quella di James and Sugar
   piigivej <- vars$piigivej
   N <- dim(gamma)[1]
   K <- dim(alpha)[1]
   h <- dim(alpha)[2]
   n <- length(curve)
-  q <- dim(S)[2]#Così facendo, non devo più usare sum(q)
+  q <- dim(S)[2] # Così facendo, non devo più usare sum(q)
   sigma.old <- 2
   sigma <- 1
   # Compute pi.
-  if (hard)
+  if (hard) {
     parameters$pi <- rep(1 / K, K)
-  else
+  } else {
     parameters$pi <- apply(vars$piigivej, 2, mean)
+  }
   # Compute rank p estimate of Gamma
   ind <- matrix(rep(c(rep(c(
     1, rep(0, q - 1)
-  ), N), 0), q)[1:(N * q ^ 2)], N * q, q)
+  ), N), 0), q)[1:(N * q^2)], N * q, q)
   gsvd <- svd(vars$gprod %*% ind / N)
   gsvd$d[-(1:p)] <- 0
   parameters$Gamma <- gsvd$u %*% diag(gsvd$d) %*% t(gsvd$u)
+  # Store rank-p factors for the E-step Woodbury computation.
+  # Gamma = Gamma_U %*% diag(Gamma_d) %*% t(Gamma_U), with only p non-zero eigenvalues.
+  parameters$Gamma_U <- gsvd$u[, 1:p, drop = FALSE] # [q x p]
+  parameters$Gamma_d <- gsvd$d[1:p] # [p]
   # This loop iteratively calculates alpha and then Lambda and stops
   # when they have converged.
-  #Nel ciclo sono state aggiunte le perturbazioni pert1, nel caso in cui non funzioni l'inversione per autovalori troppo piccoli
+  # Nel ciclo sono state aggiunte le perturbazioni pert1, nel caso in cui non funzioni l'inversione per autovalori troppo piccoli
   loopnumber <- 1
   while ((abs(sigma.old[1] - sigma[1]) / sigma[1] > tol) &
-         (loopnumber < 10)) {
+    (loopnumber < 10)) {
     sigma.old <- sigma
     # Calculate lambda.zero.
     gamma.pi <- diag(S %*% t(apply(
@@ -508,39 +553,41 @@
     for (i in 1.:K) {
       S.Lam <- S %*% Lambda
       S.Lam.pi <- S.Lam * piigivej[curve, i]
-      if (sum(piigivej[, i]) > 10 ^ (-4))
+      if (sum(piigivej[, i]) > 10^(-4)) {
         alpha[i, ] <- solve(t(S.Lam.pi) %*% S.Lam) %*%
-        t(S.Lam.pi) %*% (x - diag(S %*% t(gamma[curve, i, ])))
-      else
+          t(S.Lam.pi) %*% (x - diag(S %*% t(gamma[curve, i, ])))
+      } else {
         print("Warning: empty cluster")
+      }
     }
     # Calculate Lambda given alpha. This is done by iterating
     # through each column of Lambda holding the other columns fixed.
     for (m in 1:h) {
-      pi.alphasq <- apply(t(piigivej) * (alpha ^ 2)[, m], 2, sum)[curve]
+      pi.alphasq <- apply(t(piigivej) * (alpha^2)[, m], 2, sum)[curve]
       pi.alpha <- apply(t(piigivej) * alpha[, m], 2, sum)[curve]
       S.Lambda <- t(S %*% Lambda)
       if (h != 1) {
         temp <- NULL
         for (i in 1:K) {
           temp <- cbind(temp, as.vector(rep(1, h - 1) %*% matrix((S.Lambda *
-                                                                    alpha[i, ])[-m, ], h - 1, dim(S)[1]
-          )) * alpha[i, m])
+            alpha[i, ])[-m, ], h - 1, dim(S)[1])) * alpha[i, m])
         }
         otherLambda <- (temp * piigivej[curve, ]) %*% rep(1, K)
-      }
-      else
+      } else {
         otherLambda <- 0
-      gamma.pi.alpha <- apply(gamma * as.vector(piigivej) *
-                                rep(alpha[, m], rep(N, K)),
-                              c(1, 3),
-                              sum)[curve, ]
+      }
+      gamma.pi.alpha <- apply(
+        gamma * as.vector(piigivej) *
+          rep(alpha[, m], rep(N, K)),
+        c(1, 3),
+        sum
+      )[curve, ]
       Lambda[, m] <- solve(t(S * pi.alphasq) %*% S + pert1 * diag(sum(q))) %*% t(S) %*%
-        (x * pi.alpha - otherLambda - (S * gamma.pi.alpha) %*% rep(1, sum(q))) #Aggiunta
+        (x * pi.alpha - otherLambda - (S * gamma.pi.alpha) %*% rep(1, sum(q))) # Aggiunta
     }
     # Calculate sigma
     ind <- matrix(rep(c(rep(F, q), rep(T, N * q)), N)
-                  [1:(N * N * q)], N, N * q, byrow = T)[rep(1:N, table(curve)), ]
+    [1:(N * N * q)], N, N * q, byrow = T)[rep(1:N, table(curve)), ]
     mat1 <- matrix(rep(S, N), n, N * q)
     mat3 <- t(mat1)
     mat3[t(ind)] <- 0
@@ -566,7 +613,7 @@
 
 #' fclustconst
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
@@ -585,23 +632,24 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-#Preso senza modifiche, questa function mi calcola i cfit
+# Preso senza modifiche, questa function mi calcola i cfit
 "fclustconst" <- function(parameters, vars, S) {
   # This function enforces the constraint (7) from the paper on the
   # parameters. This means that the alphas can be interpreted as the
   # number of standard deviations that the groups are apart etc.
   par <- parameters
   A <- t(S) %*% solve(par$sigma * diag(dim(S)[1]) + S %*% par$Gamma %*%
-                        t(S)) %*% S
+    t(S)) %*% S
   svdA <- svd(A)
   sqrtA <- diag(sqrt(svdA$d)) %*% t(svdA$u)
   negsqrtA <- svdA$u %*% diag(1 / sqrt(svdA$d))
   finalsvd <- svd(sqrtA %*% par$Lambda)
   par$Lambda <- negsqrtA %*% finalsvd$u
-  if (dim(par$Lambda)[2] > 1)
+  if (dim(par$Lambda)[2] > 1) {
     par$alpha <- t(diag(finalsvd$d) %*% t(finalsvd$v) %*% t(par$alpha))
-  else
+  } else {
     par$alpha <- t(finalsvd$d * t(finalsvd$v) %*% t(par$alpha))
+  }
   meanalpha <- apply(par$alpha, 2, mean)
   par$alpha <- t(t(par$alpha) - meanalpha)
   par$lambda.zero <- par$lambda.zero + par$Lambda %*% meanalpha
@@ -611,7 +659,7 @@
 
 #' fclust_pred
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
@@ -631,14 +679,13 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-
-#Questa function mi calcola la predizione finale
-#Qui domandona da un milione di dollari, sulla S_ij
+# Questa function mi calcola la predizione finale
+# Qui domandona da un milione di dollari, sulla S_ij
 "fclust_pred" <- function(fit,
                           data = NULL,
                           reweight = FALSE,
-                          pert2=0) {
-  #FullS <- data1$FullS
+                          pert2 = 0) {
+  # FullS <- data1$FullS
   S <- data$S
   M <- data$CData$measureID
   par <- fit$parameters
@@ -672,17 +719,19 @@
   # Calculate final class predictions for each curve.
   class.pred <- rep(1, N)
   log.pi <- log(fit$par$pi)
-  if (!reweight)
+  if (!reweight) {
     log.pi <- rep(0, K)
+  }
   probs <- t(exp(log.pi - t(distance) / 2))
   probs <- probs / apply(probs, 1, sum)
   m <- probs[, 1]
-  if (K != 1)
+  if (K != 1) {
     for (k in 2:K) {
       test <- (probs[, k] > m)
       class.pred[test] <- k
       m[test] <- probs[test, k]
     }
+  }
   pred <- list(
     Calpha = Calpha,
     alpha.hat = alpha.hat,
@@ -696,7 +745,7 @@
 
 #' nummax
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
@@ -711,17 +760,18 @@
 "nummax" <- function(X) {
   ind <- rep(1, dim(X)[1])
   m <- X[, 1]
-  if (dim(X)[2] > 1)
+  if (dim(X)[2] > 1) {
     for (i in 2:dim(X)[2]) {
       test <- X[, i] > m
       ind[test] <- i
       m[test] <- X[test, i]
     }
+  }
   list(ind = ind, max = m)
 }
 #' fclust.curvepred
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
@@ -729,7 +779,7 @@
 #' @param tau ...
 #' @param tau1 ...
 #' @param q ...
-#' @param KData ... 
+#' @param KData ...
 #'
 #' @return ...
 #'
@@ -746,90 +796,92 @@
                                tau1 = 0.975,
                                q,
                                KData) {
-  
-  fit=data$cfit
-  FullS=KData$FullS
-  data=KData$CData
+  fit <- data$cfit
+  FullS <- KData$FullS
+  data <- KData$CData
   J <- length(unique(data$measureID))
-  #N indica il numero di soggetti studiati
+  # N indica il numero di soggetti studiati
   N <- length(unique(data$jamesID))
-  #M è il vettore contente le misure, applicando l'unique
+  # M è il vettore contente le misure, applicando l'unique
   M <- sort(as.character(unique(data$measureID)))
-  
+
   tau2 <- tau / tau1
-  sigma <- fit$par$sigma#Questo non va toccato
-  Gamma <- fit$par$Gamma#vanno prese ncol pari al valore di q[j]
-  Lambda <- fit$par$Lambda #Prendo le righe pari al valore di q[j]
+  sigma <- fit$par$sigma # Questo non va toccato
+  Gamma <- fit$par$Gamma # vanno prese ncol pari al valore di q[j]
+  Lambda <- fit$par$Lambda # Prendo le righe pari al valore di q[j]
   alpha <- fit$par$alpha
   lambda.zero <- as.vector(fit$par$lambda.zero)
-  
-  #Dopo aver estratto i parametri, li tiro fouri per ogni curva di appartenenza.
+
+  # Dopo aver estratto i parametri, li tiro fouri per ogni curva di appartenenza.
   a_old <- 1
-  Final_result = list()
-  #se J e q sono lunghi diversi tira errore con messaggio "numero di q diverso da numero di misure" in inglese
+  Final_result <- list()
+  # se J e q sono lunghi diversi tira errore con messaggio "numero di q diverso da numero di misure" in inglese
   if (J != length(q)) {
     stop("Number of q different from number of measures")
   }
-  
+
   for (gei in 1:J) {
     a_new <- q[gei] + a_old - 1
-    
+
     Gamma1 <- Gamma[(a_old:a_new), (a_old:a_new)]
-    
+
     Lambda1 <- Lambda[a_old:a_new, ]
-    if (is.null(dim(Lambda1)))
-      Lambda1 <- matrix(Lambda1, ncol = 1, nrow =  q[gei])
-    
+    if (is.null(dim(Lambda1))) {
+      Lambda1 <- matrix(Lambda1, ncol = 1, nrow = q[gei])
+    }
+
     lambda.zero1 <- lambda.zero[a_old:a_new]
-    
-    
+
+
     a_old <- a_new + 1
-    
-    
-    #Servirà fare un ciclo per ogni j
-    #Costruiamo per j fissato
-    #Costruisso S già unlistata
+
+
+    # Servirà fare un ciclo per ogni j
+    # Costruiamo per j fissato
+    # Costruisso S già unlistata
     FullSj <- FullS[[gei]]
-    
+
     upci <- lowci <- uppi <- lowpi <- gpred <- matrix(0, N, nrow(FullSj))
     etapred <- matrix(0, N, ncol(FullSj))
     ind <- 1
     Lambda.alpha <- lambda.zero1 + Lambda1 %*% t(alpha)
     for (i in 1:N) {
-      #y sono yij
+      # print(i)
+      # y sono yij
       y <- data$value[data$jamesID == i & data$measureID == M[gei]]
       Sij <- FullSj[data$timeindex[data$jamesID == i &
-                                     data$measureID == M[gei]], ]
+        data$measureID == M[gei]], ]
       ni <- dim(Sij)[1]
       invvar <- diag(1 / rep(sigma, ni))
       covx <- Sij %*% Gamma1 %*% t(Sij) + solve(invvar)
       centx <- data$value[data$jamesID == i &
-                            data$measureID == M[gei]] - Sij %*% Lambda.alpha
+        data$measureID == M[gei]] - Sij %*% Lambda.alpha
       d <- exp(-diag(t(centx) %*% solve(covx) %*% centx) / 2) * fit$par$pi
-      if(sum(d)!=0){
+      if (sum(d) != 0) {
         pi <- d / sum(d)
         ord <- order(-pi)
-        numb <- sum(cumsum(pi[ord]) <= tau1) + 1
-      }else {
+        numb <- min(sum(cumsum(pi[ord]) <= tau1) + 1, nrow(alpha))
+      } else {
         # Da controllare: prima il numb era fuori ma dava errore in  sum(cumsum(pi[ord]) <= tau1) + 1 > numero di righe di alfa
-        pi<-rep(0,length(d))
+
+        pi <- rep(0, length(d))
         ord <- order(-pi)
         numb <- nrow(alpha)
       }
-      
+
       K <- length(pi)
       mu <- lambda.zero1 + Lambda1 %*% t(alpha * pi) %*% rep(1, K)
       cov <- (
         Gamma1 - Gamma1 %*% t(Sij) %*% solve(diag(ni) + Sij %*% Gamma1 %*%
-                                               t(Sij) / sigma) %*% Sij %*% Gamma1 /
+          t(Sij) / sigma) %*% Sij %*% Gamma1 /
           sigma
       ) / sigma
       etapred[ind, ] <- mu + cov %*% t(Sij) %*% (y - Sij %*% mu)
-      
-      v <- diag(FullSj %*% (cov * sigma) %*% t(FullSj))
+
+      v <- pmax(diag(FullSj %*% (cov * sigma) %*% t(FullSj)), 0)
       pse <- sqrt(v + sigma)
       se <- sqrt(v)
-      
+
       lower.p <- upper.p <- lower.c <- upper.c <- matrix(0, nrow(FullSj), numb)
       for (j in 1:numb) {
         #
@@ -840,16 +892,16 @@
         upper.c[, j] <- mean + qnorm(tau2) * se
         lower.c[, j] <- mean - qnorm(tau2) * se
       }
-      
+
       upci[ind, ] <- nummax(upper.c)$max
-      lowci[ind, ] <-  -nummax(-lower.c)$max
+      lowci[ind, ] <- -nummax(-lower.c)$max
       uppi[ind, ] <- nummax(upper.p)$max
-      lowpi[ind, ] <-  -nummax(-lower.p)$max
+      lowpi[ind, ] <- -nummax(-lower.p)$max
       gpred[ind, ] <- as.vector(FullSj %*% etapred[ind, ])
       ind <- ind + 1
     }
     meancurves <- FullSj %*% Lambda.alpha
-    Final_result[[M[gei]]] = list(
+    Final_result[[M[gei]]] <- list(
       gpred = gpred,
       upci = upci,
       lowci = lowci,
@@ -858,30 +910,29 @@
       meancurves = meancurves
     )
   }
-  
+
   return(Final_result)
 }
 
 
-
 #' fclust
 #'
-#'@description
+#' @description
 #'
 #'  ...
 #'
-#' @param data_input 
-#' @param q 
-#' @param h 
-#' @param K 
-#' @param pert 
-#' @param pert1 
-#' @param natural 
-#' @param tol 
-#' @param maxit 
-#' @param hard 
-#' @param pert2 
-#' @param seed 
+#' @param data_input
+#' @param q
+#' @param h
+#' @param K
+#' @param pert
+#' @param pert1
+#' @param natural
+#' @param tol
+#' @param maxit
+#' @param hard
+#' @param pert2
+#' @param seed
 
 #'
 #' @return ...
@@ -893,9 +944,9 @@
 #' @import splines rlist ggplot2 RhpcBLASctl
 #' @importFrom Matrix bdiag
 #' @importFrom dplyr select filter group_by mutate arrange
-#Qui inzia il ciclo finale
-#initial sono i valori uscenti dall'inizializzazione
-#TODO Probabilmente non serve più
+# Qui inzia il ciclo finale
+# initial sono i valori uscenti dall'inizializzazione
+# TODO Probabilmente non serve più
 "fclust" <- function(data_input,
                      q,
                      h,
@@ -908,8 +959,8 @@
                      hard = FALSE,
                      pert2 = 0,
                      seed = NULL) {
-  #limit solve() function
-  #omp_set_num_threads(1)
+  # limit solve() function
+  # omp_set_num_threads(1)
   # initial <- intfclust(
   #   CData = data_input,
   #   q = q,
@@ -918,8 +969,8 @@
   #   K = K,
   #   natural = natural
   # )
-  #Da qui in avanti passare come dataset intial$starter
-  
+  # Da qui in avanti passare come dataset intial$starter
+
   parameters <- initial$parameters
   vars <- initial$vars
   S <- initial$S
@@ -927,11 +978,11 @@
   sigma.old <- 0
   sigma.new <- 1
   ind <- 1
-  #Iterazioni massime del ciclo EM
+  # Iterazioni massime del ciclo EM
   # Main loop. Iterates between M and E steps and stops when
   # sigma  has converged.
   while (abs(sigma.old - sigma.new) / sigma.new > tol &
-         (ind <= maxit)) {
+    (ind <= maxit)) {
     parameters <- fclustMstep(
       parameters = parameters,
       curve_ok = initial$starter,
@@ -942,7 +993,7 @@
       pert1 = pert1,
       tol = tol
     )
-    
+
     vars <- fclustEstep(
       par = parameters,
       curve_ok = initial$starter,
@@ -954,9 +1005,9 @@
     sigma.new <- parameters$sigma[1]
     ind <- ind + 1
   }
-  #starter <- initial$starter #Richiamo i valori inziali, poiché mi servono i timeindex
-  ###########starter$S<-S
-  
+  # starter <- initial$starter #Richiamo i valori inziali, poiché mi servono i timeindex
+  ########### starter$S<-S
+
   cfit <- fclustconst(parameters, vars, S)
   pred <- fclust_pred(
     fit = cfit,
@@ -964,7 +1015,7 @@
     reweight = FALSE,
     pert2 = pert2
   )
-  
+
   return(
     list(
       cfit = cfit,

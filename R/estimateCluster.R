@@ -14,9 +14,11 @@
 #' @param p Named vector or single integer specifying the dimension of the natural cubic
 #'   spline basis for each measurement type. Higher values capture more complex curve shapes
 #'   but may lead to overfitting. See \code{\link{estimatepDimension}} for guidance.
+#'   If a single integer is supplied it is recycled for all measures with a warning.
+#'   If a vector is supplied, its length must equal the number of measures; otherwise
+#'   an error is raised.
 #' @param h Projection dimension parameter. Must be ≤ min(p, G-1) for identifiability.
 #'   Lower values provide simpler representations but may lose important curve features.
-#'   Default is typically 2 or 3.
 #' @param runs Integer specifying the number of random initializations for each parameter
 #'   combination. More runs improve stability but increase computation time. Default: 50.
 #' @param seed Integer seed for reproducible results. Ensures consistent random initializations
@@ -614,6 +616,8 @@ setGeneric("process_p", function(p, CONNECTORData) {
 })
 
 setMethod("process_p", signature(), function(p, CONNECTORData) {
+  n_measures <- length(CONNECTORData@TimeGrids)
+
   if (!is.null(names(p))) {
     valid_names <- names(CONNECTORData@TimeGrids)
     if (!all(names(p) %in% valid_names)) {
@@ -626,5 +630,21 @@ setMethod("process_p", signature(), function(p, CONNECTORData) {
     p <- p[order(names(p))]
     names(p) <- NULL
   }
+
+  if (length(p) == 1) {
+    warning(
+      "'p' is a single value (", p, "). It will be repeated for all ",
+      n_measures, " measure(s)."
+    )
+    p <- rep(p, n_measures)
+  } else if (length(p) != n_measures) {
+    stop(
+      "The length of 'p' (", length(p), ") does not match the number of ",
+      "measures (", n_measures, "). ",
+      "Please provide either a single value (recycled for all measures) or ",
+      "one value per measure."
+    )
+  }
+
   return(p)
 })

@@ -1,2 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.DS_Store$
+^.*\.DS_Store$
+^vignettes/.*\.html$
+^vignettes/.*_files$
+^vignettes/.*_cache$
+^Connector2_0_User_Manual\.pdf$
+^cose\.rds$
+^.Rhistory$
+^.RData$
