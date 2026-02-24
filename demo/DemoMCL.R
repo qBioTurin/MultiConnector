@@ -61,7 +61,7 @@ clusters <- estimateCluster(Data,
                             runs = 20,         # Multiple runs for stability
                             cores = 5)         # Parallel processing
 
-# Estimated time with 5 cores: ~5.28 mins
+# Estimated time with 5 cores: ~4 mins
 plot(clusters)
 # Perform clustering with multiple G values
 # This is the core clustering step - most computationally intensive

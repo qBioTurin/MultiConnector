@@ -617,18 +617,17 @@ setGeneric("process_p", function(p, CONNECTORData) {
 
 setMethod("process_p", signature(), function(p, CONNECTORData) {
   n_measures <- length(CONNECTORData@TimeGrids)
+  valid_names <- getMeasures(CONNECTORData)
 
   if (!is.null(names(p))) {
-    valid_names <- names(CONNECTORData@TimeGrids)
     if (!all(names(p) %in% valid_names)) {
       stop(
         "Some of the names provided in 'p' are invalid. Allowed names are: ",
         paste(valid_names, collapse = ", ")
       )
     }
-    # Ordina in ordine alfabetico e rimuove i nomi
-    p <- p[order(names(p))]
-    names(p) <- NULL
+    # Align p values with the order of measures in CONNECTORData
+    p <- p[valid_names]
   }
 
   if (length(p) == 1) {
@@ -637,6 +636,7 @@ setMethod("process_p", signature(), function(p, CONNECTORData) {
       n_measures, " measure(s)."
     )
     p <- rep(p, n_measures)
+    names(p) <- valid_names
   } else if (length(p) != n_measures) {
     stop(
       "The length of 'p' (", length(p), ") does not match the number of ",
@@ -644,6 +644,9 @@ setMethod("process_p", signature(), function(p, CONNECTORData) {
       "Please provide either a single value (recycled for all measures) or ",
       "one value per measure."
     )
+  } else if (is.null(names(p))) {
+    # If p is an unnamed vector of correct length, assume order matches valid_names
+    names(p) <- valid_names
   }
 
   return(p)

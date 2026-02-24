@@ -23,7 +23,7 @@ setMethod("estimatepDimension", signature = c("CONNECTORData"),
 
             start <- Sys.time()
             res <- list()
-            measures <- unique(data@curves$measureID)
+            measures <- sort(as.character(unique(data@curves$measureID)))
             
             if (length(measures) == 1) {
               result <- estimatepDimensionPerObs(data, p, cores)
@@ -122,12 +122,13 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
                   
                   Crosslikelihood <-
                     sapply(p, function(p_value){
-                      
+                      names(p_value) <- unique(data@curves$measureID)
                       Calclikelihood(
-                        p = p_value,
+                        p =  p_value,
                         data.funcit = TrainingSet,
                         TestSet = TestSet
-                      )}
+                      )
+                      }
                     )
                   
                   return(tibble(
@@ -180,7 +181,6 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
               library(MASS)
               library(splines)
               library(parallel)
-              #library(ConnectorV2.0)
               library(Matrix)
               library(rlist)
               library(RhpcBLASctl)
@@ -209,7 +209,7 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
                 
                 Crosslikelihood <-
                   sapply(p, function(p_value){
-                  
+                    names(p_value) <- unique(data@curves$measureID)
                     Calclikelihood(
                       p = p_value,
                       data.funcit = TrainingSet,

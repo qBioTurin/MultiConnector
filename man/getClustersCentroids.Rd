@@ -22,7 +22,7 @@ This method provides the features available in the annotations of the provided o
 \examples{
 \dontrun{
 
-# For CONNECTORDataClustered 
+# For CONNECTORDataClustered
 getClustersCentroids(my_clustered_data)
 }
 }

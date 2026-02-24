@@ -32,8 +32,7 @@
   # Questa funzione serve ad inizializzare i parametri da usare
   # riceve i dati già ordinati per jamesID, measureID e time
   # TODO capire se serve la grid qua
-  # Definisco J come il numero di misurazioni presenti nel dataset
-  J <- length(unique(CData$measureID))
+
   # N indica il numero di soggetti studiati
   N <- length(unique(CData$jamesID))
   # M è il vettore contente le misure, applicando l'unique
@@ -43,8 +42,8 @@
 
   grid <- list()
 
-  for (j in 1:J) {
-    a <- sort(unique(CData$time[CData$measureID == M[j]]))
+  for (j in M ) {
+    a <- sort(unique(CData$time[ CData$measureID == j ]))
     grid <- list.append(grid, a)
   }
   names(grid) <- M
@@ -53,28 +52,29 @@
   FullS <- list()
   # Metto la condizione if, per dare la possibilità di cambiare il tipo di base usata (ns o bs)
   if (natural == TRUE) {
-    for (j in 1:J) {
+    for (j in M ) {
       b <- cbind(1, ns(grid[[j]], df = q[j] - 1)) # unlist serve poiché se no non mi legge il vettore (ho controllato che mantenga l'ordine e non cambi gli elemnti)
       b <- svd(b)$u
       FullS <- list.append(FullS, b)
     }
   } else {
-    for (j in 1:J) {
+    for (j in M ) {
       b <- cbind(1, bs(grid[[j]], df = q[j] - 1))
       b <- svd(b)$u
       FullS <- list.append(FullS, b)
     }
   }
-  #
+  names(FullS) <- M
+  
   # Creo i timeindex, poiché nel dataset iniziale io ho solo i tempi ma non come essi siano posizionati nella griglia
   CData$timeindex <- NA
 
   for (i in 1:N) {
     t <- NULL
-    for (j in 1:J) {
-      CData$timeindex[CData$measureID == M[j] &
+    for (j in M) {
+      CData$timeindex[CData$measureID == j &
         CData$jamesID == i] <- match(
-        CData$time[CData$measureID == M[j] & CData$jamesID == i],
+        CData$time[CData$measureID == j & CData$jamesID == i],
         grid[[j]]
       )
     }
@@ -86,10 +86,10 @@
 
   for (i in 1:N) {
     Si <- NULL
-    for (j in 1:J) {
+    for (j in M) {
       A <- FullS[[j]][CData$timeindex[(CData$jamesID == i &
-        CData$measureID == M[j])], ]
-      if (j == 1) {
+        CData$measureID == j )], ]
+      if (j == M[1] ) {
         Si <- A
       } else {
         Si <- bdiag(Si, A)
@@ -104,12 +104,10 @@
 
     S <- rbind(S, Si) # In questo modo attacco le matrice dei vari soggetti una sotto l'altra (tanto il numero di colonne è uguale per ogni soggetto, ovvero sum(q))
   }
-
-  # S <- as.matrix(S)# è necessario perché rbind, non riempie le matrici con gli zeri
-
+  
   # Calcolo i coefficienti iniziali delle spline, usando il metodo dell'errore quadratico (penso qua si usi effetivamente la svd?)
   points <- matrix(0, N, sum(q))
-  #
+  
   for (i in 1:N) {
     if (length(which(CData$jamesID == i)) == 1) {
       Si <- matrix(S[CData$jamesID == i, ], nrow = 1)
@@ -348,19 +346,16 @@
 #' fclustEstep
 #'
 #' @description
+#' Internal E-step for functional clustering.
 #'
-#'  ...
+#' @param par Parameters
+#' @param curve_ok Data
+#' @param vars Variables
+#' @param S Spline basis
+#' @param hard Hard clustering flag
 #'
-#' @param par ...
-#' @param curve_ok ...
-#' @param vars ...
-#' @param S ....
-#' @param hard ...
-
+#' @return Updated variables.
 #'
-#' @return ...
-#'
-
 #' @keywords internal
 #' @noRd
 #'
@@ -369,118 +364,69 @@
 #' @importFrom dplyr select filter group_by mutate arrange
 
 
-# E step
 "fclustEstep" <- function(par, curve_ok, vars, S, hard) {
+  #Qui richiamo gli oggetti necessari per la function
   N <- dim(vars$gamma)[1]
   K <- dim(vars$gamma)[2]
-  q <- dim(vars$gamma)[3] # = sum(q_j) over measures
-  sigma <- par$sigma[1] # observation noise variance (scalar)
-
-  # Rank-p factorisation of Gamma = U_p diag(D_p) U_p^T stored by fclustMstep.
-  # Using full Gamma would require solve(Gamma), which fails because Gamma is
-  # rank-deficient (all but p singular values were zeroed in the M-step).
-  U_p <- par$Gamma_U # [q x p]
-  D_p <- par$Gamma_d # [p]  (positive eigenvalues only)
-
-  Lambda.alpha <- par$lambda.zero + par$Lambda %*% t(par$alpha) # [q x K]
+  q <- dim(vars$gamma)[3]#Così equivale alla sum q
+  Gamma <- par$Gamma
+  Lambda.alpha <- par$lambda.zero + par$Lambda %*% t(par$alpha)
   vars$gprod <- vars$gcov <- NULL
-
   for (j in 1:N) {
-    # Extract rows of S belonging to subject j
-    if (length(which(curve_ok$jamesID == j)) == 1) {
-      Sj <- matrix(S[curve_ok$jamesID == j, ], nrow = 1)
-    } else {
+    # Calculate expected value of gamma.
+    if (length(which(curve_ok$jamesID == j)) == 1){
+      Sj <- matrix( S[curve_ok$jamesID == j, ],nrow=1)
+    }  else {
       Sj <- S[curve_ok$jamesID == j, ]
     }
-
-    # -----------------------------------------------------------------------
-    # Rank-p Woodbury identity
-    # -----------------------------------------------------------------------
-    # The original code inverts:  diag(nj) + Sj Gamma Sj^T (1/sigma)
-    # which is nj x nj -- expensive for large nj.
-    #
-    # Since Gamma = U_p D_p U_p^T, write W = Sj U_p  [nj x p].  Then:
-    #   Sj Gamma Sj^T = W D_p W^T
-    # and the Woodbury identity gives:
-    #
-    #   Cgamma = (Gamma^{-1} + Sj^T Sj / sigma)^{-1}
-    #          = U_p  (D_p^{-1} + W^T W / sigma)^{-1}  U_p^T
-    #
-    # Inner matrix M = diag(1/D_p) + W^T W / sigma is only p x p and is
-    # always positive-definite (sigma > 0, D_p > 0).
-    # -----------------------------------------------------------------------
-    W <- Sj %*% U_p # [nj x p]
-    WtW <- crossprod(W) # [p x p]
-    M <- diag(1 / D_p) + WtW / sigma # [p x p]  -- always invertible
-    M_inv <- solve(M) # [p x p]  -- cheap
-    C_inner <- M_inv # alias for clarity
-
-    # Full q x q posterior covariance:  Cgamma = U_p C_inner U_p^T
-    Cgamma <- U_p %*% C_inner %*% t(U_p) # [q x q]
-
-    # -----------------------------------------------------------------------
-    # Posterior mean of gamma_j:  Cgamma Sj^T (1/sigma) centx
-    #   = (1/sigma) U_p C_inner W^T centx            [q x K]
-    # -----------------------------------------------------------------------
-    centx <- curve_ok$value[curve_ok$jamesID == j] - Sj %*% Lambda.alpha # [nj x K]
-    Wt_centx <- t(W) %*% centx # [p x K]
-    vars$gamma[j, , ] <- t((1 / sigma) * U_p %*% (C_inner %*% Wt_centx))
-
-    # -----------------------------------------------------------------------
-    # Cluster membership weights via Woodbury on covx:
-    #   covx     = Sj Gamma Sj^T + sigma I  =  W D_p W^T + sigma I
-    #   covx^{-1}= (1/sigma)(I - (1/sigma) W C_inner W^T)
-    #
-    # Quadratic form per cluster k:
-    #   c_k^T covx^{-1} c_k = (1/sigma)(||c_k||^2 - (1/sigma) c_k^T W C_inner W^T c_k)
-    # No nj x nj matrix is ever formed.
-    # -----------------------------------------------------------------------
-    Ci_Wt_cx <- C_inner %*% Wt_centx # [p x K]
-    quad_forms <- (1 / sigma) *
-      (colSums(centx^2) - colSums(Wt_centx * Ci_Wt_cx) / sigma) # [K]
-    d <- exp(-quad_forms / 2) * par$pi
-
-    # Assign cluster probabilities (guard against numerical underflow)
-    if (sum(d) != 0) {
+    
+    # Sj <- S[curve_ok$jamesID == j, ]
+    nj <- sum(curve_ok$jamesID == j) #determina quanti dati del soggetto j
+    invvar <- diag(1 / rep(par$sigma, nj))
+    Cgamma <- Gamma - Gamma %*% t(Sj) %*% solve(diag(nj) + Sj %*%
+                                                  Gamma %*% t(Sj) %*% invvar) %*% invvar %*% Sj %*% Gamma
+    centx <- curve_ok$value[curve_ok$jamesID == j] - Sj %*% Lambda.alpha
+    vars$gamma[j, , ] <- t(Cgamma %*% t(Sj) %*% invvar %*% centx)
+    # Calculate pi i given j.
+    covx <- Sj %*% par$Gamma %*% t(Sj) + solve(invvar)
+    d <- exp(-diag(t(centx) %*% solve(covx) %*% centx) / 2) * par$pi
+    #vars$piigivej[j,  ] <- d/sum(d)
+    #Qui ci sono delle aggiunte di simone, servono nel caso in cui sum(d) == 0,
+    #così da non avere errori ponendo quel caso uguale a zero per definizione
+    if (sum(d) != 0)
       vars$piigivej[j, ] <- d / sum(d)
-    } else {
+    else
       vars$piigivej[j, ] <- 0
-    }
-
+    
     if (hard) {
       m <- order(-d)[1]
       vars$piigivej[j, ] <- 0
       vars$piigivej[j, m] <- 1
     }
-
-    # E[gamma gamma^T] and covariance accumulation (unchanged logic)
-    vars$gprod <- cbind(
-      vars$gprod,
-      t(matrix(vars$gamma[j, , ], K, q)) %*%
-        (matrix(vars$gamma[j, , ], K, q) * vars$piigivej[j, ]) + Cgamma
-    )
+    
+    # Calculate expected value of gamma %*% t(gamma).
+    vars$gprod <- cbind(vars$gprod,
+                        t(matrix(vars$gamma[j, , ], K, q)) %*% (matrix(vars$gamma[j, , ], K, q) * vars$piigivej[j, ]) + Cgamma)
     vars$gcov <- cbind(vars$gcov, Cgamma)
   }
   return(vars)
 }
 
-
 #' fclustMstep
 #'
 #' @description
+#' Internal M-step for functional clustering.
 #'
-#'  ...
+#' @param parameters Parameters
+#' @param curve_ok Data
+#' @param S Spline basis
+#' @param vars Variables
+#' @param hard Hard clustering flag
+#' @param p Rank
+#' @param pert1 Perturbation
+#' @param tol Tolerance
 #'
-#' @param parameters ...
-#' @param curve_ok ...
-#' @param S ....
-#' @param vars ...
-#' @param hard ...
-#' @param p ...
-#' @param pert1 ...
-#' @param tol ...
-#'
-#' @return ...
+#' @return Updated parameters.
 #'
 
 #' @keywords internal
@@ -500,45 +446,40 @@
                           p,
                           pert1,
                           tol) {
-  # Prova del M step
-  # Richiamo i paramentri che mi servono
+  #Prova del M step
+  #Richiamo i paramentri che mi servono
   K <- dim(parameters$alpha)[1]
   alpha <- parameters$alpha
   Lambda <- parameters$Lambda
   gamma <- vars$gamma
   gcov <- vars$gcov
-  curve <- curve_ok$jamesID # Così faccio coincidere la mia notazione con quella di James and Sugar
+  curve <- curve_ok$jamesID #Così faccio coincidere la mia notazione con quella di James and Sugar
   piigivej <- vars$piigivej
   N <- dim(gamma)[1]
   K <- dim(alpha)[1]
   h <- dim(alpha)[2]
   n <- length(curve)
-  q <- dim(S)[2] # Così facendo, non devo più usare sum(q)
+  q <- dim(S)[2]#Così facendo, non devo più usare sum(q)
   sigma.old <- 2
   sigma <- 1
   # Compute pi.
-  if (hard) {
+  if (hard)
     parameters$pi <- rep(1 / K, K)
-  } else {
+  else
     parameters$pi <- apply(vars$piigivej, 2, mean)
-  }
   # Compute rank p estimate of Gamma
   ind <- matrix(rep(c(rep(c(
     1, rep(0, q - 1)
-  ), N), 0), q)[1:(N * q^2)], N * q, q)
+  ), N), 0), q)[1:(N * q ^ 2)], N * q, q)
   gsvd <- svd(vars$gprod %*% ind / N)
   gsvd$d[-(1:p)] <- 0
   parameters$Gamma <- gsvd$u %*% diag(gsvd$d) %*% t(gsvd$u)
-  # Store rank-p factors for the E-step Woodbury computation.
-  # Gamma = Gamma_U %*% diag(Gamma_d) %*% t(Gamma_U), with only p non-zero eigenvalues.
-  parameters$Gamma_U <- gsvd$u[, 1:p, drop = FALSE] # [q x p]
-  parameters$Gamma_d <- gsvd$d[1:p] # [p]
   # This loop iteratively calculates alpha and then Lambda and stops
   # when they have converged.
-  # Nel ciclo sono state aggiunte le perturbazioni pert1, nel caso in cui non funzioni l'inversione per autovalori troppo piccoli
+  #Nel ciclo sono state aggiunte le perturbazioni pert1, nel caso in cui non funzioni l'inversione per autovalori troppo piccoli
   loopnumber <- 1
   while ((abs(sigma.old[1] - sigma[1]) / sigma[1] > tol) &
-    (loopnumber < 10)) {
+         (loopnumber < 10)) {
     sigma.old <- sigma
     # Calculate lambda.zero.
     gamma.pi <- diag(S %*% t(apply(
@@ -553,41 +494,39 @@
     for (i in 1.:K) {
       S.Lam <- S %*% Lambda
       S.Lam.pi <- S.Lam * piigivej[curve, i]
-      if (sum(piigivej[, i]) > 10^(-4)) {
+      if (sum(piigivej[, i]) > 10 ^ (-4))
         alpha[i, ] <- solve(t(S.Lam.pi) %*% S.Lam) %*%
-          t(S.Lam.pi) %*% (x - diag(S %*% t(gamma[curve, i, ])))
-      } else {
+        t(S.Lam.pi) %*% (x - diag(S %*% t(gamma[curve, i, ])))
+      else
         print("Warning: empty cluster")
-      }
     }
     # Calculate Lambda given alpha. This is done by iterating
     # through each column of Lambda holding the other columns fixed.
     for (m in 1:h) {
-      pi.alphasq <- apply(t(piigivej) * (alpha^2)[, m], 2, sum)[curve]
+      pi.alphasq <- apply(t(piigivej) * (alpha ^ 2)[, m], 2, sum)[curve]
       pi.alpha <- apply(t(piigivej) * alpha[, m], 2, sum)[curve]
       S.Lambda <- t(S %*% Lambda)
       if (h != 1) {
         temp <- NULL
         for (i in 1:K) {
           temp <- cbind(temp, as.vector(rep(1, h - 1) %*% matrix((S.Lambda *
-            alpha[i, ])[-m, ], h - 1, dim(S)[1])) * alpha[i, m])
+                                                                    alpha[i, ])[-m, ], h - 1, dim(S)[1]
+          )) * alpha[i, m])
         }
         otherLambda <- (temp * piigivej[curve, ]) %*% rep(1, K)
-      } else {
-        otherLambda <- 0
       }
-      gamma.pi.alpha <- apply(
-        gamma * as.vector(piigivej) *
-          rep(alpha[, m], rep(N, K)),
-        c(1, 3),
-        sum
-      )[curve, ]
+      else
+        otherLambda <- 0
+      gamma.pi.alpha <- apply(gamma * as.vector(piigivej) *
+                                rep(alpha[, m], rep(N, K)),
+                              c(1, 3),
+                              sum)[curve, ]
       Lambda[, m] <- solve(t(S * pi.alphasq) %*% S + pert1 * diag(sum(q))) %*% t(S) %*%
-        (x * pi.alpha - otherLambda - (S * gamma.pi.alpha) %*% rep(1, sum(q))) # Aggiunta
+        (x * pi.alpha - otherLambda - (S * gamma.pi.alpha) %*% rep(1, sum(q))) #Aggiunta
     }
     # Calculate sigma
     ind <- matrix(rep(c(rep(F, q), rep(T, N * q)), N)
-    [1:(N * N * q)], N, N * q, byrow = T)[rep(1:N, table(curve)), ]
+                  [1:(N * N * q)], N, N * q, byrow = T)[rep(1:N, table(curve)), ]
     mat1 <- matrix(rep(S, N), n, N * q)
     mat3 <- t(mat1)
     mat3[t(ind)] <- 0
@@ -614,14 +553,13 @@
 #' fclustconst
 #'
 #' @description
+#' Enforces constraints on functional clustering parameters.
 #'
-#'  ...
+#' @param parameters Parameters
+#' @param vars Variables
+#' @param S Spline basis
 #'
-#' @param parameters ...
-#' @param vars ...
-#' @param S ...
-#'
-#' @return ...
+#' @return List with updated parameters and variables.
 #'
 
 #' @keywords internal
@@ -692,7 +630,6 @@
   curve <- data$CData$jamesID
   time <- data$CData$timeindex
   N <- length(table(curve))
-  J <- length(unique(M))
   h <- dim(par$alpha)[2]
   alpha.hat <- matrix(0, N, h)
   K <- dim(fit$par$alpha)[1]
@@ -799,7 +736,6 @@
   fit <- data$cfit
   FullS <- KData$FullS
   data <- KData$CData
-  J <- length(unique(data$measureID))
   # N indica il numero di soggetti studiati
   N <- length(unique(data$jamesID))
   # M è il vettore contente le misure, applicando l'unique
@@ -815,12 +751,9 @@
   # Dopo aver estratto i parametri, li tiro fouri per ogni curva di appartenenza.
   a_old <- 1
   Final_result <- list()
-  # se J e q sono lunghi diversi tira errore con messaggio "numero di q diverso da numero di misure" in inglese
-  if (J != length(q)) {
-    stop("Number of q different from number of measures")
-  }
 
-  for (gei in 1:J) {
+
+  for (gei in M) {
     a_new <- q[gei] + a_old - 1
 
     Gamma1 <- Gamma[(a_old:a_new), (a_old:a_new)]
@@ -848,14 +781,14 @@
     for (i in 1:N) {
       # print(i)
       # y sono yij
-      y <- data$value[data$jamesID == i & data$measureID == M[gei]]
+      y <- data$value[data$jamesID == i & data$measureID == gei]
       Sij <- FullSj[data$timeindex[data$jamesID == i &
-        data$measureID == M[gei]], ]
+        data$measureID == gei], ]
       ni <- dim(Sij)[1]
       invvar <- diag(1 / rep(sigma, ni))
       covx <- Sij %*% Gamma1 %*% t(Sij) + solve(invvar)
       centx <- data$value[data$jamesID == i &
-        data$measureID == M[gei]] - Sij %*% Lambda.alpha
+        data$measureID == gei ] - Sij %*% Lambda.alpha
       d <- exp(-diag(t(centx) %*% solve(covx) %*% centx) / 2) * fit$par$pi
       if (sum(d) != 0) {
         pi <- d / sum(d)
@@ -901,7 +834,7 @@
       ind <- ind + 1
     }
     meancurves <- FullSj %*% Lambda.alpha
-    Final_result[[M[gei]]] <- list(
+    Final_result[[gei]] <- list(
       gpred = gpred,
       upci = upci,
       lowci = lowci,
@@ -918,24 +851,22 @@
 #' fclust
 #'
 #' @description
+#' Main internal function for functional clustering EM algorithm.
 #'
-#'  ...
+#' @param data_input Input data
+#' @param q Spline dimension
+#' @param h Projection dimension
+#' @param K Number of clusters
+#' @param pert Perturbation for initialization
+#' @param pert1 Perturbation for M-step
+#' @param natural Natural spline flag
+#' @param tol Convergence tolerance
+#' @param maxit Maximum iterations
+#' @param hard Hard clustering flag
+#' @param pert2 Perturbation for prediction
+#' @param seed Random seed
 #'
-#' @param data_input
-#' @param q
-#' @param h
-#' @param K
-#' @param pert
-#' @param pert1
-#' @param natural
-#' @param tol
-#' @param maxit
-#' @param hard
-#' @param pert2
-#' @param seed
-
-#'
-#' @return ...
+#' @return A list containing clustering results.
 #'
 
 #' @keywords internal

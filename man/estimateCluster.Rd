@@ -26,11 +26,13 @@ The algorithm will test each specified number of clusters.}
 
 \item{p}{Named vector or single integer specifying the dimension of the natural cubic
 spline basis for each measurement type. Higher values capture more complex curve shapes
-but may lead to overfitting. See \code{\link{estimatepDimension}} for guidance.}
+but may lead to overfitting. See \code{\link{estimatepDimension}} for guidance.
+If a single integer is supplied it is recycled for all measures with a warning.
+If a vector is supplied, its length must equal the number of measures; otherwise
+an error is raised.}
 
 \item{h}{Projection dimension parameter. Must be ≤ min(p, G-1) for identifiability.
-Lower values provide simpler representations but may lose important curve features.
-Default is typically 2 or 3.}
+Lower values provide simpler representations but may lose important curve features.}
 
 \item{runs}{Integer specifying the number of random initializations for each parameter
 combination. More runs improve stability but increase computation time. Default: 50.}

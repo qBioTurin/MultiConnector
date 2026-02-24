@@ -24,7 +24,7 @@ This method provides the features available in the annotations of the provided o
 # For CONNECTORData
 getAnnotations(my_connector_data)
 
-# For CONNECTORDataClustered 
+# For CONNECTORDataClustered
 getAnnotations(my_clustered_data)
 }
 }

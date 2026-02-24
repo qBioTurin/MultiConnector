@@ -18,36 +18,35 @@ if (knitr::is_latex_output()) {
 
 ## ----libraries, message=FALSE, warning=FALSE----------------------------------
 # Load required libraries
-library(dplyr)           # Data manipulation
-library(parallel)        # Parallel computing
-library(MultiConnector)  # Main clustering package
-library(ggplot2)         # Enhanced plotting
-library(knitr)           # Table formatting
-library(kableExtra)      # Enhanced table styling
+library(dplyr) # Data manipulation
+library(parallel) # Parallel computing
+library(MultiConnector) # Main clustering package
+library(ggplot2) # Enhanced plotting
+library(knitr) # Table formatting
+library(kableExtra) # Enhanced table styling
 
 # Set up parallel processing
 n_cores <- detectCores()
-workers <- max(1, n_cores - 1)  # Leave one core free
+workers <- max(1, n_cores - 1) # Leave one core free
 
 cat("System Information:\n")
 cat("- Available CPU cores:", n_cores, "\n")
 cat("- Cores used for analysis:", workers, "\n")
 
 ## ----create-data-object-------------------------------------------------------
-system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package="MultiConnector") -> time_series_path
-system.file("Data/OvarianCancer/Ovarian_Annotations.csv", package="MultiConnector") -> annotations_path
+system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package = "MultiConnector") -> time_series_path
+system.file("Data/OvarianCancer/Ovarian_Annotations.csv", package = "MultiConnector") -> annotations_path
 # Create the main data object
-Data <- ConnectorData(time_series_path,annotations_path)
-
+Data <- ConnectorData(time_series_path, annotations_path)
 
 ## ----initial-plots, fig.cap="Initial data exploration: (A) All growth curves overlaid, (B) Curves colored by progeny type.", fig.width=12, fig.height=8----
 # Plot 1: Basic time series overview
-p1 <- plot(Data) + 
+p1 <- plot(Data) +
   ggtitle("A) All Growth Curves") +
   theme_minimal()
 
 # Plot 2: Colored by progeny feature
-p2 <- plot(Data, feature = "Progeny") + 
+p2 <- plot(Data, feature = "Progeny") +
   ggtitle("B) Curves by Progeny Type") +
   theme_minimal()
 
@@ -72,7 +71,7 @@ truncatePlot(Data, measure = "Ovarian", truncTime = 70)
 DataTrunc <- truncate(Data, measure = "Ovarian", truncTime = 70)
 
 # Visualize truncated data
-plot(DataTrunc) + 
+plot(DataTrunc) +
   ggtitle("Growth Curves After Truncation (t ≤ 70)") +
   theme_minimal()
 
@@ -87,30 +86,33 @@ print(CrossLogLikePlot)
 optimal_p <- 3
 cat("Selected optimal p =", optimal_p, "\n")
 
-## ----cluster-selection--------------------------------------------------------
+## ----clustering-analysis, fig.cap="Clustering quality metrics across different numbers of clusters (G).", cache=TRUE----
+# Perform clustering analysis
+# Note: Since p is a single value, a warning will be issued indicating
+# it's being recycled for all measures. This is expected.
 clusters <- estimateCluster(
-  DataTrunc, 
-  G = 2:6,              # Test 2-6 clusters
-  p = optimal_p,        # Use optimal spline dimension
-  runs = 20,            # Reduced for demonstration (use 100+ for final analysis)
-  cores = workers       # Parallel processing
+  DataTrunc,
+  G = 2:6, # Test 2-6 clusters
+  p = optimal_p, # Use optimal spline dimension
+  runs = 20, # Reduced for demonstration (use 100+ for final analysis)
+  cores = workers # Parallel processing
 )
 
 # Display quality metrics
 plot(clusters)
 
+## ----cluster-selection--------------------------------------------------------
 # Select optimal clustering (G=4 based on quality metrics)
 ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
 
-
 ## ----cluster-plots, fig.cap="Cluster visualization: (A) Growth curves colored by cluster assignment, (B) Curves colored by progeny type to examine biological associations.", fig.width=12, fig.height=8----
 # Plot clusters
-p1 <- plot(ClusterData) + 
+p1 <- plot(ClusterData) +
   ggtitle("A) Clusters by Assignment") +
   theme_minimal()
 
 # Plot by progeny feature
-p2 <- plot(ClusterData, feature = "Progeny") + 
+p2 <- plot(ClusterData, feature = "Progeny") +
   ggtitle("B) Clusters by Progeny Type") +
   theme_minimal()
 
@@ -129,8 +131,9 @@ print(annotations_summary)
 
 # Create summary table if annotations exist
 if (exists("annotations_summary") && length(annotations_summary) > 0) {
-  kable(annotations_summary, 
-        caption = "Cluster-annotation summary showing the distribution of features across clusters.") %>%
+  kable(annotations_summary,
+    caption = "Cluster-annotation summary showing the distribution of features across clusters."
+  ) %>%
     kable_styling(bootstrap_options = c("striped", "hover"))
 }
 
@@ -184,11 +187,9 @@ subject_info$highlighted_plot
 multi_subject_info <- SubjectInfo(ClusterData, subjIDs = selected_subjects)
 multi_subject_info$highlighted_plot
 
-
 ## ----cluster-distribution-----------------------------------------------------
+progeny_dist <- clusterDistribution(ClusterData, "Progeny")
 
-progeny_dist <- clusterDistribution(ClusterData, c("Progeny", "Source") )
-  
 cat("Progeny Distribution Across Clusters:")
 print(progeny_dist)
 
@@ -201,14 +202,17 @@ print(available_features)
 if (length(available_features) > 1) {
   # Take the first available feature for demonstration
   demo_feature <- available_features[1]
-  if (demo_feature != "Progeny") {  # Avoid duplicate analysis
-    tryCatch({
-      feature_dist <- clusterDistribution(ClusterData, demo_feature)
-      cat("\nDistribution of", demo_feature, "across clusters:")
-      print(feature_dist)
-    }, error = function(e) {
-      cat("\nCannot analyze feature", demo_feature, ":", e$message)
-    })
+  if (demo_feature != "Progeny") { # Avoid duplicate analysis
+    tryCatch(
+      {
+        feature_dist <- clusterDistribution(ClusterData, demo_feature)
+        cat("\nDistribution of", demo_feature, "across clusters:")
+        print(feature_dist)
+      },
+      error = function(e) {
+        cat("\nCannot analyze feature", demo_feature, ":", e$message)
+      }
+    )
   }
 }
 
