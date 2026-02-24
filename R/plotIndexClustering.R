@@ -112,6 +112,7 @@ setMethod("IndexPlotExtrapolation",signature(), function(results) {
       facet_wrap(~Indexes, scales = "free") +
       theme_bw() +
       xlab("G") +
-      ylab("IndexesV")
+      ylab("IndexesV") +
+      scale_x_continuous(breaks = g_values) 
   ))
 })
