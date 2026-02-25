@@ -11,7 +11,8 @@ generateReport(
   include_dimension_analysis = TRUE,
   include_cluster_analysis = TRUE,
   features = NULL,
-  output_format = "list"
+  output_format = "list",
+  output_file = NULL
 )
 }
 \arguments{
@@ -27,7 +28,9 @@ generateReport(
 
 \item{features}{Vector of feature names to analyze (optional)}
 
-\item{output_format}{Output format: "list" (default), "html", "pdf" (future implementation)}
+\item{output_format}{Output format: "list" (default), "html"}
+
+\item{output_file}{Output file path for HTML report (optional)}
 }
 \value{
 A comprehensive report containing all plots and analysis summaries

@@ -303,14 +303,16 @@ if (requireNamespace("gridExtra", quietly = TRUE)) {
 ## Cluster-Feature Association Analysis
 
 ```{r cluster-annotations}
-# Examine cluster-annotation relationships
-annotations_summary <- getAnnotations(ClusterData)
-print(annotations_summary)
+# Examine available features
+features <- getAnnotations(ClusterData)
+cat("Available features:", paste(features, collapse = ", "), "\n")
 
-# Create summary table if annotations exist
-if (exists("annotations_summary") && length(annotations_summary) > 0) {
-  kable(annotations_summary,
-    caption = "Cluster-annotation summary showing the distribution of features across clusters."
+# Generate distribution table for the main feature
+if ("Progeny" %in% features) {
+  dist_table <- clusterDistribution(ClusterData, "Progeny")
+
+  kable(dist_table,
+    caption = "Cluster-progeny distribution showing how different lineages are grouped."
   ) %>%
     kable_styling(bootstrap_options = c("striped", "hover"))
 }
@@ -386,6 +388,28 @@ MaximumDiscriminationFunction(ClusterData)
 # Advanced Analysis Functions
 
 This section demonstrates the new advanced analysis capabilities available in MultiConnector for detailed subject-level analysis and comprehensive reporting.
+
+## Automated Reporting with generateReport()
+
+The `generateReport()` function creates a comprehensive analysis summary that can be exported as an HTML report, including all plots, tables, and analysis choices.
+
+```{r generate-report, eval=FALSE}
+# Generate a comprehensive report object
+analysis_report <- generateReport(
+  data = DataTrunc,
+  clustered_data = ClusterData,
+  report_title = "Ovarian Cancer Growth Analysis",
+  features = "Progeny"
+)
+
+# Export to HTML for sharing
+generateReport(
+  clustered_data = ClusterData,
+  report_title = "Ovarian Cancer Final Report",
+  output_format = "html",
+  output_file = "Ovarian_Analysis_Report.html"
+)
+```
 
 ## Subject-Level Analysis with SubjectInfo()
 

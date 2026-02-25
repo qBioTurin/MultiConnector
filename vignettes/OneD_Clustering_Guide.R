@@ -86,21 +86,6 @@ print(CrossLogLikePlot)
 optimal_p <- 3
 cat("Selected optimal p =", optimal_p, "\n")
 
-## ----clustering-analysis, fig.cap="Clustering quality metrics across different numbers of clusters (G).", cache=TRUE----
-# Perform clustering analysis
-# Note: Since p is a single value, a warning will be issued indicating
-# it's being recycled for all measures. This is expected.
-clusters <- estimateCluster(
-  DataTrunc,
-  G = 2:6, # Test 2-6 clusters
-  p = optimal_p, # Use optimal spline dimension
-  runs = 20, # Reduced for demonstration (use 100+ for final analysis)
-  cores = workers # Parallel processing
-)
-
-# Display quality metrics
-plot(clusters)
-
 ## ----cluster-selection--------------------------------------------------------
 # Select optimal clustering (G=4 based on quality metrics)
 ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
@@ -125,14 +110,16 @@ if (requireNamespace("gridExtra", quietly = TRUE)) {
 }
 
 ## ----cluster-annotations------------------------------------------------------
-# Examine cluster-annotation relationships
-annotations_summary <- getAnnotations(ClusterData)
-print(annotations_summary)
+# Examine available features
+features <- getAnnotations(ClusterData)
+cat("Available features:", paste(features, collapse = ", "), "\n")
 
-# Create summary table if annotations exist
-if (exists("annotations_summary") && length(annotations_summary) > 0) {
-  kable(annotations_summary,
-    caption = "Cluster-annotation summary showing the distribution of features across clusters."
+# Generate distribution table for the main feature
+if ("Progeny" %in% features) {
+  dist_table <- clusterDistribution(ClusterData, "Progeny")
+
+  kable(dist_table,
+    caption = "Cluster-progeny distribution showing how different lineages are grouped."
   ) %>%
     kable_styling(bootstrap_options = c("striped", "hover"))
 }
@@ -168,6 +155,23 @@ if (length(splinePlots) > 0) {
 ## ----discrimination-analysis--------------------------------------------------
 # Identify most discriminative features
 MaximumDiscriminationFunction(ClusterData)
+
+## ----generate-report, eval=FALSE----------------------------------------------
+# # Generate a comprehensive report object
+# analysis_report <- generateReport(
+#   data = DataTrunc,
+#   clustered_data = ClusterData,
+#   report_title = "Ovarian Cancer Growth Analysis",
+#   features = "Progeny"
+# )
+# 
+# # Export to HTML for sharing
+# generateReport(
+#   clustered_data = ClusterData,
+#   report_title = "Ovarian Cancer Final Report",
+#   output_format = "html",
+#   output_file = "Ovarian_Analysis_Report.html"
+# )
 
 ## ----subject-analysis, fig.width=12, fig.height=8-----------------------------
 # Select some subjects for detailed analysis

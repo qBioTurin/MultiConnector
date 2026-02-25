@@ -16,41 +16,49 @@
 #' @export
 
 setGeneric("truncatePlot", function(data,
-                                      feature=NULL,
-                                      truncTime = NULL,
-                                      labels = NULL,
-                                      measure = NULL)
+                                    feature = NULL,
+                                    truncTime = NULL,
+                                    labels = NULL,
+                                    measure = NULL) {
   standardGeneric("truncatePlot")
-  )
+})
 
-setMethod("truncatePlot",
-          signature ("CONNECTORData"), function(data,
-                                                feature=NULL,
-                                                truncTime = NULL,
-                                                labels = NULL,
-                                                measure = NULL)
-          {
-            select<-dplyr::select
-            oldData <- data
-            if (length(unique(data@curves$measureID)) > 1) {
-              if (is.null(measure) || length(measure) != 1) {
-                stop("Indicate one and only one measure on which to perform the Truncation.")
-              }
-              else{
-                data <- filter(data@curves, measureID == measure)
-                invisible(capture.output(data <-
-                                           ConnectorData(data, oldData@annotations)))
-              }
-            }
-            dimBefore <- oldData@dimensions$nTimePoints
-            
-            growthCurveTr <- PlotTimeSeries(data, feature = feature, labels = labels)
-            
-            
-            if (!is.null(truncTime))
-            {
-              growthCurveTr <- growthCurveTr + geom_vline(xintercept = truncTime,
-                                                          color = "black",
-                                                          linewidth = 1)
-              return(growthCurveTr)
-            }})
+setMethod(
+  "truncatePlot",
+  signature("CONNECTORData"), function(data,
+                                       feature = NULL,
+                                       truncTime = NULL,
+                                       labels = NULL,
+                                       measure = NULL) {
+    if (is.null(measure)) {
+      measure <- unique(data@curves$measureID)
+    }
+
+    # Filter data to selected measures
+    curves_to_plot <- data@curves %>% filter(measureID %in% measure)
+
+    if (nrow(curves_to_plot) == 0) {
+      stop("None of the specified measures found in data.")
+    }
+
+    # Reconstruct temporary object for plotting
+    invisible(capture.output(
+      data_subset <- ConnectorData(curves_to_plot, data@annotations)
+    ))
+
+    # Generate base plot
+    growthCurveTr <- plot(data_subset, feature = feature, labels = labels)
+
+
+    if (!is.null(truncTime)) {
+      # Add truncation line (will appear on all relevant facets/measures)
+      growthCurveTr <- growthCurveTr + geom_vline(
+        xintercept = truncTime,
+        color = "black",
+        linewidth = 1
+      )
+    }
+
+    return(growthCurveTr)
+  }
+)

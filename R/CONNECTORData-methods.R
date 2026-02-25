@@ -156,7 +156,7 @@ setMethod(
       stop("The column name 'subjID' is not present or is present more than once in the AnnotationFile")
     }
     # check if the ID in the time series file are all present in the annotation file
-    if (all(curves$subjID %in% annotations$subjID) == FALSE) {
+    if (all(unique(curves$subjID) %in% annotations$subjID) == FALSE) {
       IDMISS <- setdiff(unique(curves$subjID), annotations$subjID)
       annotations <- add_row(annotations, subjID = IDMISS)
       warning(

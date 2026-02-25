@@ -1,7 +1,7 @@
 # ==============================================================================
 # MultiConnector Package - Complete Demo: One-Dimensional Clustering Analysis
 # ==============================================================================
-# 
+#
 # This demo provides a comprehensive step-by-step guide for performing functional
 # clustering analysis on one-dimensional time series data using the MultiConnector
 # package. We'll use ovarian cancer data as an example to demonstrate the complete
@@ -16,22 +16,24 @@
 # STEP 0: SETUP AND LIBRARY LOADING
 # ------------------------------------------------------------------------------
 
-library(dplyr)        # Data manipulation
-library(parallel)     # Parallel computing
-library(MultiConnector)  # Main clustering package
-library(ggplot2)      # Additional plotting (if needed)
+library(dplyr) # Data manipulation
+library(parallel) # Parallel computing
+library(MultiConnector) # Main clustering package
+library(ggplot2) # Additional plotting (if needed)
 
 # Set up parallel processing
 detectCores() -> nworkers
-cat("Detected", nworkers, "CPU cores. Will use", nworkers-1, "for parallel processing.\n\n")
+cat("Detected", nworkers, "CPU cores. Will use", nworkers - 1, "for parallel processing.\n\n")
 
 # ------------------------------------------------------------------------------
 # STEP 1: CREATE CONNECTOR DATA OBJECT
 # ------------------------------------------------------------------------------
 
 # Create the main data object for analysis
-Data <- ConnectorData(system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx",package = "MultiConnector"),
-                      system.file("Data/OvarianCancer/Ovarian_Annotations.csv",package = "MultiConnector"))
+Data <- ConnectorData(
+    system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx", package = "MultiConnector"),
+    system.file("Data/OvarianCancer/Ovarian_Annotations.csv", package = "MultiConnector")
+)
 
 # ------------------------------------------------------------------------------
 # STEP 2: INITIAL DATA EXPLORATION
@@ -41,22 +43,22 @@ Data <- ConnectorData(system.file("Data/OvarianCancer/Ovarian_TimeSeries.xlsx",p
 plot(Data)
 
 # Plot 2.2: Time series colored by progeny feature
-plot(Data, feature="Progeny")
+plot(Data, feature = "Progeny")
 
 # Plot 2.3: Time distribution analysis
-plotTimes(Data, large=TRUE)   # Detailed time analysis
-plotTimes(Data, large=FALSE)  # Summary time analysis
+plotTimes(Data, large = TRUE) # Detailed time analysis
+plotTimes(Data, large = FALSE) # Summary time analysis
 
 # ------------------------------------------------------------------------------
 # STEP 3: DATA PREPROCESSING (TRUNCATION)
 # ------------------------------------------------------------------------------
 
 # This helps identify if we should truncate data at a specific time point
-truncatePlot(Data, measure="Ovarian", truncTime=70)
+truncatePlot(Data, measure = "Ovarian", truncTime = 70)
 
 # Based on the truncation plot, applying truncation at time = 70.
 # Apply truncation to remove sparse data at later time points
-DataTrunc <- truncate(Data, measure="Ovarian", truncTime=70)
+DataTrunc <- truncate(Data, measure = "Ovarian", truncTime = 70)
 
 # Visualize truncated data
 plot(DataTrunc)
@@ -72,7 +74,7 @@ plot(DataTrunc)
 
 # Cross-validation to find optimal p
 # Test p values from 2 to 6
-CrossLogLikePlot <- estimatepDimension(DataTrunc, p=2:6, cores=nworkers-1)
+CrossLogLikePlot <- estimatepDimension(DataTrunc, p = 2:6, cores = nworkers - 1)
 
 # Display results
 print(CrossLogLikePlot)
@@ -91,11 +93,12 @@ optimal_p <- 3
 
 # Perform clustering with multiple G values
 # This is the core clustering step - most computationally intensive
-clusters <- estimateCluster(DataTrunc, 
-                           G = 2:6,           # Test 2-6 clusters
-                           p = optimal_p,     # Use optimal spline dimension
-                           runs = 10,         # Multiple runs for stability
-                           cores = 1) # Parallel processing
+clusters <- estimateCluster(DataTrunc,
+    G = 2:6, # Test 2-6 clusters
+    p = optimal_p, # Use optimal spline dimension
+    runs = 10, # Multiple runs for stability
+    cores = 1
+) # Parallel processing
 
 # Plot clustering quality metrics
 plot(clusters)
@@ -113,7 +116,7 @@ plot(clusters)
 
 # Select the best configuration
 # G=4 often provides good balance between complexity and interpretability
-ClusterData <- selectCluster(clusters, G=4, "MinfDB")
+ClusterData <- selectCluster(clusters, G = 4, "MinfDB")
 
 # ------------------------------------------------------------------------------
 # STEP 7: CLUSTER VISUALIZATION AND INTERPRETATION
@@ -127,7 +130,7 @@ annotations_summary <- getAnnotations(ClusterData)
 print(annotations_summary)
 
 # Plot 7.3: Cluster visualization colored by progeny
-plot(ClusterData, feature="Progeny")
+plot(ClusterData, feature = "Progeny")
 
 # Interpretation notes:
 # - Each cluster represents a distinct growth pattern
@@ -159,14 +162,22 @@ print(Metrics$plot)
 # This shows clusters in reduced dimensional space
 Discr <- DiscriminantPlot(ClusterData)
 
-Discr$ColCluster
-Discr$ColFeature
+if (!is.null(Discr$ColCluster)) {
+    print(Discr$ColCluster)
+}
+if (!is.null(Discr$ColFeature)) {
+    print(Discr$ColFeature)
+}
 
 # Plot 9.2: Spline-based cluster representations
-
+# splinePlot returns a list of plots indexed by subject ID
 splinePlots <- splinePlot(ClusterData)
-print(splinePlots$`1`)
+
+# Print specific subject plots if they exist
+subject_id_to_plot <- names(splinePlots)[1]
+if (!is.null(subject_id_to_plot)) {
+    print(splinePlots[[subject_id_to_plot]])
+}
 
 # Plot 9.3: Maximum discrimination analysis
 MaximumDiscriminationFunction(ClusterData)
-

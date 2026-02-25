@@ -1,95 +1,71 @@
-library(readxl)
-library(dplyr)
-library(readr)
-library(tibble)
-library(magrittr)
-library(tidyr)
-library(ggplot2)
-library(patchwork)
-library(parallel)
-library(MASS)
-library(splines)
-library(rlist)
-library(RhpcBLASctl)
-library(RColorBrewer)
-library(Matrix)
-library(MetBrewer)
-library(gghalves)
-library(statmod)
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-
-
 #### Loading data to cluster ####
 
-TimeSeries = readRDS("../inst/Data/PDX/TimeSeriesFiltered.RDs")
-Annotations = readRDS("../inst/Data/PDX/AnnotationsFiltered.RDs")
+# Use data from the package for portability
+TimeSeries <- readRDS(system.file("Data/PDX/TimeSeriesFiltered.RDs", package = "MultiConnector"))
+Annotations <- readRDS(system.file("Data/PDX/AnnotationsFiltered.RDs", package = "MultiConnector"))
 
 ####
 
-source("../R/DataImport.R")
-source("../R/CONNECTORData.R")
-Data<-DataImport(as_tibble(TimeSeries), as_tibble(Annotations) )
-source("../R/PlotTimeSeries.R")
-PlotTimeSeries(Data,feature = "LongID") + ggplot2::theme(legend.position = "none")
-source("../R/DataVisualization.R")
-source("../R/GridTimeOfPoints.R")
-DataVisualization(Data)
-DataVisualization(Data, large=T)
-# source("PlotDataTruncation.R")
-# source("DataTruncation.R")
-# PlotDataTruncation(Data,  measure="PDX", truncTime=5)
-# DataTruncation(Data,  measure="PDX", truncTime=5)
-source("../R/BasisDimensionChoice.R")
-source("../R/Clust.R")
-CrossLogLikePlot<-BasisDimensionChoice(Data, p=2:6, cores=5)
-CrossLogLikePlot
+# Initialize ConnectorData using the new constructor
+Data <- ConnectorData(TimeSeries, Annotations)
 
-source("../R/ClusterAnalysis.R")
+# Initial visualization
+plot(Data, feature = "LongID") + ggplot2::theme(legend.position = "none")
 
-clusters<-ClusterAnalysis(Data, G=2:6, p=4, runs=50, cores=5)
+# Time point visualization
+plotTimes(Data)
+plotTimes(Data, large = TRUE)
 
-saveRDS(clusters, file = "../inst/Data/PDX/clusters.RDs")
-clusters = readRDS("../inst/Data/PDX/clusters.RDs")
+# Truncation analysis (if needed)
+# truncatePlot(Data, measure = "PDX", truncTime = 5)
+# DataTrunc <- truncate(Data, measure = "PDX", truncTime = 5)
 
-source("../R/IndexPlotExtrapolation.R")
-IndexPlotExtrapolation(clusters)
-source("../R/CONNECTORDataClustered.R")
-source("../R/selectCluster.R")
-Set<-ConfigSelection(clusters, G=2, "MinfDB")
-source("../R/IndexPlotExtrapolation2.R")
-IndexPlotExtrapolation2(Data, ConfigChosen=Set, feature="LongID")
+# Estimate spline dimension (formerly BasisDimensionChoice)
+# Using 1 core for compatibility, increase as needed
+CrossLogLikePlot <- estimatepDimension(Data, p = 2:6, cores = 1)
+print(CrossLogLikePlot)
 
-source("../R/validateCluster.R")
-SilEntropy(Set)
+# Clustering analysis (formerly ClusterAnalysis)
+clusters <- estimateCluster(Data, G = 2:6, p = 4, runs = 10, cores = 1)
+plot(clusters)
 
-source("../R/DiscriminantPlot.R")
-DiscriminantPlot(Data, ConfigChosen=Set, feature="LongID")
+# Select optimal cluster (formerly ConfigSelection)
+ClusterData <- selectCluster(clusters, G = 2, "MinfDB")
+plot(ClusterData)
 
+# Cluster validation (formerly SilEntropy)
+Metrics <- validateCluster(ClusterData)
+print(Metrics$plot)
 
-source("../R/splinePlot.R")
-splinePlots = splinePlot(ConfigChosen = Set)
-source("../R/MaximumDiscriminationFunction.R")
-MaximumDiscriminationFunction(ConfigChosen = Set)
+# Discriminant analysis
+Discr <- DiscriminantPlot(ClusterData, feature = "LongID")
+if (!is.null(Discr$ColCluster)) print(Discr$ColCluster)
+
+# Spline plots
+splinePlots <- splinePlot(ClusterData)
+if (length(splinePlots) > 0) print(splinePlots[[1]])
+
+# Maximum discrimination
+MaximumDiscriminationFunction(ClusterData)
 
 
 ###### Classification #######
 
-TimeSeriesClassif = readRDS("../inst/Data/Synthetic/TimeSeries_Classification.RDs")
-AnnotationsClassif = readRDS("../inst/Data/Synthetic/Annotations_Classification.RDs")
-clusters = readRDS("../inst/Data/Synthetic/clusters.RDs")
-source("selectCluster.R")
-Set<-selectCluster(clusters, G=2, "MinfDB")
-source("DataImport.R")
-source("CONNECTORData.R")
-DataNew<-DataImport(TimeSeriesClassif, AnnotationsClassif)
-source("Classification.R")
+# Use synthetic data from the package for demonstration
+TimeSeriesClassif <- readRDS(system.file("Data/Synthetic/TimeSeries_Classification.RDs", package = "MultiConnector"))
+AnnotationsClassif <- readRDS(system.file("Data/Synthetic/Annotations_Classification.RDs", package = "MultiConnector"))
 
-ClassNew = ClassificationCurves(newdata = DataNew,
-                                ConfigChosen = Set,
-                                Cores =1,
-                                entropyCutoff =1, probCutoff = 0.6 )
+DataNew <- ConnectorData(TimeSeriesClassif, AnnotationsClassif)
 
-ClassNew$ListClassID$ID_1
+# Classification using the selected cluster configuration
+ClassNew <- ClassificationCurves(
+    newdata = DataNew,
+    ConfigChosen = ClusterData,
+    Cores = 1,
+    entropyCutoff = 1, probCutoff = 0.6
+)
 
-
-
+# Access results for a specific subject
+if (length(ClassNew$ListClassID) > 0) {
+    print(ClassNew$ListClassID[[1]])
+}
