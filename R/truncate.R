@@ -66,18 +66,18 @@ setMethod(
     cat("############################### \n######## Summary ##############\n")
     cat("\n Number of curves cutted:\n")
     # Using data.frame to ensure nice printing of the summary
-    summary_df_new <- dataTr@curves %>% 
+    summary_df_new <- TruncData@curves %>% 
       group_by(measureID, subjID) %>% 
-      summarise(len_curves = n(), .groups = "drop") 
-    summary_df_old <-data@curves %>% 
+      summarise(len_curves_after = n(), .groups = "drop") 
+    summary_df_old <-Data@curves %>% 
       group_by(measureID, subjID) %>% 
-      summarise(len_curves = n(), .groups = "drop") 
+      summarise(len_curves_before = n(), .groups = "drop") 
     
-    summary_df <- merge(summary_df_old, summary_df_new, by = "measureID", suffixes = c("_before", "_after"))
+    summary_df <- merge(summary_df_old, summary_df_new, by = c("subjID", "measureID") )
     summary_df <- summary_df %>%
       mutate(cutted = len_curves_before - len_curves_after) %>%
       group_by(measureID) %>%
-      summarise(total_cutted = sum(cutted), .groups = "drop")
+      summarise(Number_subjID_cutted = sum(cutted!=0), .groups = "drop")
     print(as.data.frame(summary_df))
      
     cat("\n Min/Max curve length per measure after cutting:\n")
@@ -136,28 +136,28 @@ setMethod("DataTrunc",
               }
               
               datasetTr <-
-                dataset[dataset$time <= 4 &
-                          dataset$time >= -1, ]
+                dataset[dataset$time <= maxTruncTime &
+                          dataset$time >= minTruncTime, ]
               
-              # Re-calculate dimensions
-              dimensionsTr <- datasetTr %>%
+              subjIDToRemove <- datasetTr %>%
                 select(-time) %>%
                 group_by(curvesID) %>%
                 mutate(nTimePoints = sum(!is.na(value))) %>% 
                 ungroup() %>%
-                select(-value) %>% distinct()
+                select(-value)  %>%
+                filter( nTimePoints < 2) %>%
+                pull(subjID)%>% unique()
               
-              if(nrow(dimensionsTr) == 0){
+              if(length(subjIDToRemove) == length(datasetTr %>% pull(subjID) %>% unique() ) ){
                 stop("No curves left after truncation. Please check the truncation time and try again.")
               }
-              else if (length(which(dimensionsTr$nTimePoints <= 2)) != 0) {
+              else if (length(subjIDToRemove) != 0) {
                 warning(
                   paste0(
                     "subjID with one point after truncation will be removed: ",
-                    paste(dimensionsTr %>% filter(nTimePoints  <= 2) %>% pull(subjID), collapse = ", ")
+                    paste(subjIDToRemove, collapse = ", ")
                   )
                 )
-                subjIDToRemove <- dimensionsTr %>% filter(nTimePoints  <= 2) %>% pull(subjID)
                 datasetTr <- datasetTr %>% filter(! subjID %in% subjIDToRemove )
                 annotations = annotations %>% filter(! subjID %in% subjIDToRemove )
               }

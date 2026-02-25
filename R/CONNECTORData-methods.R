@@ -140,7 +140,6 @@ setMethod(
     }
 
     # remove rows in curves where ID or time or both are NA
-
     rowsKeep <- complete.cases(curves[, c("subjID", "time", "measureID", "value")])
     NaInRow <- sum(!rowsKeep)
     if (NaInRow > 0) {
@@ -149,6 +148,7 @@ setMethod(
       )
     }
 
+    
     curves <-
       curves[rowsKeep, ]
 

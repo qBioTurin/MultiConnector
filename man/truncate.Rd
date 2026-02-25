@@ -9,13 +9,9 @@ truncate(data, feature = NULL, truncTime = NULL, labels = NULL, measure = NULL)
 \arguments{
 \item{data}{CONNECTORData. (see \code{\link{ConnectorData}})}
 
-\item{feature}{The column name reported in the AnnotationFile containing the feature  to be investigated.}
-
 \item{truncTime}{A two dimension vector of integers corresponding to the time points where the curves will be truncated. If an integer number is passed, than it will be considered as the upper time point by default.}
 
-\item{labels}{Vector containing the text for the title of axis names and plot title.}
-
-\item{measure}{Measure on which to perform the Truncation.}
+\item{measure}{Measure(s) on which to perform the Truncation. If NULL (default), all measures are truncated.}
 }
 \value{
 truncate returns a list containing the truncated data and the plot of the truncated curves.
