@@ -11,6 +11,12 @@ plot(Data, feature = "treatment_group")
 plotTimes(Data)
 plotTimes(Data, large = T)
 
+# NEW: Filter data to remove subjects with insufficient points (e.g., < 10)
+# This will remove subjects that have < 10 points in ANY of their measures
+DataFiltered <- filterData(Data, minPoints = 10)
+# Use DataFiltered for subsequent steps if desired
+# Data <- DataFiltered
+
 truncatePlot(Data, measure = "Parabola", truncTime = 5)
 # Note: truncate() returns a new object
 DataTrunc <- truncate(Data, measure = "Parabola", truncTime = 5)

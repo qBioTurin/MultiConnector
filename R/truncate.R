@@ -66,10 +66,10 @@ setMethod(
     cat("############################### \n######## Summary ##############\n")
     cat("\n Number of curves cutted:\n")
     # Using data.frame to ensure nice printing of the summary
-    summary_df_new <- TruncData@curves %>% 
+    summary_df_new <- dataTr@curves %>% 
       group_by(measureID, subjID) %>% 
       summarise(len_curves_after = n(), .groups = "drop") 
-    summary_df_old <-Data@curves %>% 
+    summary_df_old <-data@curves %>% 
       group_by(measureID, subjID) %>% 
       summarise(len_curves_before = n(), .groups = "drop") 
     

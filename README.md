@@ -129,6 +129,7 @@ Subject (subjID) ──┬── Measure 1 (measureID) ──── Observations
 | `generateReport()` | Comprehensive analysis report generation |
 | `setClusterNames()` | Assign custom names to clusters |
 | `getClusterNames()` | Retrieve current cluster names |
+| `filterData()` | Filter subjects by minimum points per measure |
 
 ## S4 Classes and Methods
 
@@ -151,6 +152,7 @@ The `CONNECTORData` class represents preprocessed time series data ready for clu
 - `plot()`: Visualize time series data, dispatches to `PlotTimeSeries()`
 - `show()`: Display basic object summary
 - `getAnnotations()`: Extract available feature names
+- `filterData()`: Remove subjects with insufficient data points
 
 ```r
 # Create CONNECTORData object
@@ -165,6 +167,7 @@ names(data@TimeGrids)    # Available measurements
 plot(data, feature = "treatment")
 show(data)
 getAnnotations(data)     # Lists available features
+data_filtered <- filterData(data, minPoints = 3) # Remove subjects with < 3 points
 ```
 
 ### CONNECTORDataClustered Class
