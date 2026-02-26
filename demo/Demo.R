@@ -12,8 +12,8 @@ plotTimes(Data)
 plotTimes(Data, large = T)
 
 # NEW: Filter data to remove subjects with insufficient points (e.g., < 10)
-# This will remove subjects that have < 10 points in ANY of their measures
-DataFiltered <- filterData(Data, minPoints = 10)
+# This will remove subjects that have < 3 points in ANY of their measures
+DataFiltered <- filterData(Data, minPoints = 3)
 # Use DataFiltered for subsequent steps if desired
 # Data <- DataFiltered
 
@@ -26,6 +26,7 @@ CrossLogLikePlot <- estimatepDimension(DataTrunc, p = 2:10, cores = 1)
 if (!is.null(CrossLogLikePlot$Parabola)) {
     print(CrossLogLikePlot$Parabola)
 }
+# "Total time: 2.9 mins"
 
 # The p parameter now expects a named vector matching measure names
 clusters <- estimateCluster(DataTrunc,
@@ -46,11 +47,14 @@ Metrics <- validateCluster(ClusterData)
 print(Metrics$plot)
 
 
-generateReport(
+rep = generateReport(
     data = DataTrunc,
     clustered_data = ClusterData,
+    p_analysis = CrossLogLikePlot,
+    G_analysis = clusters,
+    feature = "treatment_group",
     output_format = "html",
-    report_title = "reportDemo"
+    report_title = "reportDemo",output_file = "./reportDemo.html"
 )
 
 ###### Classification #######

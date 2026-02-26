@@ -2,15 +2,29 @@
 % Please edit documentation in R/generateReport.R
 \name{generateReport}
 \alias{generateReport}
+\alias{generateReport,ANY-method}
 \title{Generate Analysis Report}
 \usage{
 generateReport(
   data = NULL,
   clustered_data = NULL,
   report_title = "MultiConnector Analysis Report",
-  include_dimension_analysis = TRUE,
-  include_cluster_analysis = TRUE,
+  p_analysis = NULL,
+  G_analysis = NULL,
   features = NULL,
+  include_spline = T,
+  output_format = "list",
+  output_file = NULL
+)
+
+\S4method{generateReport}{ANY}(
+  data = NULL,
+  clustered_data = NULL,
+  report_title = "MultiConnector Analysis Report",
+  p_analysis = NULL,
+  G_analysis = NULL,
+  features = NULL,
+  include_spline = T,
   output_format = "list",
   output_file = NULL
 )
@@ -22,11 +36,9 @@ generateReport(
 
 \item{report_title}{Title for the report}
 
-\item{include_dimension_analysis}{Include dimension estimation analysis (default: TRUE)}
-
-\item{include_cluster_analysis}{Include clustering analysis (default: TRUE)}
-
 \item{features}{Vector of feature names to analyze (optional)}
+
+\item{include_spline}{Include spline plots for each subjID (default: TRUE)}
 
 \item{output_format}{Output format: "list" (default), "html"}
 

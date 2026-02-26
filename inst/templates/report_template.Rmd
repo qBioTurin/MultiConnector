@@ -35,9 +35,9 @@ if (!is.null(report$summary$data_overview)) {
 }
 ```
 
-## Exploratory Data Analysis
+## Exploratory Data Analysis {.tabset .tabset-fade .tabset-pills}
 
-### Time Series Plot
+### Base Plot
 
 ```{r timeseries_plot}
 if (!is.null(report$plots$timeseries_plot)) {
@@ -45,7 +45,17 @@ if (!is.null(report$plots$timeseries_plot)) {
 }
 ```
 
-### Time Grid Visualization
+```{r base_feature_plots, results='asis'}
+if (!is.null(report$plots$timeseries_plots_by_feature) && length(report$plots$timeseries_plots_by_feature) > 0) {
+    for (feat in names(report$plots$timeseries_plots_by_feature)) {
+        cat("\n\n### Feature: ", feat, "\n\n")
+        print(report$plots$timeseries_plots_by_feature[[feat]])
+        cat("\n\n")
+    }
+}
+```
+
+## Time Grid Visualization
 
 ```{r time_grid_plot}
 if (!is.null(report$plots$time_grid_plot)) {
@@ -55,55 +65,130 @@ if (!is.null(report$plots$time_grid_plot)) {
 
 ```{r dimension_analysis, results='asis'}
 if (!is.null(report$plots$dimension_analysis)) {
-    cat("## Dimension Analysis\n")
-    print(report$plots$dimension_analysis)
+    cat("\n\n## Dimension Analysis {.tabset .tabset-fade .tabset-pills}\n\n")
+    for (m in names(report$plots$dimension_analysis)) {
+        cat("\n\n### Measure: ", m, "\n\n")
+        print(report$plots$dimension_analysis[[m]])
+        cat("\n\n")
+    }
+}
+```
+
+```{r cluster_estimation, results='asis'}
+if (!is.null(report$plots$cluster_estimation_plot)) {
+    cat("## Cluster Selection Analysis\n")
+    print(report$plots$cluster_estimation_plot)
 }
 ```
 
 ```{r clustering_analysis, results='asis'}
 if (!is.null(report$summary$clustering_overview)) {
-    cat("## Clustering Analysis\n")
+    cat("\n\n## Clustering Analysis\n")
 
-    cat("### Clustering Summary\n")
-    cat("- **Number of clusters:**", report$summary$clustering_overview$n_clusters, "\n")
+    cat("\n### Clustering Summary\n")
+    cat("- **Number of clusters (G):**", report$summary$clustering_overview$n_clusters, "\n")
     cat("- **H parameter:**", report$summary$clustering_overview$h_parameter, "\n")
+
+    p_param <- report$summary$clustering_overview$p_parameter
+    if (is.vector(p_param) && !is.null(names(p_param))) {
+        cat("- **Spline dimensions (p):**\n")
+        for (m_name in names(p_param)) {
+            cat("    -", m_name, ":", p_param[m_name], "\n")
+        }
+    } else {
+        cat("- **Spline dimension (p):**", p_param, "\n")
+    }
+
     cat("- **Cluster names:**", paste(report$summary$clustering_overview$cluster_names, collapse = ", "), "\n")
 
-    cat("\n### Cluster Assignments\n")
+    cat("\n\n### Cluster Assignments\n")
     if (!is.null(report$tables$cluster_assignments)) {
         print(knitr::kable(report$tables$cluster_assignments))
     }
 
-    cat("\n### Cluster Visualizations\n")
+    cat("\n\n### Cluster Visualizations {.tabset .tabset-fade .tabset-pills}\n\n")
+
+    cat("\n\n#### Base Classification\n\n")
     print(report$plots$cluster_plot_basic)
-}
-```
+    cat("\n\n")
 
-```{r feature_plots, results='asis'}
-if (!is.null(report$plots$cluster_plots_by_feature) && length(report$plots$cluster_plots_by_feature) > 0) {
-    cat("### Feature-based Visualizations\n")
-    for (feat in names(report$plots$cluster_plots_by_feature)) {
-        cat("#### Feature:", feat, "\n")
-        print(report$plots$cluster_plots_by_feature[[feat]])
-        cat("\n")
+    if (!is.null(report$plots$cluster_plots_by_feature) && length(report$plots$cluster_plots_by_feature) > 0) {
+        for (feat in names(report$plots$cluster_plots_by_feature)) {
+            cat("\n\n#### Feature: ", feat, "\n\n")
+            print(report$plots$cluster_plots_by_feature[[feat]])
+            cat("\n\n")
+        }
     }
 }
 ```
 
-```{r additional_analysis, results='asis'}
+
+```{r validation_analysis, results='asis'}
+if (!is.null(report$plots$validation_plot)) {
+    cat("\n\n### Validation Analysis\n\n")
+    print(report$plots$validation_plot)
+    cat("\n\n")
+}
+```
+
+```{r discriminant_analysis, results='asis'}
 if (!is.null(report$plots$discriminant_plot)) {
-    cat("### Discriminant Analysis\n")
-    print(report$plots$discriminant_plot)
-}
-
-if (!is.null(report$plots$spline_plots)) {
-    cat("### Spline Plots (Subject Examples)\n")
-    # Print first 3 subject plots for brevity
-    splines <- report$plots$spline_plots
-    n_to_show <- min(3, length(splines))
-    for (i in 1:n_to_show) {
-        print(splines[[i]])
+    cat("\n\n### Discriminant Analysis\n\n")
+    for(i in seq_along(report$plots$discriminant_plot)) {
+      print(report$plots$discriminant_plot[[i]])
+      cat("\n\n")
     }
+}
+```
+
+```{r spline_plots, results='asis'}
+if (!is.null(report$plots$spline_plots) && length(report$plots$spline_plots) > 0) {
+    cat("\n\n### Subject Spline Plots\n\n")
+
+    splines <- report$plots$spline_plots
+    subj_ids <- names(splines)
+
+    # Create a unique ID for this selector instance
+    selector_id <- "subject_spline_selector"
+    container_prefix <- "spline_plot_container_"
+
+    # Dropdown menu
+    cat('<div style="margin-bottom: 20px;">')
+    cat('  <label for="', selector_id, '">Select Subject to View Spline fit: </label>', sep = "")
+    cat('  <select id="', selector_id, '" onchange="showSplinePlot(this.value)">', sep = "")
+    for (i in seq_along(subj_ids)) {
+        selected <- if (i == 1) " selected" else ""
+        cat('    <option value="', subj_ids[i], '"', selected, ">", subj_ids[i], "</option>", sep = "")
+    }
+    cat("  </select>")
+    cat("</div>")
+
+    # Plot containers
+    for (i in seq_along(subj_ids)) {
+        display_style <- if (i == 1) "display: block;" else "display: none;"
+        cat('<div id="', container_prefix, subj_ids[i], '" class="spline-plot-div" style="', display_style, '">', sep = "")
+        print(splines[[i]])
+        cat("</div>")
+    }
+
+    # JavaScript to handle switching
+    cat('
+<script>
+function showSplinePlot(subjectId) {
+  // Hide all plot containers
+  var buckets = document.getElementsByClassName("spline-plot-div");
+  for (var i = 0; i < buckets.length; i++) {
+    buckets[i].style.display = "none";
+  }
+
+  // Show the selected one
+  var selected = document.getElementById("', container_prefix, '" + subjectId);
+  if (selected) {
+    selected.style.display = "block";
+  }
+}
+</script>
+', sep = "")
 }
 ```
 
