@@ -53,7 +53,6 @@ rep = generateReport(
     p_analysis = CrossLogLikePlot,
     G_analysis = clusters,
     feature = "treatment_group",
-    output_format = "html",
     report_title = "reportDemo",output_file = "./reportDemo.html"
 )
 

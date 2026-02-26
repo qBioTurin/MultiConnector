@@ -6,11 +6,12 @@
 #'  for both CONNECTORData and CONNECTORDataClustered objects
 #'
 #' @param data CONNECTORData object (optional if clustered_data is provided)
-#' @param clustered_data CONNECTORDataClustered object (optional if data is provided)
+#' @param clustered_data CONNECTORDataClustered object (optional if data is provided, output from selectCluster)
+#' @param p_analysis List of dimension analysis plots (output from estimatepDimension)
+#' @param G_analysis Cluster estimation results (output from estimateCluster)
 #' @param report_title Title for the report
-#' @param include_spline Include spline plots for each subjID (default: TRUE)
+#' @param include_spline Include spline plots for each subjID (default: FALSE)
 #' @param features Vector of feature names to analyze (optional)
-#' @param output_format Output format: "list" (default), "html"
 #' @param output_file Output file path for HTML report (optional)
 #'
 #' @return A comprehensive report containing all plots and analysis summaries
@@ -31,8 +32,7 @@ setGeneric("generateReport", function(data = NULL,
                                       p_analysis = NULL,
                                       G_analysis = NULL,
                                       features = NULL,
-                                      include_spline = T, 
-                                      output_format = "list",
+                                      include_spline = FALSE, 
                                       output_file = NULL) {
   standardGeneric("generateReport")
 })
@@ -47,19 +47,18 @@ setMethod(
            p_analysis = NULL,
            G_analysis = NULL,
            features = NULL,
-           include_spline = T, 
-           output_format = "list",
+           include_spline = FALSE, 
            output_file = NULL) {
     # Support both 'feature' and 'features' arguments
     if (is.null(features) && !is.null(list(...)$feature)) {
       features <- list(...)$feature
     }
-
+    
     # Ensure features is a character vector
     if (!is.null(features)) {
       features <- as.character(features)
     }
-
+    
     # Extract data from clustered object if needed
     if (!is.null(clustered_data)) {
       model_params <- getParameters(clustered_data)
@@ -68,7 +67,7 @@ setMethod(
     } else if (!is.null(data)) {
       measures <- getMeasures(data)
     }
-
+    
     # Initialize report
     report <- list(
       title = report_title,
@@ -78,19 +77,19 @@ setMethod(
       tables = list(),
       analysis_choices = list()
     )
-
+    
     cat("Generating MultiConnector analysis report...\n")
-
+    
     # ===== DATA SUMMARY SECTION =====
     if (!is.null(data)) {
       cat("- Processing base data characteristics...\n")
-
+      
       # Data overview
       n_subjects <- length(unique(data@curves$subjID))
       n_measures <- length(measures)
       n_timepoints <- nrow(data@curves)
       time_range <- range(data@curves$time)
-
+      
       report$summary$data_overview <- list(
         n_subjects = n_subjects,
         n_measures = n_measures,
@@ -98,18 +97,18 @@ setMethod(
         time_range = time_range,
         measures = measures
       )
-
+      
       # Time series plots
       report$plots$timeseries_plot <- plot(data)
-
+      
       # Time grid visualization
       report$plots$time_grid_plot <- plotTimes(data)
-
+      
       # Base data feature-based plots
       if (!is.null(features)) {
         report$plots$timeseries_plots_by_feature <- list()
         available_features_base <- getAnnotations(data)
-
+        
         for (feature in features) {
           if (feature %in% available_features_base) {
             tryCatch(
@@ -134,27 +133,27 @@ setMethod(
         time_range = range(df$time),
         measures = measures
       )
-
+      
       # Time series plot from KData if base data not provided
       # report$plots$timeseries_plot <- plot(clustered_data@KData) # Might need work if @KData isn't a CONNECTORData
     }
-
+    
     # ===== DIMENSION ANALYSIS SECTION =====
     if (!is.null(p_analysis)) {
       cat("- Including provided dimension analysis results...\n")
       report$plots$dimension_analysis <- p_analysis
     }
-
+    
     # ===== CLUSTERING ANALYSIS SECTION =====
     if (!is.null(G_analysis)) {
       cat("- Including provided cluster estimation results...\n")
       # Use IndexPlotExtrapolation to show quality metrics
       report$plots$cluster_estimation_plot <- plot(G_analysis)
     }
-
+    
     if (!is.null(clustered_data)) {
       cat("- Analyzing clustering results...\n")
-
+      
       # Clustering summary
       report$summary$clustering_overview <- list(
         n_clusters = model_params$G,
@@ -163,26 +162,26 @@ setMethod(
         cluster_names = cluster_names,
         quality_metrics = clustered_data@TTandfDBandSil
       )
-
+      
       # Cluster assignments
       clusters_df <- getClusters(clustered_data)
       cluster_sizes <- table(clusters_df$cluster)
-
+      
       report$tables$cluster_assignments <- data.frame(
         Cluster = names(cluster_sizes),
         Size = as.numeric(cluster_sizes),
         Percentage = round(as.numeric(cluster_sizes) / sum(cluster_sizes) * 100, 2)
       )
-
+      
       # Basic cluster plot
       report$plots$cluster_plot_basic <- plot(clustered_data)
-
+      
       # Feature-based cluster plots
       available_features <- getAnnotations(clustered_data)
       if (!is.null(features)) {
         cat("- Generating feature-based visualizations...\n")
         report$plots$cluster_plots_by_feature <- list()
-
+        
         for (feature in features) {
           if (feature %in% available_features) {
             tryCatch(
@@ -199,7 +198,7 @@ setMethod(
           }
         }
       }
-
+      
       # Evaluation analysis
       tryCatch(
         {
@@ -209,7 +208,7 @@ setMethod(
           cat("Warning: Validation plot failed:", e$message, "\n")
         }
       )
-
+      
       # Discriminant analysis
       tryCatch(
         {
@@ -219,7 +218,7 @@ setMethod(
           cat("Warning: Discriminant plot failed:", e$message, "\n")
         }
       )
-
+      
       # Spline plots
       if(include_spline){
         tryCatch(
@@ -237,10 +236,10 @@ setMethod(
           }
         )
       }
-
+      
       # Quality metrics table
       report$tables$quality_metrics <- clustered_data@TTandfDBandSil
-
+      
       # Analysis choices summary
       report$analysis_choices$clustering <- list(
         number_of_clusters = model_params$G,
@@ -249,7 +248,7 @@ setMethod(
         selection_criteria = "Selected solution"
       )
     }
-
+    
     # ===== REPORT METADATA =====
     report$metadata <- list(
       r_version = R.version.string,
@@ -258,58 +257,45 @@ setMethod(
         features_analyzed = features
       )
     )
-
+    
     cat("Report generation completed!\n")
 
-    # Return based on output format
-    if (output_format == "list") {
-      return(report)
-    } else if (output_format == "html") {
-      if (!requireNamespace("rmarkdown", quietly = TRUE)) {
-        stop("The 'rmarkdown' package is required for HTML output. Please install it or use output_format = 'list'.")
-      }
-
-      # Find template
-      template <- system.file("templates/report_template.Rmd", package = "MultiConnector")
-
-      # Fallback for development mode
-      if (template == "") {
-        template <- "inst/templates/report_template.Rmd"
-      }
-
-      if (!file.exists(template)) {
-        stop("Report template not found. Please ensure the package is correctly installed.")
-      }
-
-      if (is.null(output_file)) {
-        output_file <- paste0(gsub(" ", "_", report_title), "_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".html")
-      }
-
-      # Ensure output_file is absolute to avoid rmarkdown::render saving in the template directory
-      if (!grepl("^/", output_file) && !grepl("^[A-Za-z]:", output_file)) {
-        output_file <- file.path(getwd(), output_file)
-      }
-
-      cat(paste("- Exporting to HTML:", output_file, "...\n"))
-
-      rmarkdown::render(
-        input = template,
-        output_file = output_file,
-        params = list(
-          title = report_title,
-          generated_on = report$generated_on,
-          report_data = report
-        ),
-        quiet = TRUE
-      )
-
-      cat("Download your report at:", normalizePath(output_file), "\n")
-
-      return(report)
-    } else {
-      warning("Selected output format not fully implemented. Returning list format.")
-      return(report)
+    
+    # Find template
+    template <- system.file("templates/report_template.Rmd", package = "MultiConnector")
+    
+    # Fallback for development mode
+    if (template == "") {
+      template <- "inst/templates/report_template.Rmd"
     }
+    
+    if (!file.exists(template)) {
+      stop("Report template not found. Please ensure the package is correctly installed.")
+    }
+    
+    if (is.null(output_file)) {
+      output_file <- paste0(gsub(" ", "_", report_title), "_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".html")
+    }
+    
+    # Ensure output_file is absolute to avoid rmarkdown::render saving in the template directory
+    if (!grepl("^/", output_file) && !grepl("^[A-Za-z]:", output_file)) {
+      output_file <- file.path(getwd(), output_file)
+    }
+    
+    cat(paste("- Exporting to HTML:", output_file, "...\n"))
+    
+    rmarkdown::render(
+      input = template,
+      output_file = output_file,
+      params = list(
+        title = report_title,
+        generated_on = report$generated_on,
+        report_data = report
+      ),
+      quiet = TRUE
+    )
+    
+    cat("Download your report at:", normalizePath(output_file), "\n")
   }
 )
 
@@ -321,7 +307,7 @@ printReportSummary <- function(report) {
   cat("=== MULTICONNECTOR ANALYSIS REPORT ===\n")
   cat("Title:", report$title, "\n")
   cat("Generated on:", as.character(report$generated_on), "\n\n")
-
+  
   # Data summary
   if (!is.null(report$summary$data_overview)) {
     cat("DATA OVERVIEW:\n")
@@ -331,7 +317,7 @@ printReportSummary <- function(report) {
     cat("- Time range:", paste(report$summary$data_overview$time_range, collapse = " to "), "\n")
     cat("- Measures:", paste(report$summary$data_overview$measures, collapse = ", "), "\n\n")
   }
-
+  
   # Clustering summary
   if (!is.null(report$summary$clustering_overview)) {
     cat("CLUSTERING RESULTS:\n")
@@ -339,13 +325,13 @@ printReportSummary <- function(report) {
     cat("- H parameter:", report$summary$clustering_overview$h_parameter, "\n")
     cat("- Cluster names:", paste(report$summary$clustering_overview$cluster_names, collapse = ", "), "\n\n")
   }
-
+  
   # Content summary
   cat("REPORT CONTENTS:\n")
   cat("- Plots:", length(report$plots), "\n")
   cat("- Tables:", length(report$tables), "\n")
   cat("- Analysis sections:", length(report$analysis_choices), "\n\n")
-
+  
   # Available plots
   if (length(report$plots) > 0) {
     cat("AVAILABLE PLOTS:\n")
@@ -354,7 +340,7 @@ printReportSummary <- function(report) {
     }
     cat("\n")
   }
-
+  
   # Available tables
   if (length(report$tables) > 0) {
     cat("AVAILABLE TABLES:\n")
@@ -363,6 +349,6 @@ printReportSummary <- function(report) {
     }
     cat("\n")
   }
-
+  
   cat("Use report$plots$<plot_name> or report$tables$<table_name> to access specific elements.\n")
 }

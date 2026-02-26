@@ -362,34 +362,47 @@ attr(dist_table, "n_complete_cases")  # Subjects with complete data
 
 ### Comprehensive Reporting with generateReport()
 
-Generate complete analysis reports including all plots and tables:
+Generate complete analysis reports including all plots, tables, and interactive elements. The function supports both static R lists and standalone interactive HTML exports.
 
 ```r
-# Basic report
+# 1. Basic report as an R list
 report <- generateReport(clustered_data = clustered_data)
 
-# Advanced report with features
-comprehensive_report <- generateReport(
-  data = original_data,                    # Include dimension analysis
-  clustered_data = clustered_data,         # Include clustering results
-  report_title = "Clinical Trial Analysis",
-  features = c("treatment", "age", "gender"),
-  include_dimension_analysis = TRUE,
-  include_cluster_analysis = TRUE
+# 2. Interactive HTML report (Recommended for sharing)
+generateReport(
+  clustered_data = clustered_data,
+  output_format = "html",
+  output_file = "analysis_report.html",
+  report_title = "My Clinical Analysis",
+  features = "treatment_group"
 )
 
-# View report summary
-printReportSummary(comprehensive_report)
+# 3. Passive Analysis: Include pre-computed results
+# (Useful when you've already run time-consuming estimations)
+generateReport(
+  data = original_data,
+  clustered_data = clustered_data,
+  p_analysis = dimension_results,   # Output from estimatepDimension
+  G_analysis = cluster_results,     # Output from estimateCluster
+  output_format = "html",
+  output_file = "full_report.html",
+  include_spline = TRUE             # Include interactive subject spline fits
+)
+```
 
-# Access specific elements
-comprehensive_report$plots$cluster_plot_basic      # Basic cluster plot
-comprehensive_report$plots$dimension_analysis      # Dimension selection plot
-comprehensive_report$tables$cluster_assignments    # Cluster size table
-comprehensive_report$tables$quality_metrics        # Silhouette/entropy metrics
+**Interactive HTML Features:**
+- **Feature Tabs**: Toggle between different feature-colored visualizations.
+- **Subject Selector**: Interactive dropdown menu to view specific subject spline fits.
+- **Tabbed Sections**: Organized view for Dimension Analysis, Clustering, and Validation.
 
-# Feature-specific plots
-comprehensive_report$plots$cluster_plots_by_feature$treatment
-comprehensive_report$plots$cluster_plots_by_feature$age
+### Accessing Report Elements
+If saved as a list, you can programmatically access all generated components:
+```r
+report$plots$cluster_plot_basic      # Basic cluster plot
+report$plots$dimension_analysis      # Dimension selection plot
+report$tables$cluster_assignments    # Cluster size table
+report$tables$quality_metrics        # Silhouette/entropy metrics
+report$plots$spline_plots            # Individual subject fits
 ```
 
 ## Advanced Features

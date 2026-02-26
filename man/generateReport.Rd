@@ -12,8 +12,7 @@ generateReport(
   p_analysis = NULL,
   G_analysis = NULL,
   features = NULL,
-  include_spline = T,
-  output_format = "list",
+  include_spline = FALSE,
   output_file = NULL
 )
 
@@ -24,23 +23,24 @@ generateReport(
   p_analysis = NULL,
   G_analysis = NULL,
   features = NULL,
-  include_spline = T,
-  output_format = "list",
+  include_spline = FALSE,
   output_file = NULL
 )
 }
 \arguments{
 \item{data}{CONNECTORData object (optional if clustered_data is provided)}
 
-\item{clustered_data}{CONNECTORDataClustered object (optional if data is provided)}
+\item{clustered_data}{CONNECTORDataClustered object (optional if data is provided, output from selectCluster)}
 
 \item{report_title}{Title for the report}
 
+\item{p_analysis}{List of dimension analysis plots (output from estimatepDimension)}
+
+\item{G_analysis}{Cluster estimation results (output from estimateCluster)}
+
 \item{features}{Vector of feature names to analyze (optional)}
 
-\item{include_spline}{Include spline plots for each subjID (default: TRUE)}
-
-\item{output_format}{Output format: "list" (default), "html"}
+\item{include_spline}{Include spline plots for each subjID (default: FALSE)}
 
 \item{output_file}{Output file path for HTML report (optional)}
 }
