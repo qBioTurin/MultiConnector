@@ -33,7 +33,7 @@ setGeneric("generateReport", function(data = NULL,
                                       G_analysis = NULL,
                                       features = NULL,
                                       include_spline = FALSE, 
-                                      output_file = NULL) {
+                                      output_file = "report.html") {
   standardGeneric("generateReport")
 })
 
@@ -48,11 +48,7 @@ setMethod(
            G_analysis = NULL,
            features = NULL,
            include_spline = FALSE, 
-           output_file = NULL) {
-    # Support both 'feature' and 'features' arguments
-    if (is.null(features) && !is.null(list(...)$feature)) {
-      features <- list(...)$feature
-    }
+           output_file = "report.html") {
     
     # Ensure features is a character vector
     if (!is.null(features)) {

@@ -52,8 +52,8 @@ rep = generateReport(
     clustered_data = ClusterData,
     p_analysis = CrossLogLikePlot,
     G_analysis = clusters,
-    feature = "treatment_group",
-    report_title = "reportDemo",output_file = "./reportDemo.html"
+    report_title = "reportDemo",
+    output_file = "./reportDemo.html"
 )
 
 ###### Classification #######
