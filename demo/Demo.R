@@ -68,14 +68,10 @@ DataNew <- ConnectorData(TimeSeriesClassif, AnnotationsClassif)
 # Note: ConfigChosen should be a CONNECTORDataClustered object from selectCluster
 ClassNew <- ClassificationCurves(
   data = DataNew,
-  CONNECTORDataClustered = ClusterData,cores =  1
+  CONNECTORDataClustered = ClusterData,cores =  2
 )
 
 ClassNew
 plot(ClassNew)
+plot(ClassNew, subjID = c("1", "2"))
 
-
-# Access results for a specific subject
-if (length(ClassNew$ListClassID) > 0) {
-    print(ClassNew$ListClassID[[1]])
-}

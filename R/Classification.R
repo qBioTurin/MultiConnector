@@ -89,7 +89,7 @@ setMethod(
 
     newGrid <- data@TimeGrids
 
-    Snew <- lapply(1:J, function(j) {
+    Snew <- lapply( M, function(j) {
       FullSm <- FullS[[j]]
       Gridm <- grid[[j]]
       NewGridm <- newGrid[[j]]
@@ -99,9 +99,11 @@ setMethod(
       Snew[, 1:pm] <- sapply(1:pm, function(i) stats::spline(x = Gridm, y = FullSm[, i], xout = NewGridm)$y)
       Snew
     })
+    names(Snew) <- M
 
     IDcurves <- unique(CData$subjID)
-
+    clusterNames = getClusterNames(CONNECTORDataClustered)
+    
     cl <- makeCluster(cores)
     clusterCall(cl, function() {
       library(dplyr)
@@ -111,7 +113,7 @@ setMethod(
     })
     clusterExport(cl, list(
       "CData", "Lambda.alpha", "Snew", "sigma",
-      "Gamma", "ClassificationSingleCurve", "Nclusters"
+      "Gamma", "ClassificationSingleCurve", "Nclusters", "M"
     ), envir = environment())
 
     ALL.runs <-
@@ -120,8 +122,8 @@ setMethod(
           {
             do.call(
               rbind,
-              lapply(1:J, function(j) {
-                CData_x <- CData %>% filter(subjID == x_id, measureID == M[j])
+              lapply(M, function(j) {
+                CData_x <- CData %>% filter(subjID == x_id, measureID == j)
                 CData_x$timeindex <- match(CData_x$time, newGrid[[j]])
                 CData_x
               })
@@ -158,6 +160,7 @@ setMethod(
       tidyr::gather(-ID, key = "Cluster", value = "Prob") %>%
       group_by(ID) %>%
       mutate(
+        Cluster = clusterNames[as.numeric(Cluster)],
         Entropy = -sum(Prob * log2(Prob + 1e-10)), # Added small epsilon for stability
         MajorProb = max(Prob)
       ) %>%
@@ -168,7 +171,9 @@ setMethod(
       ungroup() %>%
       tidyr::spread(key = "ClusterOld", value = "Prob")
 
-    # Create the S4 object
+    colnames(df) = c("subjID", clusterNames)
+
+        # Create the S4 object
     result <- new("CONNECTORDataClassified",
       ClassMatrix = df,
       ClassMatrix_entropy = df_Entrop,

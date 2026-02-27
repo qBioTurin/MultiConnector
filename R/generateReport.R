@@ -12,6 +12,7 @@
 #' @param report_title Title for the report
 #' @param include_spline Include spline plots for each subjID (default: FALSE)
 #' @param features Vector of feature names to analyze (optional)
+#' @param save_list = T, whether to save the list of data passed as input for the report (default: TRUE)
 #' @param output_file Output file path for HTML report (optional)
 #'
 #' @return A comprehensive report containing all plots and analysis summaries
@@ -32,7 +33,8 @@ setGeneric("generateReport", function(data = NULL,
                                       p_analysis = NULL,
                                       G_analysis = NULL,
                                       features = NULL,
-                                      include_spline = FALSE, 
+                                      include_spline = FALSE,
+                                      save_list = T,
                                       output_file = "report.html") {
   standardGeneric("generateReport")
 })
@@ -48,6 +50,7 @@ setMethod(
            G_analysis = NULL,
            features = NULL,
            include_spline = FALSE, 
+           save_list = T, 
            output_file = "report.html") {
     
     # Ensure features is a character vector
@@ -290,6 +293,8 @@ setMethod(
       ),
       quiet = TRUE
     )
+    if(save_list)
+      saveRDS(report, file = sub("\\.html$", ".rds", output_file))
     
     cat("Download your report at:", normalizePath(output_file), "\n")
   }
