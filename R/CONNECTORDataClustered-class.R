@@ -228,7 +228,7 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
   # Compute curve predictions
   curvepred <- fclust.curvepred(
     object@CfitandParameters,
-    object@KData,
+    KData = object@KData,
     tau = 0.95,
     tau1 = 0.975,
     q = q

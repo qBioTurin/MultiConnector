@@ -2,18 +2,23 @@
 % Please edit documentation in R/plot.R
 \name{plot}
 \alias{plot}
-\alias{plot,CONNECTORData-method}
+\alias{plot,CONNECTORData,missing-method}
+\alias{plot,CONNECTORDataClustered,missing-method}
+\alias{plot,list,missing-method}
+\alias{plot,CONNECTORDataClassified,missing-method}
 \title{Intelligent Plot Dispatch for MultiConnector Objects}
 \usage{
-plot(data, ...)
+plot(x, y, ...)
 
-\S4method{plot}{CONNECTORData}(data, ...)
+\S4method{plot}{CONNECTORData,missing}(x, y, ...)
+
+\S4method{plot}{CONNECTORDataClustered,missing}(x, y, ...)
+
+\S4method{plot}{list,missing}(x, y, ...)
+
+\S4method{plot}{CONNECTORDataClassified,missing}(x, y, subjID = NULL, ...)
 }
 \arguments{
-\item{data}{Either a CONNECTORData object (for raw time series visualization) or
-a CONNECTORDataClustered object (for cluster visualization), or a list object
-(for clustering quality metrics visualization).}
-
 \item{...}{Additional arguments passed to the specific plotting functions:
 \itemize{
 \item \code{feature}: Feature name for coloring (used in all plot types)
@@ -21,6 +26,10 @@ a CONNECTORDataClustered object (for cluster visualization), or a list object
 \item \code{measurementColName}: Specific measurement to plot (for time series)
 \item Other plot-specific parameters
 }}
+
+\item{data}{Either a CONNECTORData object (for raw time series visualization) or
+a CONNECTORDataClustered object (for cluster visualization), or a list object
+(for clustering quality metrics visualization).}
 }
 \value{
 The appropriate plot object based on input type:
@@ -28,6 +37,7 @@ The appropriate plot object based on input type:
 \item For CONNECTORData: ggplot2 time series plots via \code{\link{PlotTimeSeries}}
 \item For CONNECTORDataClustered: ggplot2 cluster plots via \code{\link{PlotCluster}}
 \item For list objects: ggplot2 quality metrics plots via \code{\link{IndexPlotExtrapolation}}
+\item For CONNECTORDataClassified: ggplot2 classification plots (overview or specific subjects)  \code{\link{ClassificationCurves}}
 }
 }
 \description{
@@ -69,6 +79,5 @@ plot(my_data, feature = "age", measurementColName = "biomarker1")
 \seealso{
 \code{\link{PlotTimeSeries}} for time series visualization,
 \code{\link{PlotCluster}} for cluster visualization,
-\code{\link{IndexPlotExtrapolation}} for quality metrics,
-\code{\link{DiscriminantPlot}} for advanced cluster analysis plots
+\code{\link{IndexPlotExtrapolation}} for quality metrics
 }

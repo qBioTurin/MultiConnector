@@ -67,7 +67,7 @@ setMethod(
           linewidth = .9,
           linetype = "dashed"
         ) +
-        facet_grid(measureID ~ cluster, scales = "free_y") +
+        facet_grid(measureID ~ cluster, scales = "free") +
         labs(y = "", x = "Time")
     } else {
       # When feature is provided, use it for coloring
@@ -102,7 +102,7 @@ setMethod(
             linewidth = .9,
             linetype = "dashed"
           ) +
-          facet_grid(measureID ~ cluster, scales = "free_y") +
+          facet_grid(measureID ~ cluster, scales = "free") +
           labs(y = "", x = "Time", col = feature)
 
         # Check if there are too many categories for scale_color_brewer
@@ -130,7 +130,7 @@ setMethod(
             linewidth = .9,
             linetype = "dashed"
           ) +
-          facet_grid(measureID ~ cluster, scales = "free_y") +
+          facet_grid(measureID ~ cluster, scales = "free") +
           labs(y = "", x = "Time", col = feature) +
           scale_color_gradient(low = "blue", high = "red")
       }

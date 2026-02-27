@@ -155,6 +155,12 @@ setMethod(
     if (sum(colnames(annotations) == "subjID") != 1) {
       stop("The column name 'subjID' is not present or is present more than once in the AnnotationFile")
     }
+    
+    if (sum(colnames(annotations) == "cluster") != 0) {
+      warning("The column name 'cluster' is present in the AnnotationFile, the name will be changed in 'cluster_annotation' to avoid confusion with the cluster slot of the ClusterData object")
+      colnames(annotations)[colnames(annotations) == "cluster"] <- "cluster_annotation"
+    }
+    
     # check if the ID in the time series file are all present in the annotation file
     if (all(unique(curves$subjID) %in% annotations$subjID) == FALSE) {
       IDMISS <- setdiff(unique(curves$subjID), annotations$subjID)

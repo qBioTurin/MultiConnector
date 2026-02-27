@@ -67,11 +67,13 @@ DataNew <- ConnectorData(TimeSeriesClassif, AnnotationsClassif)
 # Classification using the selected cluster configuration
 # Note: ConfigChosen should be a CONNECTORDataClustered object from selectCluster
 ClassNew <- ClassificationCurves(
-    newdata = DataNew,
-    ConfigChosen = ClusterData,
-    Cores = 1,
-    entropyCutoff = 1, probCutoff = 0.6
+  data = DataNew,
+  CONNECTORDataClustered = ClusterData,cores =  1
 )
+
+ClassNew
+plot(ClassNew)
+
 
 # Access results for a specific subject
 if (length(ClassNew$ListClassID) > 0) {

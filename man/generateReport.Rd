@@ -13,7 +13,7 @@ generateReport(
   G_analysis = NULL,
   features = NULL,
   include_spline = FALSE,
-  output_file = NULL
+  output_file = "report.html"
 )
 
 \S4method{generateReport}{ANY}(
@@ -24,7 +24,7 @@ generateReport(
   G_analysis = NULL,
   features = NULL,
   include_spline = FALSE,
-  output_file = NULL
+  output_file = "report.html"
 )
 }
 \arguments{
