@@ -23,7 +23,7 @@ plot(db, feature = "outcome")
 
 library(parallel)
 detectCores()
-workers <- 10
+workers <- 20
 spline_dimension <- estimatepDimension(db, p = 3:10, cores =  workers)
 spline_dimension
 getwd()
@@ -36,7 +36,7 @@ optimal_p <- c("Basophils" = 6, "Eosinophils" = 5, "Erythrocytes" = 5,
 clusters <- estimateCluster(db, 
                             G = 2:6,           # Test 2-6 clusters
                             p = optimal_p,     # Use optimal spline dimensions for both measurements
-                            runs = 20,         # Multiple runs for stability
-                            cores = 10) 
+                            runs = 50,         # Multiple runs for stability
+                            cores = workers) 
 
 save.image(file = "emoMultiup2clusters.RData")
