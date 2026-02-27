@@ -51,7 +51,7 @@ rep = generateReport(
     data = DataTrunc,
     clustered_data = ClusterData,
     p_analysis = CrossLogLikePlot,
-    G_analysis = clusters,
+    G_analysis = clusters,features = "treatment_group",
     report_title = "reportDemo",
     output_file = "./reportDemo.html"
 )

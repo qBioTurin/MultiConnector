@@ -187,6 +187,7 @@ setMethod(
               {
                 report$plots$cluster_plots_by_feature[[feature]] <-
                   plot(clustered_data, feature = feature)
+                report$tables[[feature]] <- clusterDistribution(clustered_data, feature = feature)
               },
               error = function(e) {
                 cat(paste("Warning: Failed to create plot for feature", feature, ":", e$message, "\n"))
@@ -258,7 +259,7 @@ setMethod(
     )
     
     cat("Report generation completed!\n")
-
+    
     
     # Find template
     template <- system.file("templates/report_template.Rmd", package = "MultiConnector")
@@ -294,7 +295,11 @@ setMethod(
       quiet = TRUE
     )
     if(save_list)
-      saveRDS(report, file = sub("\\.html$", ".rds", output_file))
+      saveRDS(list(report = report,
+                   inputdata=list(clustered_data = clustered_data,
+                                  p_analysis = p_analysis,
+                                  G_analysis=G_analysis)), 
+              file = sub("\\.html$", ".rds", output_file))
     
     cat("Download your report at:", normalizePath(output_file), "\n")
   }

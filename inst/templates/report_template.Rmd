@@ -117,6 +117,8 @@ if (!is.null(report$summary$clustering_overview)) {
             cat("\n\n#### Feature: ", feat, "\n\n")
             print(report$plots$cluster_plots_by_feature[[feat]])
             cat("\n\n")
+            print(knitr::kable(x = report$tables[[feat]]))
+            cat("\n\n")
         }
     }
 }
