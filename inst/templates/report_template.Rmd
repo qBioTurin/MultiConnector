@@ -141,6 +141,17 @@ if (!is.null(report$plots$discriminant_plot)) {
       cat("\n\n")
     }
 }
+
+if (!is.null(report$plots$maxdiscriminant_plot)) {
+    
+      print(report$plots$maxdiscriminant_plot) 
+   cat("\n\n")
+      print(knitr::kable(x =report$tabels$discriminant_areas, caption = "The calculated areas for each measure and function, representing their relative importance in clustering.") )
+      cat("\n\n")
+
+}
+
+
 ```
 
 ```{r spline_plots, results='asis'}

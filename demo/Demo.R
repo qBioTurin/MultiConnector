@@ -46,6 +46,7 @@ plot(ClusterData)
 Metrics <- validateCluster(ClusterData)
 print(Metrics$plot)
 
+MaximumDiscriminationFunction(ClusterData)
 
 rep = generateReport(
     data = DataTrunc,

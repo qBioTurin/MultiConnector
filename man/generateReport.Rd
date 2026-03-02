@@ -13,6 +13,7 @@ generateReport(
   G_analysis = NULL,
   features = NULL,
   include_spline = FALSE,
+  save_list = T,
   output_file = "report.html"
 )
 
@@ -24,6 +25,7 @@ generateReport(
   G_analysis = NULL,
   features = NULL,
   include_spline = FALSE,
+  save_list = T,
   output_file = "report.html"
 )
 }
@@ -41,6 +43,8 @@ generateReport(
 \item{features}{Vector of feature names to analyze (optional)}
 
 \item{include_spline}{Include spline plots for each subjID (default: FALSE)}
+
+\item{save_list}{= T, whether to save the list of data passed as input for the report (default: TRUE)}
 
 \item{output_file}{Output file path for HTML report (optional)}
 }

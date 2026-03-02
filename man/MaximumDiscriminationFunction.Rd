@@ -9,13 +9,20 @@ MaximumDiscriminationFunction(CONNECTORDataClustered, absvalue = TRUE)
 \arguments{
 \item{CONNECTORDataClustered}{The CONNECTORDataClustered object obtained from selectCluster function.}
 
-\item{absvalue}{If TRUE, the absolute values of the weights are plotted.
-@return
-MaximumDiscriminationFunction generates two plots as ggplot objects, showing
-the weights applied to each dimension for determining the cluster membership, plotted as a single curve.}
+\item{absvalue}{If TRUE, the absolute values of the weights are plotted.}
+}
+\value{
+MaximumDiscriminationFunction returns a list containing:
+\itemize{
+\item \code{DiscrFunctionsPlot}: A ggplot object showing overlapping discriminant functions for each measure in a grid.
+\item \code{Separated}: A ggplot object showing separated discriminant functions, ordered by their total area (importance).
+\item \code{measure_areas}: A data frame containing the calculated areas for each measure and function, representing their relative importance in clustering.
+}
 }
 \description{
 Visualizes the h curve(s) representing the optimal weights to apply to each dimension for determining the cluster membership.
+The measures in the plots are ordered by the sum of the absolute areas under their respective discrimination curves,
+meaning the most influential measures from a clustering perspective appear first.
 }
 \references{
 Gareth M. James and Catherine A. Sugar, (2003). Clustering for Sparsely Sampled Functional Data. Journal of the American Statistical Association.

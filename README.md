@@ -189,7 +189,7 @@ The `CONNECTORDataClustered` class represents the results of clustering analysis
 - `DiscriminantPlot()`: Create discriminant analysis plots for cluster interpretation
 - `validateCluster()`: Compute and plot clustering quality metrics (returns plot, entropy_silhouette_table, assignmentProbs)
 - `splinePlot()`: Visualize cluster-specific spline representations
-- `MaximumDiscriminationFunction()`: Show optimal discrimination weights
+- `MaximumDiscriminationFunction()`: Show optimal discrimination weights, ordered by impact area, and return the numerical area values.
 - `getAnnotations()`: Extract features with cluster assignments
 - `getClusters()`: Extract subjID with cluster assignments
 - `setClusterNames()`: Assign custom names to clusters (used in plots and tables)

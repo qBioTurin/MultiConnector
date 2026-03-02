@@ -219,6 +219,17 @@ setMethod(
         }
       )
       
+      tryCatch(
+        {
+          MaximumD<- MaximumDiscriminationFunction(clustered_data)
+          report$plots$maxdiscriminant_plot = MaximumD$Separated
+          report$tabels$discriminant_areas = MaximumD$measure_areas
+        },
+        error = function(e) {
+          cat("Warning: Discriminant plot failed:", e$message, "\n")
+        }
+      )
+      
       # Spline plots
       if(include_spline){
         tryCatch(
