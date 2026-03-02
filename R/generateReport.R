@@ -307,7 +307,8 @@ setMethod(
     )
     if(save_list)
       saveRDS(list(report = report,
-                   inputdata=list(clustered_data = clustered_data,
+                   inputdata=list(data = data,
+                                  clustered_data = clustered_data,
                                   p_analysis = p_analysis,
                                   G_analysis=G_analysis)), 
               file = sub("\\.html$", ".rds", output_file))
