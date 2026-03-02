@@ -12,7 +12,6 @@
 #'
 #' @return ...
 #'
-
 #' @seealso CONNECTORDataClustered()
 #'
 #' @import parallel ggplot2
@@ -22,13 +21,15 @@
 #' @export
 #'
 
-
+#' @seealso CONNECTORDataClustered()
+#'
 #' CONNECTORDataClassified
 #' @description Objects of this class hold the results of classifying new curves into existing clusters.
 #' @slot ClassMatrix Data frame with classification probabilities for each subject.
 #' @slot ClassMatrix_entropy Data frame with classification results including entropy and certainty thresholds.
 #' @slot ClassificationData The CONNECTORData object containing the new curves.
 #' @slot ClusteredData The CONNECTORDataClustered model used for classification.
+#' @export
 setClass(
   "CONNECTORDataClassified",
   slots = list(
@@ -89,7 +90,7 @@ setMethod(
 
     newGrid <- data@TimeGrids
 
-    Snew <- lapply( M, function(j) {
+    Snew <- lapply(M, function(j) {
       FullSm <- FullS[[j]]
       Gridm <- grid[[j]]
       NewGridm <- newGrid[[j]]
@@ -102,8 +103,8 @@ setMethod(
     names(Snew) <- M
 
     IDcurves <- unique(CData$subjID)
-    clusterNames = getClusterNames(CONNECTORDataClustered)
-    
+    clusterNames <- getClusterNames(CONNECTORDataClustered)
+
     cl <- makeCluster(cores)
     clusterCall(cl, function() {
       library(dplyr)
@@ -171,9 +172,9 @@ setMethod(
       ungroup() %>%
       tidyr::spread(key = "ClusterOld", value = "Prob")
 
-    colnames(df) = c("subjID", clusterNames)
+    colnames(df) <- c("subjID", clusterNames)
 
-        # Create the S4 object
+    # Create the S4 object
     result <- new("CONNECTORDataClassified",
       ClassMatrix = df,
       ClassMatrix_entropy = df_Entrop,

@@ -37,4 +37,8 @@ Objects of this class hold the results of classifying new curves into existing c
 
 \seealso{
 CONNECTORDataClustered()
+
+CONNECTORDataClustered()
+
+CONNECTORDataClassified
 }
