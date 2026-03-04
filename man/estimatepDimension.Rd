@@ -16,7 +16,12 @@ estimatepDimension(data, i = NULL, p, cores = 1)
 \item{cores}{The number of Cores to be used for parallel computation. Maximum number is 10.}
 }
 \value{
-Returns a list containing for each element a line plot of the cross-validated loglikelihood for each value of p, in grey the result of all ten repetitions of the likelihood calculation and in black the mean of them.
+Returns a list containing:
+\itemize{
+\item For each measure: A patchwork object containing three plots: (1) Time series of the growth curves, (2) Spline basis knots distribution, and (3) Cross-validated loglikelihood values for each dimension $p$. This object also contains a \code{Summary} attribute with the mean loglikelihood values.
+\item \code{summary}: A matrix reporting the mean loglikelihood for each measure (rows) and each dimension $p$ (columns).
+\item \code{p_suggested}: A named vector indicating the suggested dimension $p$ for each measure.
+}
 }
 \description{
 Generates a line plot reporting the cross-validated loglikelihood value for each number of knots. In details, for each number of knots 10\% of the curves from the whole data are removed and treated as a test set, then the remaing curves are fitted using the FCM and the loglikelihood on the test set is calculated. The process is then repeated nine more times.
