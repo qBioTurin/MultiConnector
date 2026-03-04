@@ -62,11 +62,11 @@
 #' @export
 #' @import methods
 
-setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
+setGeneric("plot", function(x, ...) standardGeneric("plot"))
 
 #' @rdname plot
 #' @export
-setMethod("plot", signature(x = "CONNECTORData", y = "missing"), function(x, y, ...) {
+setMethod("plot", signature(x = "CONNECTORData"), function(x,  ...) {
   # For CONNECTORData objects, always use PlotTimeSeries
   args <- list(...)
   return(PlotTimeSeries(
@@ -78,7 +78,7 @@ setMethod("plot", signature(x = "CONNECTORData", y = "missing"), function(x, y, 
 
 #' @rdname plot
 #' @export
-setMethod("plot", signature(x = "CONNECTORDataClustered", y = "missing"), function(x, y, ...) {
+setMethod("plot", signature(x = "CONNECTORDataClustered"), function(x,  ...) {
   # For CONNECTORDataClustered objects, always use ClusterPlot
   args <- list(...)
 
@@ -90,61 +90,59 @@ setMethod("plot", signature(x = "CONNECTORDataClustered", y = "missing"), functi
 
 #' @rdname plot
 #' @export
-setMethod("plot", signature(x = "list", y = "missing"), function(x, y, ...) {
+setMethod("plot", signature(x = "list"), function(x,  ...) {
   # Check if this is a valid estimateCluster output
   return(IndexPlotExtrapolation(x))
 })
 
 #' @rdname plot
 #' @export
-setMethod("plot", signature(x = "CONNECTORDataClassified", y = "missing"), function(x, y, subjID = NULL, ...) {
-  
+setMethod("plot", signature(x = "CONNECTORDataClassified"), function(x,  subjID = NULL, ...) {
   # Actually, let's implement a version that can show 1 or more subjID
   IDcurves <- subjID
   CData <- x@ClassificationData@curves
   CONNECTORDataClustered <- x@ClusteredData
-  
+
   resClust <- getClusters(CONNECTORDataClustered)
   df_train <- CONNECTORDataClustered@KData$CData
   df_train$cluster <- resClust$cluster[match(df_train$subjID, resClust$subjID)]
-  
+
   # Get mean curves
   MeanC <- getClustersCentroids(CONNECTORDataClustered)
   # Get predicted clusters for these new subjID
-  new_assignments <- x@ClassMatrix_entropy 
-  df_probs <- x@ClassMatrix 
+  new_assignments <- x@ClassMatrix_entropy
+  df_probs <- x@ClassMatrix
   if (!is.null(subjID)) {
     # Plot specific subject(s)
-      if (! all(subjID %in% x@ClassificationData@curves$subjID) ) {
-        warning(paste("Subject ID", subjID[!(subjID %in% x@ClassificationData@curves$subjID)], "not found in classification data."))
-        return(NULL)
-      }
+    if (!all(subjID %in% x@ClassificationData@curves$subjID)) {
+      warning(paste("Subject ID", subjID[!(subjID %in% x@ClassificationData@curves$subjID)], "not found in classification data."))
+      return(NULL)
+    }
     # Filter new data
     CData <- CData %>% filter(subjID %in% IDcurves)
-    new_assignments<- new_assignments %>% filter(ID %in% IDcurves)
-    df_probs <- df_probs  %>% filter(subjID %in% IDcurves)
+    new_assignments <- new_assignments %>% filter(ID %in% IDcurves)
+    df_probs <- df_probs %>% filter(subjID %in% IDcurves)
   }
   CData$cluster <- new_assignments$Cluster[match(CData$subjID, new_assignments$ID)]
-    
-    # Annotation for probs
-  df_probs  = df_probs %>%
-      tidyr::gather(key = "cluster", value = "Prob", -subjID) %>%
-      mutate(cluster = factor(cluster, levels = levels(MeanC$cluster)))
-    
-    # Plot
-    pl <- ggplot() +
-      geom_line(data = df_train, aes(x = time, y = value, group = subjID), color = "grey", alpha = 0.3) +
-      geom_line(data = MeanC, aes(x = time, y = value), linewidth = 0.8, linetype = "dashed") +
-      geom_line(data = CData, aes(x = time, y = value, group = subjID,color = subjID), linewidth = 1) +
-      facet_grid(measureID ~ cluster) +
-      theme_bw() +
-      labs(
-        title = "Classification Result",
-        subtitle = "Grey: Training curves, Dashed: Cluster means, Colored: New classified curves"
-      )
-    
-    if(is.null(subjID)) pl = pl + theme(legend.position = "none") 
-    
-    return(pl)
-})
 
+  # Annotation for probs
+  df_probs <- df_probs %>%
+    tidyr::gather(key = "cluster", value = "Prob", -subjID) %>%
+    mutate(cluster = factor(cluster, levels = levels(MeanC$cluster)))
+
+  # Plot
+  pl <- ggplot() +
+    geom_line(data = df_train, aes(x = time, y = value, group = subjID), color = "grey", alpha = 0.3) +
+    geom_line(data = MeanC, aes(x = time, y = value), linewidth = 0.8, linetype = "dashed") +
+    geom_line(data = CData, aes(x = time, y = value, group = subjID, color = subjID), linewidth = 1) +
+    facet_grid(measureID ~ cluster) +
+    theme_bw() +
+    labs(
+      title = "Classification Result",
+      subtitle = "Grey: Training curves, Dashed: Cluster means, Colored: New classified curves"
+    )
+
+  if (is.null(subjID)) pl <- pl + theme(legend.position = "none")
+
+  return(pl)
+})

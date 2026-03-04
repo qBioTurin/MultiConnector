@@ -63,6 +63,8 @@ rep = generateReport(
 TimeSeriesClassif <- readRDS(system.file("Data/Synthetic/TimeSeries_Classification.RDs", package = "MultiConnector"))
 AnnotationsClassif <- readRDS(system.file("Data/Synthetic/Annotations_Classification.RDs", package = "MultiConnector"))
 
+TimeSeriesClassif$subjID = LETTERS[TimeSeriesClassif$subjID]
+AnnotationsClassif$subjID = LETTERS[AnnotationsClassif$subjID]
 DataNew <- ConnectorData(TimeSeriesClassif, AnnotationsClassif)
 
 # Classification using the selected cluster configuration

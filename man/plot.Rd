@@ -2,21 +2,21 @@
 % Please edit documentation in R/plot.R
 \name{plot}
 \alias{plot}
-\alias{plot,CONNECTORData,missing-method}
-\alias{plot,CONNECTORDataClustered,missing-method}
-\alias{plot,list,missing-method}
-\alias{plot,CONNECTORDataClassified,missing-method}
+\alias{plot,CONNECTORData-method}
+\alias{plot,CONNECTORDataClustered-method}
+\alias{plot,list-method}
+\alias{plot,CONNECTORDataClassified-method}
 \title{Intelligent Plot Dispatch for MultiConnector Objects}
 \usage{
-plot(x, y, ...)
+plot(x, ...)
 
-\S4method{plot}{CONNECTORData,missing}(x, y, ...)
+\S4method{plot}{CONNECTORData}(x, ...)
 
-\S4method{plot}{CONNECTORDataClustered,missing}(x, y, ...)
+\S4method{plot}{CONNECTORDataClustered}(x, ...)
 
-\S4method{plot}{list,missing}(x, y, ...)
+\S4method{plot}{list}(x, ...)
 
-\S4method{plot}{CONNECTORDataClassified,missing}(x, y, subjID = NULL, ...)
+\S4method{plot}{CONNECTORDataClassified}(x, subjID = NULL, ...)
 }
 \arguments{
 \item{...}{Additional arguments passed to the specific plotting functions:

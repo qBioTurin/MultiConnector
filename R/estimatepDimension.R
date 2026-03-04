@@ -10,9 +10,9 @@
 #' @import parallel ggplot2 splines patchwork rlist
 #' @export
 setGeneric("estimatepDimension", function(data,
-                                            i = NULL,
-                                            p,
-                                            cores = 1)
+                                          i = NULL,
+                                          p,
+                                          cores = 1)
   standardGeneric("estimatepDimension"))
 
 setMethod("estimatepDimension", signature = c("CONNECTORData"),
@@ -20,7 +20,7 @@ setMethod("estimatepDimension", signature = c("CONNECTORData"),
                    i = NULL,
                    p,
                    cores = 1) {
-
+            
             start <- Sys.time()
             res <- list()
             measures <- sort(as.character(unique(data@curves$measureID)))
@@ -59,7 +59,17 @@ setMethod("estimatepDimension", signature = c("CONNECTORData"),
             
             time_diff <- Sys.time() - start
             
-            # Estrai il valore numerico e l'unità
+            res$summary = do.call(
+              "rbind",
+              lapply(names(res),function(m){
+                df = res[[m]]@layers[[1]]$data
+                v = df$mean 
+                matrix(v, nrow = 1, ncol = length(v), dimnames = list(m, df$p))
+              })
+            )
+            
+            res$p_suggested  <- apply(res$summary, 1, first_relmax_col, colnames_x = colnames(mat), tol = 0.01)
+            
             time_value <- round(as.numeric(time_diff), 2)
             time_unit <- attr(time_diff, "units")
             print(paste("Total time:", time_value, time_unit))
@@ -128,7 +138,7 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
                         data.funcit = TrainingSet,
                         TestSet = TestSet
                       )
-                      }
+                    }
                     )
                   
                   return(tibble(
@@ -148,91 +158,91 @@ setMethod("estimatepDimensionPerObs", signature = c("CONNECTORData"),
               })
             }
             else{
-            nworkers <- detectCores()-1
-            if (nworkers < cores)
-              cores <- nworkers
-            if (cores > 10)
-              cores <- 10
-            variables_to_export <-
-              c(
-                "data",
-                "p",
-                "Calclikelihood",
-                "fclustMstep",
-                "fclustEstep",
-                "fclustconst",
-                "Likelihood",
-                "Allsplits",
-                "fclust",
-                "fclust_pred",
-                "fclustconst",
-                "intfclust",
-                "presetKmeans",
-                "justKmeans"
-              )
-            cl <- makeCluster(cores)
-            clusterExport(cl = cl,
-                          varlist = variables_to_export,
-                          envir = environment())
-            
-            
-            clusterEvalQ(cl, {
-              library(dplyr)
-              library(MASS)
-              library(splines)
-              library(parallel)
-              library(Matrix)
-              library(rlist)
-              library(RhpcBLASctl)
+              nworkers <- detectCores()-1
+              if (nworkers < cores)
+                cores <- nworkers
+              if (cores > 10)
+                cores <- 10
+              variables_to_export <-
+                c(
+                  "data",
+                  "p",
+                  "Calclikelihood",
+                  "fclustMstep",
+                  "fclustEstep",
+                  "fclustconst",
+                  "Likelihood",
+                  "Allsplits",
+                  "fclust",
+                  "fclust_pred",
+                  "fclustconst",
+                  "intfclust",
+                  "presetKmeans",
+                  "justKmeans"
+                )
+              cl <- makeCluster(cores)
+              clusterExport(cl = cl,
+                            varlist = variables_to_export,
+                            envir = environment())
               
-
-            })
-            crossvalid <- parLapply(cl, 1:splits, function(step) {
-              tryCatch({
-                omp_set_num_threads(1)
-                SampleTestSet <- sort(Allsplits[[step]])
-                SampleTrainSet <- unname(unlist(Allsplits[-step]))
-                TestSet <-
-                  data@curves[data@curves$curvesID %in% SampleTestSet, ]
-                TrainingSet <-
-                  data@curves[data@curves$curvesID %in% SampleTrainSet, ]
-                #trasforma la colonna ID di TrainingSet in valori numerici
-                TrainingSet$IDnum <-
-                  as.numeric(as.factor(TrainingSet$curvesID))
-                TestSet$IDnum <-
-                  as.numeric(as.factor(TestSet$curvesID)) #davedere
-                #create data.funcit a tibble composed by TrainingTestSet plus a new column with the value of data@dimensions[2] matching the ID
+              
+              clusterEvalQ(cl, {
+                library(dplyr)
+                library(MASS)
+                library(splines)
+                library(parallel)
+                library(Matrix)
+                library(rlist)
+                library(RhpcBLASctl)
                 
                 
-                # data.funcit <- TrainingSet #%>%
-                #mutate(timepos = match(TrainingSet$time, grid)) #da vedere
-                
-                Crosslikelihood <-
-                  sapply(p, function(p_value){
-                    names(p_value) <- unique(data@curves$measureID)
-                    Calclikelihood(
-                      p = p_value,
-                      data.funcit = TrainingSet,
-                      TestSet = TestSet
-                    )}
-                  )
-                
-                return(tibble(
-                  p = p,
-                  Crosslikelihood = Crosslikelihood,
-                  fold = step
-                ))
-              }, error = function(e) {
-                err <-
-                  paste("Error in prediction:",
-                        conditionMessage(e),
-                        TrainingSet$time,
-                        grid,
-                        "\n")
-                return(err)
               })
-            })
-            stopCluster(cl)}
+              crossvalid <- parLapply(cl, 1:splits, function(step) {
+                tryCatch({
+                  omp_set_num_threads(1)
+                  SampleTestSet <- sort(Allsplits[[step]])
+                  SampleTrainSet <- unname(unlist(Allsplits[-step]))
+                  TestSet <-
+                    data@curves[data@curves$curvesID %in% SampleTestSet, ]
+                  TrainingSet <-
+                    data@curves[data@curves$curvesID %in% SampleTrainSet, ]
+                  #trasforma la colonna ID di TrainingSet in valori numerici
+                  TrainingSet$IDnum <-
+                    as.numeric(as.factor(TrainingSet$curvesID))
+                  TestSet$IDnum <-
+                    as.numeric(as.factor(TestSet$curvesID)) #davedere
+                  #create data.funcit a tibble composed by TrainingTestSet plus a new column with the value of data@dimensions[2] matching the ID
+                  
+                  
+                  # data.funcit <- TrainingSet #%>%
+                  #mutate(timepos = match(TrainingSet$time, grid)) #da vedere
+                  
+                  Crosslikelihood <-
+                    sapply(p, function(p_value){
+                      names(p_value) <- unique(data@curves$measureID)
+                      Calclikelihood(
+                        p = p_value,
+                        data.funcit = TrainingSet,
+                        TestSet = TestSet
+                      )}
+                    )
+                  
+                  return(tibble(
+                    p = p,
+                    Crosslikelihood = Crosslikelihood,
+                    fold = step
+                  ))
+                }, error = function(e) {
+                  err <-
+                    paste("Error in prediction:",
+                          conditionMessage(e),
+                          TrainingSet$time,
+                          grid,
+                          "\n")
+                  return(err)
+                })
+              })
+              stopCluster(cl)}
             crossvalid <- crossvalid[!sapply(crossvalid, is.null)]
             Knots.list <- lapply(p, function(p) {
               Spline <- ns(grid, df = (p - 1))
@@ -433,3 +443,22 @@ setMethod("Likelihood", signature = c(),
             
             return(result)
           })
+
+
+
+
+first_relmax_col <- function(x, colnames_x, tol = 0.1) {
+  n <- length(x)
+
+  #  first column within tol of the row max
+  # tol = 0.1 means "within 10% of the max"
+  m <- max(x, na.rm = TRUE)
+  idx <- which(x >= (1 + tol) * m)
+  if(length(idx) > 0 )
+     p = colnames_x[idx[1]]
+  else p = colnames_x[which.max(x)]
+  
+  return(as.numeric(p))
+}
+
+

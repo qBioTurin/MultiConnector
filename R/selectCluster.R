@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Selects the best cluster configuration from clustering analysis results based on quality metrics.
-#' This function evaluates different clustering solutions using functional Data Depth (fDB) and 
+#' This function evaluates different clustering solutions using functional Data Depth (fDB) and
 #' Total Time (TT) metrics, providing visualization through violin plots to aid in selection.
 #' Users can choose between selecting the most frequent configuration or the one with minimum fDB.
 #'
@@ -29,7 +29,7 @@
 #' stable and high-quality clustering solution from multiple runs. The function displays
 #' violin plots showing the distribution of fDB and TT values across different runs,
 #' highlighting the selected configuration.
-#' 
+#'
 #' \strong{Selection criteria:}
 #' \itemize{
 #'   \item \strong{MaxFreq}: Chooses the configuration that appears most often across runs,
@@ -42,15 +42,15 @@
 #' \dontrun{
 #' # Select most frequent 3-cluster configuration
 #' selected_config <- selectCluster(cluster_results, G = 3, best = "MaxFreq")
-#' 
+#'
 #' # Select 4-cluster configuration with minimum fDB
 #' selected_config <- selectCluster(cluster_results, G = 4, best = "MinfDB")
-#' 
+#'
 #' # View the selected configuration
 #' print(selected_config)
 #' }
 #'
-#' @seealso 
+#' @seealso
 #' \code{\link{estimateCluster}} for performing the initial clustering analysis,
 #' \code{\link{validateCluster}} for validating the selected configuration,
 #' \code{\link{plot}} for visualizing the selected clusters
@@ -65,13 +65,13 @@ setMethod("selectCluster", signature(), function(results, G, best) {
     is.list(res) && "Error" %in% names(res$TTandfDBandSil)
   })
   results$Clusterings <- results$Clusterings[!error_indices]
-  indexes =
+  indexes <-
     do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
-        xx = results$Clusterings[[x]]
-        df = data.frame(xx$TTandfDBandSil)
-        df$freq = xx$freq
-        df$which = x
-        return(df)
+      xx <- results$Clusterings[[x]]
+      df <- data.frame(xx$TTandfDBandSil)
+      df$freq <- xx$freq
+      df$which <- x
+      return(df)
     }))
   if (best == "MaxFreq") {
     indexesfiltered <- indexes %>%
@@ -81,9 +81,8 @@ setMethod("selectCluster", signature(), function(results, G, best) {
       arrange(G, Indexes, IndexesV) %>%
       slice(1) %>%
       ungroup()
-  }
-  else if (best == "MinfDB") {
-    indexesfiltered = indexes %>%
+  } else if (best == "MinfDB") {
+    indexesfiltered <- indexes %>%
       group_by(G) %>%
       filter(fDB == min(fDB)) %>%
       tidyr::gather(-G, -freq, -which, value = "IndexesV", key = "Indexes") %>%
@@ -91,9 +90,8 @@ setMethod("selectCluster", signature(), function(results, G, best) {
       arrange(G, Indexes, IndexesV) %>%
       slice(1) %>%
       ungroup()
-  }
-  else if (best == "MaxSilhouette") {
-    indexesfiltered = indexes %>%
+  } else if (best == "MaxSilhouette") {
+    indexesfiltered <- indexes %>%
       group_by(G) %>%
       filter(Sil == max(Sil)) %>%
       tidyr::gather(-G, -freq, -which, value = "IndexesV", key = "Indexes") %>%
@@ -101,13 +99,14 @@ setMethod("selectCluster", signature(), function(results, G, best) {
       arrange(G, Indexes, IndexesV) %>%
       slice(1) %>%
       ungroup()
-  }
-  else{
+  } else {
     stop("Error: 'best' must be 'MaxFeq' or 'MinfDB' or 'MaxSilhouette'")
   }
-  pos = indexesfiltered %>% filter(.data[[sym("G")]] == !!G, Indexes == "fDB") %>% pull(which)
-  res = results$Clusterings[[pos]]
-  
+  pos <- indexesfiltered %>%
+    filter(.data[[sym("G")]] == !!G, Indexes == "fDB") %>%
+    pull(which)
+  res <- results$Clusterings[[pos]]
+
   return(
     new(
       "CONNECTORDataClustered",
@@ -119,5 +118,4 @@ setMethod("selectCluster", signature(), function(results, G, best) {
       KData = results$KData
     )
   )
-  
 })

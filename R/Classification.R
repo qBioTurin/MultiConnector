@@ -67,7 +67,6 @@ setMethod(
 
     nworkers <- detectCores()
     if (nworkers < cores) cores <- nworkers
-
     parameters <- CONNECTORDataClustered@CfitandParameters$cfit$parameters
 
     grid <- CONNECTORDataClustered@KData$TimeGrids
@@ -170,7 +169,8 @@ setMethod(
         Cluster = ifelse(!is.na(Entropy) & (Entropy < entropyCutoff | MajorProb > probCutoff), Cluster[which(Prob == MajorProb)], "Unclassified")
       ) %>%
       ungroup() %>%
-      tidyr::spread(key = "ClusterOld", value = "Prob")
+      tidyr::spread(key = "ClusterOld", value = "Prob") %>%
+      rename(subjID = ID)
 
     colnames(df) <- c("subjID", clusterNames)
 
