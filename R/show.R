@@ -73,22 +73,3 @@ setMethod("show", signature(object = "list"), function(object) {
 
   return(indexesfiltered)
 })
-
-
-#' @rdname show
-#' @export
-setMethod("show", signature(object = "CONNECTOR_pdim_list"), function(object) {
-  cat("Cross-LogLikelihood Assessment Results for Multiple Measures\n")
-
-  if (!is.null(object$summary)) {
-    cat("\nSummary Table (Mean LogLikelihood):\n")
-    print(object$summary)
-  }
-
-  if (!is.null(object$p_suggested)) {
-    cat("\nSuggested Dimension (p):\n")
-    print(object$p_suggested)
-  }
-
-  return(invisible(NULL))
-})

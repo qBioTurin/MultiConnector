@@ -3,14 +3,11 @@
 \name{show}
 \alias{show}
 \alias{show,list-method}
-\alias{show,CONNECTOR_pdim_list-method}
 \title{show}
 \usage{
 \S4method{show}{CONNECTORData}(object)
 
 \S4method{show}{list}(object)
-
-\S4method{show}{CONNECTOR_pdim_list}(object)
 }
 \arguments{
 \item{object}{The object to display.}

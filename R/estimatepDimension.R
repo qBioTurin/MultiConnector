@@ -35,26 +35,27 @@ setMethod("estimatepDimension",
     if (length(measures) == 1) {
       result <- estimatepDimensionPerObs(data, p, cores)
 
-      res[[measures]] <- result
+      time_diff <- Sys.time() - start
+      time_value <- round(as.numeric(time_diff), 2)
+      time_unit <- attr(time_diff, "units")
+      print(paste("Total time:", time_value, time_unit))
+      return(result)
     } else if (is.null(i)) {
-      results <- lapply(measures, function(j) {
-        curve <- filter(data@curves, .data$measureID == j)
+      res <- lapply(measures, function(j) {
+        curve <- filter(data@curves, measureID == j)
         invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
         result <- estimatepDimensionPerObs(connect, p, cores)
         return(result)
       })
-      names(results) <- measures
-      res <- results
+      names(res) <- measures
     } else if (i %in% measures) {
-      results <- lapply(i, function(j) {
-        curve <- filter(data@curves, .data$measureID == j)
+      res <- lapply(i, function(j) {
+        curve <- filter(data@curves, measureID == j)
         invisible(capture.output(connect <- ConnectorData(curve, data@annotations)))
         result <- estimatepDimensionPerObs(connect, p, cores)
         return(result)
       })
-      names(results) <- i
-      res <- results
-      measures <- i
+      names(res) <- i
     } else {
       stop("measures given is not present in the CONNETCTORData object")
     }
@@ -63,15 +64,14 @@ setMethod("estimatepDimension",
 
     res$summary <- do.call(
       "rbind",
-      lapply(measures, function(m) {
+      lapply(names(res), function(m) {
         df <- res[[m]]@layers[[1]]$data
         v <- df$mean
         matrix(v, nrow = 1, ncol = length(v), dimnames = list(m, df$p))
       })
     )
 
-    res$p_suggested <- apply(res$summary, 1, first_relmax_col, colnames_x = colnames(res$summary), tol = 0.01)
-    class(res) <- c("CONNECTOR_pdim_list", class(res))
+    res$p_suggested <- apply(res$summary, 1, first_relmax_col, colnames_x = colnames(mat), tol = 0.01)
 
     time_value <- round(as.numeric(time_diff), 2)
     time_unit <- attr(time_diff, "units")
@@ -282,15 +282,15 @@ setMethod("estimatepDimensionPerObs",
         length.out = max(2, length(grid) /
           5)
       ))) +
-      geom_hline(aes(yintercept = .data$p.num),
+      geom_hline(aes(yintercept = p.num),
         linetype = "dashed",
         color = "grey"
       ) +
-      geom_point(aes(x = .data$Knots, y = .data$p.num, col = .data$Name), shape = 3) +
+      geom_point(aes(x = Knots, y = p.num, col = Name), shape = 3) +
       scale_color_manual(values = c(`Boundary knots` = "Orange", Knots = "blue")) +
       geom_boxplot(
         data = data.frame(y = max(Knots.df$p.num) + 1, x = grid),
-        aes(.data$x, .data$y),
+        aes(x, y),
         width = 0.4,
         col = "black"
       ) +
@@ -329,9 +329,9 @@ setMethod("estimatepDimensionPerObs",
 
     GrowthCurve <-
       ggplot(data = data@curves, aes(
-        x = .data$time,
-        y = .data$value,
-        group = .data$curvesID
+        x = time,
+        y = data@curves$value,
+        group = curvesID
       )) +
       scale_x_continuous(breaks = as.integer(seq(
         min(grid), max(grid),
@@ -367,9 +367,9 @@ setMethod("estimatepDimensionPerObs",
       geom_line(
         data = allCrossvalid,
         aes(
-          x = .data$p,
-          y = .data$Crosslikelihood,
-          group = .data$fold,
+          x = p,
+          y = Crosslikelihood,
+          group = fold,
           linetype = "test",
           col = "test"
         ),
@@ -401,11 +401,7 @@ setMethod("estimatepDimensionPerObs",
       ":", time_value, time_unit
     ))
 
-    plot_obj <- (GrowthCurve / Knots.Plot) | ValidationPlot
-    attr(plot_obj, "Summary") <- meanCrossvalidData
-    class(plot_obj) <- c("CONNECTOR_pdim", class(plot_obj))
-
-    return(plot_obj)
+    return((GrowthCurve / Knots.Plot) | ValidationPlot)
   }
 )
 
@@ -463,9 +459,9 @@ setMethod("Likelihood",
     mu <-
       fcm.fit$cfit$parameters$lambda.zero + Lambda * c(alpha)
 
-    # base <- KmData$FullS[[1]] # This variable was unused.
+    base <- KmData$FullS[[1]]
     data.temp <- TestSet[TestSet$IDnum == x, ]
-    data.temp <- arrange(data.temp, .data$time)
+    data.temp <- arrange(data.temp, time)
     time.temp <- data.temp$time
     #####
     newGrid <- time.temp
@@ -489,6 +485,7 @@ setMethod("Likelihood",
 
 
 first_relmax_col <- function(x, colnames_x, tol = 0.1) {
+  n <- length(x)
   #  first column within tol of the row max
   # tol = 0.1 means "within 10% of the max"
   m <- max(x, na.rm = TRUE)

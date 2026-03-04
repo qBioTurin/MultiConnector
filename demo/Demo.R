@@ -21,7 +21,7 @@ truncatePlot(Data, measure = "Parabola", truncTime = 5)
 # Note: truncate() returns a new object
 DataTrunc <- truncate(Data, measure = "Parabola", truncTime = 5)
 
-CrossLogLikePlot <- estimatepDimension(DataTrunc, p = 2:10, cores = 1)
+CrossLogLikePlot <- estimatepDimension(DataTrunc, p = 2:10, cores = 4)
 # Access results for a specific measure
 if (!is.null(CrossLogLikePlot$Parabola)) {
     print(CrossLogLikePlot$Parabola)
