@@ -82,126 +82,117 @@ if (!is.null(report$plots$cluster_estimation_plot)) {
 ```
 
 ```{r clustering_analysis, results='asis'}
-if (!is.null(report$summary$clustering_overview)) {
-    cat("\n\n## Clustering Analysis\n")
+if (!is.null(report$clustering_results) && length(report$clustering_results) > 0) {
+    for (model_name in names(report$clustering_results)) {
+        res <- report$clustering_results[[model_name]]
 
-    cat("\n### Clustering Summary\n")
-    cat("- **Number of clusters (G):**", report$summary$clustering_overview$n_clusters, "\n")
-    cat("- **H parameter:**", report$summary$clustering_overview$h_parameter, "\n")
+        cat("\n\n# Model Analysis:", model_name, "{.tabset .tabset-fade .tabset-pills}\n\n")
 
-    p_param <- report$summary$clustering_overview$p_parameter
-    if (is.vector(p_param) && !is.null(names(p_param))) {
-        cat("- **Spline dimensions (p):**\n")
-        for (m_name in names(p_param)) {
-            cat("    -", m_name, ":", p_param[m_name], "\n")
+        # --- Summary Sub-tab ---
+        cat("\n\n## Model Summary\n\n")
+        cat("- **Number of clusters (G):**", res$summary$n_clusters, "\n")
+        cat("- **H parameter:**", res$summary$h_parameter, "\n")
+
+        p_param <- res$summary$p_parameter
+        if (is.vector(p_param) && !is.null(names(p_param))) {
+            cat("- **Spline dimensions (p):**\n")
+            for (m_name in names(p_param)) {
+                cat("    -", m_name, ":", p_param[m_name], "\n")
+            }
+        } else {
+            cat("- **Spline dimension (p):**", p_param, "\n")
         }
-    } else {
-        cat("- **Spline dimension (p):**", p_param, "\n")
-    }
 
-    cat("- **Cluster names:**", paste(report$summary$clustering_overview$cluster_names, collapse = ", "), "\n")
+        cat("- **Cluster names:**", paste(res$summary$cluster_names, collapse = ", "), "\n")
 
-    cat("\n\n### Cluster Assignments\n")
-    if (!is.null(report$tables$cluster_assignments)) {
-        print(knitr::kable(report$tables$cluster_assignments))
-    }
+        if (!is.null(res$tables$cluster_assignments)) {
+            cat("\n\n### Cluster Assignments\n")
+            print(knitr::kable(res$tables$cluster_assignments))
+        }
 
-    cat("\n\n### Cluster Visualizations {.tabset .tabset-fade .tabset-pills}\n\n")
+        # --- Visualizations Sub-tab ---
+        cat("\n\n## Visualizations {.tabset .tabset-fade .tabset-pills}\n\n")
 
-    cat("\n\n#### Base Classification\n\n")
-    print(report$plots$cluster_plot_basic)
-    cat("\n\n")
+        cat("\n\n### Base Classification\n\n")
+        print(res$plots$cluster_plot_basic)
+        cat("\n\n")
 
-    if (!is.null(report$plots$cluster_plots_by_feature) && length(report$plots$cluster_plots_by_feature) > 0) {
-        for (feat in names(report$plots$cluster_plots_by_feature)) {
-            cat("\n\n#### Feature: ", feat, "\n\n")
-            print(report$plots$cluster_plots_by_feature[[feat]])
-            cat("\n\n")
-            print(knitr::kable(x = report$tables[[feat]]))
+        if (!is.null(res$plots$cluster_plots_by_feature) && length(res$plots$cluster_plots_by_feature) > 0) {
+            for (feat in names(res$plots$cluster_plots_by_feature)) {
+                cat("\n\n### Feature: ", feat, "\n\n")
+                print(res$plots$cluster_plots_by_feature[[feat]])
+                cat("\n\n")
+                print(knitr::kable(x = res$tables[[feat]]))
+                cat("\n\n")
+            }
+        }
+
+        # --- Validation Sub-tab ---
+        if (!is.null(res$plots$validation_plot)) {
+            cat("\n\n## Validation\n\n")
+            print(res$plots$validation_plot)
             cat("\n\n")
         }
+
+        # --- Discriminant Sub-tab ---
+        if (!is.null(res$plots$discriminant_plot) || !is.null(res$plots$maxdiscriminant_plot)) {
+            cat("\n\n## Discriminant Analysis\n\n")
+
+            if (!is.null(res$plots$discriminant_plot)) {
+                for (i in seq_along(res$plots$discriminant_plot)) {
+                    print(res$plots$discriminant_plot[[i]])
+                    cat("\n\n")
+                }
+            }
+
+            if (!is.null(res$plots$maxdiscriminant_plot)) {
+                print(res$plots$maxdiscriminant_plot)
+                cat("\n\n")
+                print(knitr::kable(x = res$tables$discriminant_areas, caption = "Relative importance of measures in clustering."))
+                cat("\n\n")
+            }
+        }
+
+        # --- Spline Plots Sub-tab ---
+        if (!is.null(res$plots$spline_plots) && length(res$plots$spline_plots) > 0) {
+            cat("\n\n## Spline Plots\n\n")
+
+            splines <- res$plots$spline_plots
+            subj_ids <- names(splines)
+
+            # Simple list/selector for splines within this model
+            # To avoid JS conflicts with multiple models, we use unique IDs
+            safe_name <- gsub("[^a-zA-Z0-9]", "_", model_name)
+            selector_id <- paste0("subj_selector_", safe_name)
+            container_prefix <- paste0("spline_cont_", safe_name, "_")
+
+            cat('<div style="margin-bottom: 20px;">')
+            cat("  <label>Select Subject: </label>")
+            cat('  <select id="', selector_id, '" onchange="showSplinePlot_', safe_name, '(this.value)">', sep = "")
+            for (i in seq_along(subj_ids)) {
+                selected <- if (i == 1) " selected" else ""
+                cat('    <option value="', subj_ids[i], '"', selected, ">", subj_ids[i], "</option>", sep = "")
+            }
+            cat("  </select>")
+            cat("</div>")
+
+            for (i in seq_along(subj_ids)) {
+                display_style <- if (i == 1) "display: block;" else "display: none;"
+                cat('<div id="', container_prefix, subj_ids[i], '" class="spline-plot-div-', safe_name, '" style="', display_style, '">', sep = "")
+                print(splines[[i]])
+                cat("</div>")
+            }
+
+            cat("\n<script>\n")
+            cat("function showSplinePlot_", safe_name, "(subjectId) {\n", sep = "")
+            cat('  var buckets = document.getElementsByClassName("spline-plot-div-', safe_name, '");\n', sep = "")
+            cat('  for (var i = 0; i < buckets.length; i++) { buckets[i].style.display = "none"; }\n')
+            cat('  var selected = document.getElementById("', container_prefix, '" + subjectId);\n', sep = "")
+            cat('  if (selected) { selected.style.display = "block"; }\n')
+            cat("}\n")
+            cat("</script>\n")
+        }
     }
-}
-```
-
-
-```{r validation_analysis, results='asis'}
-if (!is.null(report$plots$validation_plot)) {
-    cat("\n\n### Validation Analysis\n\n")
-    print(report$plots$validation_plot)
-    cat("\n\n")
-}
-```
-
-```{r discriminant_analysis, results='asis'}
-if (!is.null(report$plots$discriminant_plot)) {
-    cat("\n\n### Discriminant Analysis\n\n")
-    for(i in seq_along(report$plots$discriminant_plot)) {
-      print(report$plots$discriminant_plot[[i]])
-      cat("\n\n")
-    }
-}
-
-if (!is.null(report$plots$maxdiscriminant_plot)) {
-    
-      print(report$plots$maxdiscriminant_plot) 
-   cat("\n\n")
-      print(knitr::kable(x =report$tabels$discriminant_areas, caption = "The calculated areas for each measure and function, representing their relative importance in clustering.") )
-      cat("\n\n")
-
-}
-
-
-```
-
-```{r spline_plots, results='asis'}
-if (!is.null(report$plots$spline_plots) && length(report$plots$spline_plots) > 0) {
-    cat("\n\n### Subject Spline Plots\n\n")
-
-    splines <- report$plots$spline_plots
-    subj_ids <- names(splines)
-
-    # Create a unique ID for this selector instance
-    selector_id <- "subject_spline_selector"
-    container_prefix <- "spline_plot_container_"
-
-    # Dropdown menu
-    cat('<div style="margin-bottom: 20px;">')
-    cat('  <label for="', selector_id, '">Select Subject to View Spline fit: </label>', sep = "")
-    cat('  <select id="', selector_id, '" onchange="showSplinePlot(this.value)">', sep = "")
-    for (i in seq_along(subj_ids)) {
-        selected <- if (i == 1) " selected" else ""
-        cat('    <option value="', subj_ids[i], '"', selected, ">", subj_ids[i], "</option>", sep = "")
-    }
-    cat("  </select>")
-    cat("</div>")
-
-    # Plot containers
-    for (i in seq_along(subj_ids)) {
-        display_style <- if (i == 1) "display: block;" else "display: none;"
-        cat('<div id="', container_prefix, subj_ids[i], '" class="spline-plot-div" style="', display_style, '">', sep = "")
-        print(splines[[i]])
-        cat("</div>")
-    }
-
-    # JavaScript to handle switching
-    cat('
-<script>
-function showSplinePlot(subjectId) {
-  // Hide all plot containers
-  var buckets = document.getElementsByClassName("spline-plot-div");
-  for (var i = 0; i < buckets.length; i++) {
-    buckets[i].style.display = "none";
-  }
-
-  // Show the selected one
-  var selected = document.getElementById("', container_prefix, '" + subjectId);
-  if (selected) {
-    selected.style.display = "block";
-  }
-}
-</script>
-', sep = "")
 }
 ```
 

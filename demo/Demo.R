@@ -30,7 +30,7 @@ if (!is.null(CrossLogLikePlot$Parabola)) {
 
 # The p parameter now expects a named vector matching measure names
 clusters <- estimateCluster(DataTrunc,
-    G = 2:6,
+    G = 2:3,
     p = c("Cosine" = 3, "Parabola" = 6, "Hyperbola" = 4, "Sine" = 7),
     runs = 10, cores = 4
 )
@@ -47,12 +47,23 @@ Metrics <- validateCluster(ClusterData)
 print(Metrics$plot)
 
 MaximumDiscriminationFunction(ClusterData)
+rep = generateReport(
+  data = DataTrunc,
+  clustered_data = ClusterData,
+  p_analysis = CrossLogLikePlot,
+  G_analysis =  clusters,
+  features = "treatment_group",
+  report_title = "reportDemo",
+  output_file = "./reportDemo.html"
+)
 
+ClusterData2 <-selectCluster(clusters, G = 2, "MinfDB")
 rep = generateReport(
     data = DataTrunc,
-    clustered_data = ClusterData,
+    clustered_data = list(ClusterData2,ClusterData),
     p_analysis = CrossLogLikePlot,
-    G_analysis = clusters,features = "treatment_group",
+    G_analysis =  clusters,
+    features = "treatment_group",
     report_title = "reportDemo",
     output_file = "./reportDemo.html"
 )

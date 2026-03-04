@@ -49,24 +49,31 @@ setMethod(
            p_analysis = NULL,
            G_analysis = NULL,
            features = NULL,
-           include_spline = FALSE, 
-           save_list = T, 
+           include_spline = FALSE,
+           save_list = T,
            output_file = "report.html") {
-    
     # Ensure features is a character vector
     if (!is.null(features)) {
       features <- as.character(features)
     }
-    
-    # Extract data from clustered object if needed
-    if (!is.null(clustered_data)) {
-      model_params <- getParameters(clustered_data)
-      measures <- getMeasures(clustered_data)
-      cluster_names <- getClusterNames(clustered_data)
-    } else if (!is.null(data)) {
-      measures <- getMeasures(data)
+
+    # Handle clustered_data as a list for multiple models
+    clust_list <- clustered_data
+    if (!is.null(clust_list)) {
+      if (!is.list(clust_list) || is(clust_list, "CONNECTORDataClustered")) {
+        names(clust_list) <- "Model 1"
+      }else{
+        names(clust_list) <- paste("Model", seq_along(clust_list))
+      }
     }
-    
+
+    # Extract data from clustered object if needed to initialize measures
+    if (!is.null(data)) {
+      measures <- getMeasures(data)
+    } else if (!is.null(clust_list)) {
+      measures <- getMeasures(clust_list[[1]])
+    }
+
     # Initialize report
     report <- list(
       title = report_title,
@@ -76,19 +83,19 @@ setMethod(
       tables = list(),
       analysis_choices = list()
     )
-    
+
     cat("Generating MultiConnector analysis report...\n")
-    
+
     # ===== DATA SUMMARY SECTION =====
     if (!is.null(data)) {
       cat("- Processing base data characteristics...\n")
-      
+
       # Data overview
       n_subjects <- length(unique(data@curves$subjID))
       n_measures <- length(measures)
       n_timepoints <- nrow(data@curves)
       time_range <- range(data@curves$time)
-      
+
       report$summary$data_overview <- list(
         n_subjects = n_subjects,
         n_measures = n_measures,
@@ -96,18 +103,18 @@ setMethod(
         time_range = time_range,
         measures = measures
       )
-      
+
       # Time series plots
       report$plots$timeseries_plot <- plot(data)
-      
+
       # Time grid visualization
       report$plots$time_grid_plot <- plotTimes(data)
-      
+
       # Base data feature-based plots
       if (!is.null(features)) {
         report$plots$timeseries_plots_by_feature <- list()
         available_features_base <- getAnnotations(data)
-        
+
         for (feature in features) {
           if (feature %in% available_features_base) {
             tryCatch(
@@ -122,9 +129,9 @@ setMethod(
           }
         }
       }
-    } else if (!is.null(clustered_data)) {
-      # Extract summary from clustered data
-      df <- clustered_data@KData$CData
+    } else if (!is.null(clust_list)) {
+      # Extract summary from the first clustered data if global data not provided
+      df <- clust_list[[1]]@KData$CData
       report$summary$data_overview <- list(
         n_subjects = length(unique(df$subjID)),
         n_measures = length(measures),
@@ -132,134 +139,133 @@ setMethod(
         time_range = range(df$time),
         measures = measures
       )
-      
-      # Time series plot from KData if base data not provided
-      # report$plots$timeseries_plot <- plot(clustered_data@KData) # Might need work if @KData isn't a CONNECTORData
     }
-    
+
     # ===== DIMENSION ANALYSIS SECTION =====
     if (!is.null(p_analysis)) {
       cat("- Including provided dimension analysis results...\n")
       report$plots$dimension_analysis <- p_analysis
     }
-    
+
     # ===== CLUSTERING ANALYSIS SECTION =====
     if (!is.null(G_analysis)) {
       cat("- Including provided cluster estimation results...\n")
       # Use IndexPlotExtrapolation to show quality metrics
       report$plots$cluster_estimation_plot <- plot(G_analysis)
     }
-    
-    if (!is.null(clustered_data)) {
-      cat("- Analyzing clustering results...\n")
-      
-      # Clustering summary
-      report$summary$clustering_overview <- list(
-        n_clusters = model_params$G,
-        h_parameter = model_params$h,
-        p_parameter = model_params$p,
-        cluster_names = cluster_names,
-        quality_metrics = clustered_data@TTandfDBandSil
-      )
-      
-      # Cluster assignments
-      clusters_df <- getClusters(clustered_data)
-      cluster_sizes <- table(clusters_df$cluster)
-      
-      report$tables$cluster_assignments <- data.frame(
-        Cluster = names(cluster_sizes),
-        Size = as.numeric(cluster_sizes),
-        Percentage = round(as.numeric(cluster_sizes) / sum(cluster_sizes) * 100, 2)
-      )
-      
-      # Basic cluster plot
-      report$plots$cluster_plot_basic <- plot(clustered_data)
-      
-      # Feature-based cluster plots
-      available_features <- getAnnotations(clustered_data)
-      if (!is.null(features)) {
-        cat("- Generating feature-based visualizations...\n")
-        report$plots$cluster_plots_by_feature <- list()
-        
-        for (feature in features) {
-          if (feature %in% available_features) {
-            tryCatch(
-              {
-                report$plots$cluster_plots_by_feature[[feature]] <-
-                  plot(clustered_data, feature = feature)
-                report$tables[[feature]] <- clusterDistribution(clustered_data, feature = feature)
-              },
-              error = function(e) {
-                cat(paste("Warning: Failed to create plot for feature", feature, ":", e$message, "\n"))
-              }
-            )
-          } else {
-            cat(paste("Warning: Feature", feature, "not found in annotations\n"))
+
+    # ===== CLUSTERING ANALYSIS SECTION (MULTIPLE MODELS) =====
+    if (!is.null(clust_list)) {
+      report$clustering_results <- list()
+
+      for (model_name in names(clust_list)) {
+        cat(paste("- Analyzing clustering results for", model_name, "...\n"))
+
+        obj <- clust_list[[model_name]]
+        model_params <- getParameters(obj)
+        cluster_names <- getClusterNames(obj)
+        available_features <- getAnnotations(obj)
+
+        model_report <- list(
+          name = model_name,
+          summary = list(
+            n_clusters = model_params$G,
+            h_parameter = model_params$h,
+            p_parameter = model_params$p,
+            cluster_names = cluster_names,
+            quality_metrics = obj@TTandfDBandSil
+          ),
+          tables = list(),
+          plots = list()
+        )
+
+        # Cluster assignments
+        clusters_df <- getClusters(obj)
+        cluster_sizes <- table(clusters_df$cluster)
+
+        model_report$tables$cluster_assignments <- data.frame(
+          Cluster = names(cluster_sizes),
+          Size = as.numeric(cluster_sizes),
+          Percentage = round(as.numeric(cluster_sizes) / sum(cluster_sizes) * 100, 2)
+        )
+
+        # Basic cluster plot
+        model_report$plots$cluster_plot_basic <- plot(obj)
+
+        # Feature-based cluster plots
+        if (!is.null(features)) {
+          model_report$plots$cluster_plots_by_feature <- list()
+          for (feature in features) {
+            if (feature %in% available_features) {
+              tryCatch(
+                {
+                  model_report$plots$cluster_plots_by_feature[[feature]] <- plot(obj, feature = feature)
+                  model_report$tables[[feature]] <- clusterDistribution(obj, feature = feature)
+                },
+                error = function(e) {
+                  cat(paste("  Warning: Failed to create plot for feature", feature, "in", model_name, ":", e$message, "\n"))
+                }
+              )
+            }
           }
         }
-      }
-      
-      # Evaluation analysis
-      tryCatch(
-        {
-          report$plots$validation_plot <- validateCluster(clustered_data)$plot
-        },
-        error = function(e) {
-          cat("Warning: Validation plot failed:", e$message, "\n")
-        }
-      )
-      
-      # Discriminant analysis
-      tryCatch(
-        {
-          report$plots$discriminant_plot <- DiscriminantPlot(clustered_data)
-        },
-        error = function(e) {
-          cat("Warning: Discriminant plot failed:", e$message, "\n")
-        }
-      )
-      
-      tryCatch(
-        {
-          MaximumD<- MaximumDiscriminationFunction(clustered_data)
-          report$plots$maxdiscriminant_plot = MaximumD$Separated
-          report$tabels$discriminant_areas = MaximumD$measure_areas
-        },
-        error = function(e) {
-          cat("Warning: Discriminant plot failed:", e$message, "\n")
-        }
-      )
-      
-      # Spline plots
-      if(include_spline){
+
+        # Validation analysis
         tryCatch(
           {
-            sample_ids <- names(splinePlot(clustered_data)) # Get all available subject IDs
-            if (length(sample_ids) > 0) {
-              cat("- Generating spline plots for", length(sample_ids), "subjects...\n")
-              # We call splinePlot once and subset since it already returns the full list
-              full_spline_list <- splinePlot(clustered_data)
-              report$plots$spline_plots <- full_spline_list[sample_ids]
-            }
+            model_report$plots$validation_plot <- validateCluster(obj)$plot
           },
           error = function(e) {
-            cat("Warning: Spline plots failed:", e$message, "\n")
+            cat(paste("  Warning: Validation plot failed for", model_name, ":", e$message, "\n"))
           }
         )
+
+        # Discriminant analysis
+        tryCatch(
+          {
+            model_report$plots$discriminant_plot <- DiscriminantPlot(obj)
+          },
+          error = function(e) {
+            cat(paste("  Warning: Discriminant plot failed for", model_name, ":", e$message, "\n"))
+          }
+        )
+
+        # Maximum discrimination analysis
+        tryCatch(
+          {
+            MaximumD <- MaximumDiscriminationFunction(obj)
+            model_report$plots$maxdiscriminant_plot <- MaximumD$Separated
+            model_report$tables$discriminant_areas <- MaximumD$measure_areas
+          },
+          error = function(e) {
+            cat(paste("  Warning: Maximum discrimination analysis failed for", model_name, ":", e$message, "\n"))
+          }
+        )
+
+        # Spline plots
+        if (include_spline) {
+          tryCatch(
+            {
+              full_spline_list <- splinePlot(obj)
+              model_report$plots$spline_plots <- full_spline_list
+            },
+            error = function(e) {
+              cat(paste("  Warning: Spline plots failed for", model_name, ":", e$message, "\n"))
+            }
+          )
+        }
+
+        # Save results to main report
+        report$clustering_results[[model_name]] <- model_report
       }
-      
-      # Quality metrics table
-      report$tables$quality_metrics <- clustered_data@TTandfDBandSil
-      
-      # Analysis choices summary
-      report$analysis_choices$clustering <- list(
-        number_of_clusters = model_params$G,
-        h_parameter = model_params$h,
-        p_parameter = model_params$p,
-        selection_criteria = "Selected solution"
-      )
+
+      # For backward compatibility with older templates (optional, can be removed if template updated)
+      # report$summary$clustering_overview <- report$clustering_results[[1]]$summary
+      # report$tables$cluster_assignments <- report$clustering_results[[1]]$tables$cluster_assignments
+      # report$plots$cluster_plot_basic <- report$clustering_results[[1]]$plots$cluster_plot_basic
+      # report$plots$cluster_plots_by_feature <- report$clustering_results[[1]]$plots$cluster_plots_by_feature
     }
-    
+
     # ===== REPORT METADATA =====
     report$metadata <- list(
       r_version = R.version.string,
@@ -268,33 +274,33 @@ setMethod(
         features_analyzed = features
       )
     )
-    
+
     cat("Report generation completed!\n")
-    
-    
+
+
     # Find template
     template <- system.file("templates/report_template.Rmd", package = "MultiConnector")
-    
+
     # Fallback for development mode
     if (template == "") {
       template <- "inst/templates/report_template.Rmd"
     }
-    
+
     if (!file.exists(template)) {
       stop("Report template not found. Please ensure the package is correctly installed.")
     }
-    
+
     if (is.null(output_file)) {
       output_file <- paste0(gsub(" ", "_", report_title), "_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".html")
     }
-    
+
     # Ensure output_file is absolute to avoid rmarkdown::render saving in the template directory
     if (!grepl("^/", output_file) && !grepl("^[A-Za-z]:", output_file)) {
       output_file <- file.path(getwd(), output_file)
     }
-    
+
     cat(paste("- Exporting to HTML:", output_file, "...\n"))
-    
+
     rmarkdown::render(
       input = template,
       output_file = output_file,
@@ -305,14 +311,21 @@ setMethod(
       ),
       quiet = TRUE
     )
-    if(save_list)
-      saveRDS(list(report = report,
-                   inputdata=list(data = data,
-                                  clustered_data = clustered_data,
-                                  p_analysis = p_analysis,
-                                  G_analysis=G_analysis)), 
-              file = sub("\\.html$", ".rds", output_file))
-    
+    if (save_list) {
+      saveRDS(
+        list(
+          report = report,
+          inputdata = list(
+            data = data,
+            clustered_data = clustered_data,
+            p_analysis = p_analysis,
+            G_analysis = G_analysis
+          )
+        ),
+        file = sub("\\.html$", ".rds", output_file)
+      )
+    }
+
     cat("Download your report at:", normalizePath(output_file), "\n")
   }
 )
@@ -325,7 +338,7 @@ printReportSummary <- function(report) {
   cat("=== MULTICONNECTOR ANALYSIS REPORT ===\n")
   cat("Title:", report$title, "\n")
   cat("Generated on:", as.character(report$generated_on), "\n\n")
-  
+
   # Data summary
   if (!is.null(report$summary$data_overview)) {
     cat("DATA OVERVIEW:\n")
@@ -335,21 +348,29 @@ printReportSummary <- function(report) {
     cat("- Time range:", paste(report$summary$data_overview$time_range, collapse = " to "), "\n")
     cat("- Measures:", paste(report$summary$data_overview$measures, collapse = ", "), "\n\n")
   }
-  
+
   # Clustering summary
-  if (!is.null(report$summary$clustering_overview)) {
-    cat("CLUSTERING RESULTS:\n")
-    cat("- Number of clusters:", report$summary$clustering_overview$n_clusters, "\n")
-    cat("- H parameter:", report$summary$clustering_overview$h_parameter, "\n")
-    cat("- Cluster names:", paste(report$summary$clustering_overview$cluster_names, collapse = ", "), "\n\n")
+  if (!is.null(report$clustering_results) && length(report$clustering_results) > 0) {
+    cat("CLUSTERING ANALYSIS:\n")
+    for (name in names(report$clustering_results)) {
+      res <- report$clustering_results[[name]]
+      cat("- Model:", name, "\n")
+      cat("  * Clusters (G):", res$summary$n_clusters, "\n")
+      cat("  * H parameter:", res$summary$h_parameter, "\n")
+      cat("  * Cluster names:", paste(res$summary$cluster_names, collapse = ", "), "\n")
+    }
+    cat("\n")
   }
-  
+
   # Content summary
   cat("REPORT CONTENTS:\n")
-  cat("- Plots:", length(report$plots), "\n")
-  cat("- Tables:", length(report$tables), "\n")
+  cat("- Global plots:", length(report$plots), "\n")
+  cat("- Global tables:", length(report$tables), "\n")
+  if (!is.null(report$clustering_results)) {
+    cat("- Clustering models:", length(report$clustering_results), "\n")
+  }
   cat("- Analysis sections:", length(report$analysis_choices), "\n\n")
-  
+
   # Available plots
   if (length(report$plots) > 0) {
     cat("AVAILABLE PLOTS:\n")
@@ -358,7 +379,7 @@ printReportSummary <- function(report) {
     }
     cat("\n")
   }
-  
+
   # Available tables
   if (length(report$tables) > 0) {
     cat("AVAILABLE TABLES:\n")
@@ -367,6 +388,6 @@ printReportSummary <- function(report) {
     }
     cat("\n")
   }
-  
+
   cat("Use report$plots$<plot_name> or report$tables$<table_name> to access specific elements.\n")
 }
