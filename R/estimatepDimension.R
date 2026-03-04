@@ -6,7 +6,7 @@
 #' @param cores The number of Cores to be used for parallel computation. Maximum number is 10.
 #' @return Returns a list containing:
 #' \itemize{
-#'   \item For each measure: A patchwork object containing three plots: (1) Time series of the growth curves, (2) Spline basis knots distribution, and (3) Cross-validated loglikelihood values for each dimension $p$. This object also contains a `Summary` attribute with the mean loglikelihood values.
+#'   \item For each measure: A patchwork object containing three plots: (1) Time series of the growth curves, (2) Spline basis knots distribution, and (3) Cross-validated loglikelihood values for each dimension $p$.
 #'   \item \code{summary}: A matrix reporting the mean loglikelihood for each measure (rows) and each dimension $p$ (columns).
 #'   \item \code{p_suggested}: A named vector indicating the suggested dimension $p$ for each measure.
 #' }
@@ -33,13 +33,13 @@ setMethod("estimatepDimension",
     measures <- sort(as.character(unique(data@curves$measureID)))
 
     if (length(measures) == 1) {
-      result <- estimatepDimensionPerObs(data, p, cores)
+      res <- estimatepDimensionPerObs(data, p, cores)
 
       time_diff <- Sys.time() - start
       time_value <- round(as.numeric(time_diff), 2)
       time_unit <- attr(time_diff, "units")
       print(paste("Total time:", time_value, time_unit))
-      return(result)
+      names(res) <- measures
     } else if (is.null(i)) {
       res <- lapply(measures, function(j) {
         curve <- filter(data@curves, measureID == j)
@@ -62,21 +62,24 @@ setMethod("estimatepDimension",
 
     time_diff <- Sys.time() - start
 
-    res$summary <- do.call(
+    finalres = lapply(names(res), function(m) res[[m]]$plot)
+    names(finalres) <- names(res)
+    
+    finalres$summary <- do.call(
       "rbind",
       lapply(names(res), function(m) {
-        df <- res[[m]]@layers[[1]]$data
+        df <- res[[m]]$data
         v <- df$mean
         matrix(v, nrow = 1, ncol = length(v), dimnames = list(m, df$p))
       })
     )
 
-    res$p_suggested <- apply(res$summary, 1, first_relmax_col, colnames_x = colnames(mat), tol = 0.01)
+    finalres$p_suggested <- apply(res$summary, 1, first_relmax_col, colnames_x = colnames(res$summary), tol = 0.01)
 
     time_value <- round(as.numeric(time_diff), 2)
     time_unit <- attr(time_diff, "units")
     print(paste("Total time:", time_value, time_unit))
-    return(res)
+    return(finalres)
   }
 )
 
@@ -401,7 +404,8 @@ setMethod("estimatepDimensionPerObs",
       ":", time_value, time_unit
     ))
 
-    return((GrowthCurve / Knots.Plot) | ValidationPlot)
+    pl = (GrowthCurve / Knots.Plot) | ValidationPlot
+    return(list(plot = pl , data =meanCrossvalidData) )
   }
 )
 

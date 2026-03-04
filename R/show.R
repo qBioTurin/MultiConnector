@@ -1,8 +1,7 @@
-setGeneric("show", function(object, ...) standardGeneric("show"))
-
 #' @title show
 #' @description show method for MultiConnector objects.
 #' @param object The object to display.
+#' @importFrom methods show
 #' @name show
 #' @rdname show
 #' @export
