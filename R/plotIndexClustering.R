@@ -67,8 +67,6 @@ setMethod("IndexPlotExtrapolation", signature(), function(results) {
     slice(1) %>%
     ungroup()
 
-
-  a <- indexes %>% filter(G == 6)
   # Creiamo un dataframe per la legenda dei G
   g_values <- unique(indexes$G)
   g_labels <- paste("G =", g_values)
@@ -90,10 +88,20 @@ setMethod("IndexPlotExtrapolation", signature(), function(results) {
       )
   }
 
+  freqG =table(indexesfull$G,indexesfull$Indexes)
+  indices <- which(freqG == 1, arr.ind = TRUE)
+  single_obs <- data.frame(
+    G = rownames(freqG)[indices[, 1]],
+    Index = colnames(freqG)[indices[, 2]]
+  )
+  
+  indexesfull %>% filter(! (G %in% single_obs$G & Indexes %in% single_obs$Index) ) -> indexesfullSingleObs
+  # View the
+  
   return(suppressWarnings(
     pl +
-      gghalves::geom_half_violin(aes(fill = paste("G =", G)), side = "r", alpha = 0.7, scale = "width") +
-      gghalves::geom_half_boxplot(aes(fill = paste("G =", G)), alpha = 0.7, fatten = 1) +
+      gghalves::geom_half_violin(data = indexesfullSingleObs, aes(fill = paste("G =", G)), side = "r", alpha = 0.7, scale = "width") +
+      gghalves::geom_half_boxplot(data = indexesfullSingleObs,aes(fill = paste("G =", G)), alpha = 0.7, fatten = 1) +
       geom_point(
         data = indexesfilteredMaxFreq,
         aes(x = G, y = IndexesV, color = "MaxFreq"),
@@ -109,7 +117,6 @@ setMethod("IndexPlotExtrapolation", signature(), function(results) {
         aes(x = G, y = IndexesV, color = "maxSilhouette"),
         shape = 2, size = 4, stroke = 1.5, position = position_nudge(x = 0.3)
       ) +
-
       geom_hline(
         data = indexesfull %>% filter(Indexes == "fDB"),
         aes(yintercept = 1), linetype = "dashed"
@@ -122,7 +129,6 @@ setMethod("IndexPlotExtrapolation", signature(), function(results) {
           "maxSilhouette" = "#944D5F"
         )
       ) +
-
       facet_wrap(~Indexes, scales = "free") +
       theme_bw() +
       xlab("G") +
