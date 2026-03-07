@@ -31,7 +31,8 @@ setMethod("PlotTimeSeries", signature("CONNECTORData"),
               axes.y <- labels[2]
               title <- labels[3]
             }
-            dataplot <- as_tibble(data@curves) %>% dplyr::select(subjID, time, measureID, value)
+            dataplot <- as_tibble(data@curves) %>%
+              dplyr::select(subjID, time, measureID, value)
             
             if (!is.null(feature)) {
               # Controllo se la feature è valida
