@@ -74,7 +74,7 @@ setMethod("estimatepDimension",
       })
     )
 
-    finalres$p_suggested <- apply(finalres$summary, 1, first_relmax_col, colnames_x = colnames(finalres$summary), tol = 0.1)
+    finalres$p_suggested <- apply(finalres$summary, 1, first_relmax_col, colnames_x = colnames(finalres$summary), tol = 0.05)
 
     time_value <- round(as.numeric(time_diff), 2)
     time_unit <- attr(time_diff, "units")
