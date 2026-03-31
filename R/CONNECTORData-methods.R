@@ -18,7 +18,7 @@ setMethod(
 #' @param TimeSeriesFile The name of the excel/csv file storing the  growth evolution data. Alternatively accepts a tibble with the data.
 #'
 #' @param AnnotationFile The name of a excel/csv file storing  the annotation data. Alternatively accepts a tibble with the annotations.
-#'
+#' @param scale A boolean parameter indicating whether to scale the data. Default is FALSE. If TRUE, the values of each measureID will be scaled to have values between 0 and 1. Scaling is performed by subtracting the minimum value of each measureID and dividing by the range (max - min) of that measureID.
 #' @return ConnectorData returns a S4 object, called ConnectorData, with four arguments: (i) curves: tibble with 5 columns (subjID, measureID, time, curvesID, value) encoding the growth data for each sample, (ii) dimensions: the tibble reporting the number of observations collected per sample  (iii) annotations: the tibble matching the samples with their annotations, (iv) TimeGrid: the vector storing all the sample time points (i.e. time grid). Furthermore, it prints a brief summary of the input data, i.e. the total number of curves (samples), the minimum and the maximum curve length.
 #' @examples
 #' TimeSeriesFile <- system.file("testdata", "test.xlsx", package = "ConnectorV2.0")
@@ -37,7 +37,7 @@ setMethod(
 #' @name ConnectorData
 #' @export
 # Definition of generic for ConnectorData factory function
-setGeneric("ConnectorData", function(TimeSeriesFile, AnnotationFile) {
+setGeneric("ConnectorData", function(TimeSeriesFile, AnnotationFile, scale = FALSE) {
   standardGeneric("ConnectorData")
 })
 
@@ -46,7 +46,7 @@ setGeneric("ConnectorData", function(TimeSeriesFile, AnnotationFile) {
 # Definition of method ConnectorData
 setMethod(
   "ConnectorData", signature("character"),
-  function(TimeSeriesFile, AnnotationFile) {
+  function(TimeSeriesFile, AnnotationFile,scale = FALSE) {
     # Read Data File
 
     if (grepl("\\.xlsx$", TimeSeriesFile, ignore.case = TRUE) ||
@@ -73,7 +73,7 @@ setMethod(
     } else {
       stop("The AnnotationFile must be an excel, csv, txt or tsv file")
     }
-    return(ConnectorData(curves, annotations))
+    return(ConnectorData(curves, annotations,scale))
   }
 )
 
@@ -82,8 +82,8 @@ setMethod(
 # Definition of method ConnectorData
 setMethod(
   "ConnectorData", signature("data.frame"),
-  function(TimeSeriesFile, AnnotationFile) {
-    return(ConnectorData(tibble(TimeSeriesFile), tibble(AnnotationFile)))
+  function(TimeSeriesFile, AnnotationFile,scale) {
+    return(ConnectorData(tibble(TimeSeriesFile), tibble(AnnotationFile),scale))
   }
 )
 
@@ -96,7 +96,7 @@ setMethod(
 #' @export
 setMethod(
   "ConnectorData", signature("tbl_df"),
-  function(TimeSeriesFile, AnnotationFile) {
+  function(TimeSeriesFile, AnnotationFile,scale) {
     select <- dplyr::select
     curves <- TimeSeriesFile
     annotations <- AnnotationFile
@@ -233,6 +233,13 @@ setMethod(
       a <- sort(unique(curves$time[curves$measureID == j ]))
       grid[[as.character(j)]] <- a
     }
+    
+    if(scale){
+      curves <- curves %>%
+        group_by(measureID) %>%
+        mutate(value = (value - min(value, na.rm = TRUE)) / (max(value, na.rm = TRUE) - min(value, na.rm = TRUE)))
+    }
+    
     # set slots of CONNECTORData
     ConnectorData <-
       new(

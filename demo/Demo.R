@@ -2,11 +2,14 @@
 
 TimeSeries <- readRDS(system.file("Data/Synthetic/TimeSeries.rds", package = "MultiConnector"))
 Annotations <- readRDS(system.file("Data/Synthetic/Annotations.RDs", package = "MultiConnector"))
+
 ####
 
 Data <- ConnectorData(TimeSeries, Annotations)
-
 plot(Data, feature = "treatment_group")
+
+# Data <- ConnectorData(TimeSeries, Annotations,scale = T)
+# plot(Data, feature = "treatment_group")
 
 plotTimes(Data)
 plotTimes(Data, large = T)
