@@ -33,13 +33,14 @@ setMethod("estimatepDimension",
     measures <- sort(as.character(unique(data@curves$measureID)))
 
     if (length(measures) == 1) {
-      res <- estimatepDimensionPerObs(data, p, cores)
+      resOne <- estimatepDimensionPerObs(data, p, cores)
 
       time_diff <- Sys.time() - start
       time_value <- round(as.numeric(time_diff), 2)
       time_unit <- attr(time_diff, "units")
       print(paste("Total time:", time_value, time_unit))
-      names(res) <- measures
+      res = list()
+      res[[measures]] <- resOne
     } else if (is.null(i)) {
       res <- lapply(measures, function(j) {
         curve <- filter(data@curves, measureID == j)

@@ -110,8 +110,7 @@ setMethod(
       return()
     }
     # trasform the column "time" in lowercase
-    colnames(curves)[grepl("time", tolower(colnames(curves)), ignore.case = TRUE)] <-
-      "time"
+    colnames(curves)[grepl("time", tolower(colnames(curves)), ignore.case = TRUE)] <- "time"
 
     if (sum(colnames(curves) == "subjID") != 1) {
       stop("The column name 'subjID' is not present or is present more than once in the TimeSeriesFile")
@@ -137,9 +136,7 @@ setMethod(
       )
     }
 
-    
-    curves <-
-      curves[rowsKeep, ]
+    curves <- curves[rowsKeep, ]
 
     if (sum(colnames(annotations) == "subjID") != 1) {
       stop("The column name 'subjID' is not present or is present more than once in the AnnotationFile")
