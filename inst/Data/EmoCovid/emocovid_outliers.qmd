@@ -1,0 +1,194 @@
+---
+title: "Emocovid — outlier"
+author: "Marco"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    incremental: false
+    toc: false
+    embed-resources: true
+    fig-width: 10
+    fig-height: 6
+    code-fold: true
+    scrollable: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggrepel)
+library(purrr)
+library(knitr)
+
+d <- readRDS("emocovid_sampleCurves.RDS")
+
+# soglia per percentili: 0.5% e 99.5% calcolati sul pool di tutte le osservazioni
+# (ogni riga = un prelievo di un soggetto in un dato tempo), per ciascuna misura
+LOW_P  <- 0.005
+HIGH_P <- 0.995
+
+thresholds <- d %>%
+  group_by(measureID) %>%
+  summarise(
+    low  = quantile(value, LOW_P,  na.rm = TRUE),
+    high = quantile(value, HIGH_P, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+d2 <- d %>%
+  left_join(thresholds, by = "measureID") %>%
+  mutate(
+    outlier = value < low | value > high,
+    label   = ifelse(outlier, subjID, NA)
+  )
+
+measures <- sort(unique(d2$measureID))
+
+
+feat2 <- d %>%
+  group_by(subjID, measureID) %>%
+  filter(n() >= 3) %>%
+  summarise(score = max(value) - min(value), .groups = "drop") %>%
+  group_by(measureID) %>%
+  mutate(rank = rank(-score, ties.method = "first")) %>%
+  ungroup()
+```
+
+## Metodo
+
+- Ogni misura, tutti i punti (soggetti x tempi), no struttura temporale
+- Soglie ai percentili 0.5% / 99.5% per misura, scala originale
+- Punti oltre soglia etichettati con subjID
+
+```{r thresholds-table}
+thresholds %>%
+  mutate(across(c(low, high), ~round(.x, 3))) %>%
+  kable(col.names = c("Misura", "Soglia bassa (0.5%)", "Soglia alta (99.5%)"))
+```
+
+```{r plot-function}
+plot_measure <- function(m) {
+  dd <- d2 %>% filter(measureID == m)
+  thr <- thresholds %>% filter(measureID == m)
+
+  ggplot(dd, aes(x = 1, y = value)) +
+    geom_violin(fill = "grey90", color = "grey60", trim = TRUE, width = 1.2) +
+    geom_boxplot(width = 0.12, outlier.shape = NA, fill = "white", color = "grey30") +
+    geom_jitter(aes(color = outlier), width = 0.15, alpha = 0.55, size = 1.6) +
+    geom_hline(yintercept = thr$low,  linetype = "dashed", color = "firebrick") +
+    geom_hline(yintercept = thr$high, linetype = "dashed", color = "firebrick") +
+    ggrepel::geom_text_repel(
+      aes(label = label), na.rm = TRUE, size = 3, color = "firebrick",
+      max.overlaps = 30, seed = 1
+    ) +
+    scale_color_manual(values = c(`FALSE` = "grey40", `TRUE` = "firebrick"), guide = "none") +
+    labs(
+      title = m,
+      subtitle = paste0("soglie: ", round(thr$low, 3), " — ", round(thr$high, 3)),
+      x = NULL, y = "valore"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+          panel.grid.major.x = element_blank())
+}
+
+outlier_table <- function(m) {
+  d2 %>%
+    filter(measureID == m, outlier) %>%
+    arrange(desc(pmax(value - high, low - value, 0))) %>%
+    transmute(subjID, time, value = round(value, 3),
+              soglia_superata = ifelse(value > high, "sopra soglia alta", "sotto soglia bassa")) %>%
+    as.data.frame()
+}
+```
+
+```{r render-slides}
+#| output: asis
+for (m in measures) {
+  cat("\n\n## ", m, "\n\n")
+  
+  tab <- outlier_table(m)
+  
+  if (nrow(tab) > 0) {
+    cat(":::: {.columns}\n\n")
+    
+    cat("::: {.column width=\"70%\"}\n\n")
+    print(plot_measure(m))
+    cat("\n\n:::\n\n")
+    
+    cat("::: {.column width=\"30%\"}\n\n")
+    cat("::: {style=\"font-size: 0.55em;\"}\n\n")
+    print(kable(tab, row.names = FALSE,
+                col.names = c("subjID", "tempo", "valore", "soglia superata")))
+    cat("\n\n:::\n\n")
+    cat(":::\n\n")
+    
+    cat("::::\n\n")
+  } else {
+    print(plot_measure(m))
+    cat("\n\nNessun punto oltre soglia per questa misura.\n\n")
+  }
+}
+
+## Riepilogo soggetti flaggati
+
+```{r summary-table}
+summary_tab <- d2 %>%
+  filter(outlier) %>%
+  group_by(subjID) %>%
+  summarise(
+    n_misure_flag = n_distinct(measureID),
+    misure = paste(sort(unique(measureID)), collapse = ", "),
+    n_punti_flag = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n_misure_flag), desc(n_punti_flag))
+
+summary_tab %>% kable(col.names = c("subjID", "N misure", "quali", "N punti"))
+```
+
+## Feature-based (range / jump normalizzati)
+
+```{r feat-plot-function}
+plot_feat <- function(m) {
+  raw <- d %>% filter(measureID == m, subjID %in% (feat2 %>% filter(measureID == m) %>% pull(subjID)))
+  fl  <- feat2 %>% filter(measureID == m, rank <= 3) %>% pull(subjID)
+  raw <- raw %>% mutate(flagged = subjID %in% fl)
+  lbl <- raw %>% filter(flagged) %>% group_by(subjID) %>% filter(value == max(value)) %>% slice(1) %>% ungroup()
+
+  ggplot(raw, aes(time, value, group = subjID)) +
+    geom_line(data = filter(raw, !flagged), color = "grey70", alpha = 0.4) +
+    geom_point(data = filter(raw, !flagged), color = "grey70", alpha = 0.4, size = 0.8) +
+    geom_line(data = filter(raw, flagged), color = "firebrick", linewidth = 0.8) +
+    geom_point(data = filter(raw, flagged), color = "firebrick", size = 1.4) +
+    ggrepel::geom_text_repel(data = lbl, aes(label = subjID), color = "firebrick", size = 3, seed = 1) +
+    labs(title = m, x = "tempo", y = "valore") +
+    theme_minimal(base_size = 14)
+}
+
+score_table <- function(m) {
+  feat2 %>%
+    filter(measureID == m) %>%
+    arrange(rank) %>%
+    slice_head(n = 8) %>%
+    transmute(subjID, score = round(score, 2)) %>%
+    as.data.frame()
+}
+```
+
+```{r feat-slides}
+#| output: asis
+for (m in measures) {
+  cat("\n\n## ", m, " {.smaller}\n\n:::: {.columns}\n\n::: {.column width=\"70%\"}\n\n")
+  print(plot_feat(m))
+  cat("\n\n:::\n\n::: {.column width=\"30%\"}\n\n")
+  print(kable(score_table(m), row.names = FALSE, col.names = c("subjID", "score")))
+  cat("\n\n:::\n\n::::\n\n")
+}
+```
