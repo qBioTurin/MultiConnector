@@ -165,7 +165,7 @@ setMethod("estimateCluster", signature("CONNECTORData"), function(CONNECTORData,
     results <- lapply(all_combinations, function(combo) {
       # browser()
       if (is.null(h)) {
-        h <- min(combo$K - 1, p)
+        h <- min(combo$K - 1, sum(p) )
       }
       h.found <- F
       tentative <- 1
@@ -283,7 +283,7 @@ setMethod("estimateCluster", signature("CONNECTORData"), function(CONNECTORData,
       omp_set_num_threads(1)
 
       if (is.null(h)) {
-        h <- min(combo$K - 1, p)
+        h <- min(combo$K - 1, sum(p))
       }
       h.found <- F
       tentative <- 1

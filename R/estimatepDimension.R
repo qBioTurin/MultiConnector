@@ -211,6 +211,7 @@ setMethod("estimatepDimensionPerObs",
         library(rlist)
         library(RhpcBLASctl)
       })
+      
       crossvalid <- parLapply(cl, 1:splits, function(step) {
         tryCatch(
           {
@@ -263,7 +264,13 @@ setMethod("estimatepDimensionPerObs",
       })
       stopCluster(cl)
     }
-    crossvalid <- crossvalid[!sapply(crossvalid, is.null)]
+    
+    crossvalid <- crossvalid[sapply(crossvalid, is_tibble)]
+    
+    if(length(crossvalid) == 0) {
+      stop("All cross-validation folds failed. Please check your data and try again.")
+    }
+    
     Knots.list <- lapply(p, function(p) {
       Spline <- ns(grid, df = (p - 1))
       df <-
