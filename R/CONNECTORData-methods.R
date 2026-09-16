@@ -127,6 +127,12 @@ setMethod(
       return()
     }
 
+    curves %>% group_by(measureID) %>% distinct(value) %>% summarise(n = n()) %>% filter(n == 1) %>% pull(measureID) -> measureIDconstant
+    if(length(measureIDconstant) > 0){
+      warning(paste0("The following measureID have constant values and will be removed: ", paste(measureIDconstant, collapse = ", ")))
+      curves <- curves[!curves$measureID %in% measureIDconstant, ]
+    }
+    
     # remove rows in curves where ID or time or both are NA
     rowsKeep <- complete.cases(curves[, c("subjID", "time", "measureID", "value")])
     NaInRow <- sum(!rowsKeep)

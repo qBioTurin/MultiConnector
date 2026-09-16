@@ -31,7 +31,7 @@ setMethod("estimatepDimension",
     start <- Sys.time()
     res <- list()
     measures <- sort(as.character(unique(data@curves$measureID)))
-
+    
     if (length(measures) == 1) {
       resOne <- estimatepDimensionPerObs(data, p, cores)
 
