@@ -232,7 +232,10 @@ ClassificationSingleCurve <- function(CData_i, Snew, Gamma, sigma, Lambda.alpha,
 
     x <- CData_i$value
     n <- length(x)
-    Sigma <- sigma * diag(n) + Snew %*% Gamma %*% t(Snew)
+    sigma_rows <- unname(sigma[as.character(CData_i$measureID)])
+
+    Sigma <- diag(sigma_rows, nrow = n) + Snew %*% Gamma %*% t(Snew)
+    #Sigma <- sigma * diag(n) + Snew %*% Gamma %*% t(Snew)
 
     mu_i <- Snew %*% Lambda.alpha[, i] # (par$lambda.zero + par$Lambda %*% alphai )
 

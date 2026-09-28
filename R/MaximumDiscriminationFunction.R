@@ -56,9 +56,16 @@ setMethod("MaximumDiscriminationFunction", signature(CONNECTORDataClustered = "C
   nt <- nrow(S)
   Gamma <- parameters$Gamma
 
-  Sigma <- S %*% Gamma %*% t(S) + sigma * diag(nt)
-  Lambda <- parameters$Lambda
-  discrim <- as.data.frame(solve(Sigma) %*% S %*% Lambda)
+ sigma_rows <- unlist(lapply(M, function(m) {
+  rep(unname(sigma[as.character(m)]), nrow(FullS[[m]]))
+}), use.names = FALSE)
+
+  Sigma <- S %*% Gamma %*% t(S) + diag(sigma_rows, nrow = nrow(S))
+  discrim <- as.data.frame(solve(Sigma, S %*% parameters$Lambda))
+
+  #Sigma <- S %*% Gamma %*% t(S) + sigma * diag(nt)
+  #Lambda <- parameters$Lambda
+  #discrim <- as.data.frame(solve(Sigma) %*% S %*% Lambda)
 
   colnames(discrim) <- paste0("DiscrFunc", 1:ncol(discrim))
 

@@ -483,8 +483,12 @@ setMethod("Likelihood",
     base.i <- Snew
     Yi <- data.temp$value
     n.i <- length(time.temp)
-    Vi <-
-      base.i %*% Gamma %*% t(base.i) + sigma^2 * diag(n.i)
+
+    meas <- names(KmData$FullS)[1]
+    sigma_m <- unname(sigma[meas])
+    Vi <- base.i %*% Gamma %*% t(base.i) + sigma_m * diag(n.i)
+
+    #Vi <- base.i %*% Gamma %*% t(base.i) + sigma^2 * diag(n.i)
     mui <- base.i %*% mu
     invVi <- ginv(Vi)
     result <-

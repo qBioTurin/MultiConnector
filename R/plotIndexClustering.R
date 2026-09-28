@@ -25,6 +25,10 @@ setMethod("IndexPlotExtrapolation", signature(), function(results) {
   if (length(which(error_indices)) > 0) {
     results$Clusterings <- results$Clusterings[-which(error_indices)]
   }
+  
+  if(length(results$Clusterings) == 0) {
+    stop("All clustering results contain errors. Cannot generate plots.")
+  }
 
   indexes <- do.call(rbind, lapply(seq_along(results$Clusterings), function(x) {
     xx <- results$Clusterings[[x]]

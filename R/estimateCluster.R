@@ -163,7 +163,8 @@ setMethod("estimateCluster", signature("CONNECTORData"), function(CONNECTORData,
   }
   if (cores == 1) {
     results <- lapply(all_combinations, function(combo) {
-      # browser()
+      #browser()
+      #print(paste0("K: ", combo$K) )
       if (is.null(h)) {
         h <- min(combo$K - 1, sum(p) )
       }
