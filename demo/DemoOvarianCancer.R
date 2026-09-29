@@ -89,7 +89,7 @@ optimal_p <- 3
 # STEP 5: CLUSTERING ANALYSIS
 # ------------------------------------------------------------------------------
 
-# Estimated time with 7 cores: ~23 seconds
+# Estimated time with 1 core: ~3 seconds
 
 # Perform clustering with multiple G values
 # This is the core clustering step - most computationally intensive

@@ -7,18 +7,20 @@
 \alias{ConnectorData,tbl_df-method}
 \title{ConnectorData}
 \usage{
-ConnectorData(TimeSeriesFile, AnnotationFile)
+ConnectorData(TimeSeriesFile, AnnotationFile, scale = FALSE)
 
-\S4method{ConnectorData}{character}(TimeSeriesFile, AnnotationFile)
+\S4method{ConnectorData}{character}(TimeSeriesFile, AnnotationFile, scale = FALSE)
 
-\S4method{ConnectorData}{data.frame}(TimeSeriesFile, AnnotationFile)
+\S4method{ConnectorData}{data.frame}(TimeSeriesFile, AnnotationFile, scale = FALSE)
 
-\S4method{ConnectorData}{tbl_df}(TimeSeriesFile, AnnotationFile)
+\S4method{ConnectorData}{tbl_df}(TimeSeriesFile, AnnotationFile, scale = FALSE)
 }
 \arguments{
 \item{TimeSeriesFile}{The name of the excel/csv file storing the  growth evolution data. Alternatively accepts a tibble with the data.}
 
 \item{AnnotationFile}{The name of a excel/csv file storing  the annotation data. Alternatively accepts a tibble with the annotations.}
+
+\item{scale}{A boolean parameter indicating whether to scale the data. Default is FALSE. If TRUE, the values of each measureID will be scaled to have values between 0 and 1. Scaling is performed by subtracting the minimum value of each measureID and dividing by the range (max - min) of that measureID.}
 }
 \value{
 ConnectorData returns a S4 object, called ConnectorData, with four arguments: (i) curves: tibble with 5 columns (subjID, measureID, time, curvesID, value) encoding the growth data for each sample, (ii) dimensions: the tibble reporting the number of observations collected per sample  (iii) annotations: the tibble matching the samples with their annotations, (iv) TimeGrid: the vector storing all the sample time points (i.e. time grid). Furthermore, it prints a brief summary of the input data, i.e. the total number of curves (samples), the minimum and the maximum curve length.

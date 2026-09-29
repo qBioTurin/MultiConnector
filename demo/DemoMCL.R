@@ -58,12 +58,25 @@ optimal_p <- c("PB" = 4, "BM" = 4)
 clusters <- estimateCluster(Data,
   G = 2:6, # Test 2-6 clusters
   p = optimal_p, # Use optimal spline dimension
-  runs = 10, # Multiple runs for stability
-  cores = 5
+  runs = 1, # Multiple runs for stability
+  cores = 1
 ) # Parallel processing
 
+
+Data2 = Data
+Data2@curves %>% mutate(value = ifelse(measureID == "BM" , value*10, value)) -> Data2@curves
+plot(Data2)
+clusters2 <- estimateCluster(Data2,
+                            G = 2:6, # Test 2-6 clusters
+                            p = optimal_p, # Use optimal spline dimension
+                            runs = 10, # Multiple runs for stability
+                            cores = 1
+) # Parallel processing
+
+
+
 # Estimated time with 5 cores: ~4 mins
-plot(clusters)
+plot(clusters2)
 # Perform clustering with multiple G values
 # This is the core clustering step - most computationally intensive
 
@@ -80,7 +93,7 @@ saveRDS(clusters, file = "MCLTwoD_Clustering.rds")
 # STEP 6: CLUSTER SELECTION
 # ------------------------------------------------------------------------------
 
-# Using G = 3 clusters based on quality metrics
+# Using G = 2 clusters based on quality metrics
 # Selection criterion: MinfDB (minimum functional Data Depth)
 
 # Select the best configuration
@@ -88,7 +101,7 @@ saveRDS(clusters, file = "MCLTwoD_Clustering.rds")
 if (file.exists("MCLTwoD_Clustering.rds")) {
   clusters <- readRDS("MCLTwoD_Clustering.rds")
 }
-ClusterData <- selectCluster(clusters, G = 3, "MinfDB")
+ClusterData <- selectCluster(clusters2, G = 2, "MinfDB")
 
 # ------------------------------------------------------------------------------
 # STEP 7: CLUSTER VISUALIZATION AND INTERPRETATION
@@ -99,7 +112,7 @@ plot(ClusterData)
 getAnnotations(ClusterData)
 
 getClusterNames(ClusterData) # Get cluster names and sizes
-ClusterData <- setClusterNames(ClusterData, c("High", "Medium", "Low"))
+ClusterData <- setClusterNames(ClusterData, c("High", "Low"))
 getClusterNames(ClusterData)
 plot(ClusterData)
 

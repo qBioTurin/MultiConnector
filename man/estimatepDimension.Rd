@@ -18,7 +18,7 @@ estimatepDimension(data, i = NULL, p, cores = 1)
 \value{
 Returns a list containing:
 \itemize{
-\item For each measure: A patchwork object containing three plots: (1) Time series of the growth curves, (2) Spline basis knots distribution, and (3) Cross-validated loglikelihood values for each dimension $p$. This object also contains a \code{Summary} attribute with the mean loglikelihood values.
+\item For each measure: A patchwork object containing three plots: (1) Time series of the growth curves, (2) Spline basis knots distribution, and (3) Cross-validated loglikelihood values for each dimension $p$.
 \item \code{summary}: A matrix reporting the mean loglikelihood for each measure (rows) and each dimension $p$ (columns).
 \item \code{p_suggested}: A named vector indicating the suggested dimension $p$ for each measure.
 }
