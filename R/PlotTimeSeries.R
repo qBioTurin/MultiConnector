@@ -1,13 +1,22 @@
-#' @title PlotTimeSeries
+#' Plot longitudinal measurements
 #'
-#' @description the line plot of the time series data. The curves are colored with respect to the feature chosen by the user and/or reported in the AnnotationFile.
+#' Draws one trajectory per subject and facets the result by measure. Curves can
+#' optionally be coloured by a subject-level annotation.
 #'
-#' @param data CONNECTORData. See CONNECTORData for details.
-#' @param feature The column name reported in the AnnotationFile containing the feature to be investigated.
-#' @param labels   The vector containing the text for the axis names and plot title.
+#' @param data A [CONNECTORData-class] object.
+#' @param feature Optional single character string naming an annotation column.
+#' @param labels Optional character vector of length three containing the x-axis
+#'   label, y-axis label, and plot title, in that order.
 #'
-#' @return PlotTimeSeries returns a ggplot object.
+#' @return A `ggplot` object with free scales for each measure.
 #'
+#' @examples
+#' \dontrun{
+#' PlotTimeSeries(data)
+#' PlotTimeSeries(data, feature = "group", labels = c("Time", "Value", "Profiles"))
+#' }
+#'
+#' @seealso [plot()], [plotTimes()]
 #' @import ggplot2 tibble dplyr
 #' @export
 #' @rdname plotTimeSeries
@@ -17,6 +26,7 @@ setGeneric("PlotTimeSeries", function(data,
                                       labels)
   standardGeneric("PlotTimeSeries"))
 
+#' @rdname plotTimeSeries
 setMethod("PlotTimeSeries", signature("CONNECTORData"),
           function(data, feature=NULL, labels) {
             if (missing(labels))

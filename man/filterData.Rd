@@ -3,20 +3,33 @@
 \name{filterData}
 \alias{filterData}
 \alias{filterData,CONNECTORData-method}
-\title{filterData}
+\title{Remove subjects with insufficient longitudinal observations}
 \usage{
 filterData(data, minPoints = 3)
 
 \S4method{filterData}{CONNECTORData}(data, minPoints = 3)
 }
 \arguments{
-\item{data}{CONNECTORData. (see \code{\link{ConnectorData}})}
+\item{data}{A \linkS4class{CONNECTORData} object.}
 
-\item{minPoints}{Minimum number of points required for each measure. If a subject has fewer than this value in any of its measurements, it will be removed. Default is 3.}
+\item{minPoints}{Positive integer giving the minimum number of observations
+required for every subject-measure curve. Defaults to \code{3}.}
 }
 \value{
-Returns a new CONNECTORData object with the filtered subjects.
+A \linkS4class{CONNECTORData} object containing the retained subjects. If
+no subject is removed, the original object is returned.
 }
 \description{
-Filters the CONNECTORData object by removing subjects that have less than a certain number of points in at least one of their measurements.
+Removes a subject when any of its observed measures contains fewer than the
+requested number of time points. The resulting dimensions and time grids are
+rebuilt with \code{\link[=ConnectorData]{ConnectorData()}}.
+}
+\examples{
+\dontrun{
+filtered <- filterData(data, minPoints = 4)
+}
+
+}
+\seealso{
+\code{\link[=ConnectorData]{ConnectorData()}}, \code{\link[=truncate]{truncate()}}
 }

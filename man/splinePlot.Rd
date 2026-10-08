@@ -2,16 +2,32 @@
 % Please edit documentation in R/plotSpline.R
 \name{splinePlot}
 \alias{splinePlot}
-\title{splinePlot}
+\alias{splinePlot,CONNECTORDataClustered-method}
+\title{Plot subject-level spline fits}
 \usage{
 splinePlot(CONNECTORDataClustered)
+
+\S4method{splinePlot}{CONNECTORDataClustered}(CONNECTORDataClustered)
 }
 \arguments{
-\item{CONNECTORDataClustered}{data created with selectCluster()}
+\item{CONNECTORDataClustered}{A \linkS4class{CONNECTORDataClustered} object created
+by \code{\link[=selectCluster]{selectCluster()}}.}
 }
 \value{
-a plot of splines for each data
+A named list of patchwork plots, one per subject. Each plot contains
+one panel for every available measure.
 }
 \description{
-plot splines
+Compares each observed trajectory with its fitted spline and assigned cluster
+mean, including the fitted-curve confidence band.
+}
+\examples{
+\dontrun{
+fits <- splinePlot(clustered_data)
+fits[[1]]
+}
+
+}
+\seealso{
+\code{\link[=ClusterPlot]{ClusterPlot()}}, \code{\link[=getClustersCentroids]{getClustersCentroids()}}
 }

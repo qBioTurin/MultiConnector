@@ -2,22 +2,22 @@
 % Please edit documentation in R/CONNECTORDataClustered-class.R
 \name{getClustersCentroids}
 \alias{getClustersCentroids}
-\title{getClustersCentroids}
+\alias{getClustersCentroids,CONNECTORDataClustered-method}
+\title{Extract fitted cluster-centroid curves}
 \usage{
 getClustersCentroids(object)
+
+\S4method{getClustersCentroids}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-A dataframe with the cluster association for each subjID.
+A data frame with columns \code{time}, \code{measureID}, \code{cluster}, and \code{value}.
 }
 \description{
-Extract and display clusters centroids from  CONNECTORDataClustered object.
-Shows all available features (annotation columns) in both cases.
-}
-\details{
-This method provides the features available in the annotations of the provided object.
+Computes the fitted mean trajectory for every cluster and measure on the
+corresponding full time grid.
 }
 \examples{
 \dontrun{

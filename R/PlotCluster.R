@@ -1,17 +1,25 @@
-#' ClusterPlot
+#' Plot trajectories by assigned cluster
 #'
-#' @description
+#' Displays subject trajectories in a measure-by-cluster grid and overlays each
+#' fitted cluster centroid as a dashed curve.
 #'
-#'  plot ??
+#' @param CONNECTORDataClustered A [CONNECTORDataClustered-class] object.
+#' @param feature Optional single character string naming an annotation column
+#'   used to colour subject trajectories.
+#' @param feature_type How to interpret `feature`: `"auto"`, `"discrete"`, or
+#'   `"continuous"`. In automatic mode, factors and characters are discrete;
+#'   numeric variables with at most ten distinct values are also treated as
+#'   discrete.
 #'
-#' @param CONNECTORDataClustered Connector object created with ConnectorData
-#' @param feature dunno
-#' @param feature_type Character string specifying how to treat the feature: "auto" (default), "discrete", or "continuous"
+#' @return A faceted `ggplot` object.
 #'
-#' @return ...
+#' @examples
+#' \dontrun{
+#' ClusterPlot(clustered_data)
+#' ClusterPlot(clustered_data, feature = "group", feature_type = "discrete")
+#' }
 #'
-
-#' @seealso CONNECTORDataClustered ConfigSelection ClusterAnalysis
+#' @seealso [plot()], [getClusters()], [getClustersCentroids()]
 #'
 #' @importFrom magrittr %>%
 #' @import ggplot2
@@ -26,6 +34,7 @@ setGeneric("ClusterPlot", function(CONNECTORDataClustered,
   standardGeneric("ClusterPlot")
 })
 
+#' @rdname ClusterPlot
 setMethod(
   "ClusterPlot", signature(CONNECTORDataClustered = "CONNECTORDataClustered"),
   function(CONNECTORDataClustered,

@@ -1,13 +1,29 @@
-#' truncate
+#' Truncate longitudinal curves to a time interval
 #'
-#' @description
+#' Keeps observations within a user-defined time interval for selected measures.
+#' Subjects that have no retained observations in a selected measure are removed
+#' consistently from the other measures.
 #'
-#' Truncates the functional data (the time series) at a specific time point chosen by the user.
+#' @param data A [CONNECTORData-class] object.
+#' @param feature,labels Deprecated placeholders retained in the generic for
+#'   compatibility. They are not used by the `CONNECTORData` method.
+#' @param truncTime A numeric value or a numeric vector of length two. A single
+#'   value is interpreted as the upper bound, with the observed minimum time as
+#'   the lower bound. Two values define the lower and upper bounds. If `NULL`, no
+#'   temporal restriction is applied.
+#' @param measure Character vector naming the measures to truncate. `NULL`
+#'   applies the operation to all measures.
 #'
-#' @param data CONNECTORData. (see \code{\link{ConnectorData}})
-#' @param truncTime  A two dimension vector of integers corresponding to the time points where the curves will be truncated. If an integer number is passed, than it will be considered as the upper time point by default.
-#' @param measure Measure(s) on which to perform the Truncation. If NULL (default), all measures are truncated.
-#' @return  truncate returns a list containing the truncated data and the plot of the truncated curves.
+#' @return A new [CONNECTORData-class] object containing the retained
+#'   observations. A truncation summary is printed as a side effect.
+#'
+#' @examples
+#' \dontrun{
+#' early <- truncate(data, truncTime = 30)
+#' window <- truncate(data, truncTime = c(5, 30), measure = "marker")
+#' }
+#'
+#' @seealso [truncatePlot()], [filterData()]
 #'
 #' @import ggplot2 tibble dplyr tidyr
 #' @export
@@ -20,6 +36,7 @@ setGeneric("truncate", function(data,
   standardGeneric("truncate")
 })
 
+#' @rdname truncate
 setMethod(
   "truncate",
   signature("CONNECTORData"), function(data,

@@ -2,23 +2,38 @@
 % Please edit documentation in R/plotCluster.R
 \name{ClusterPlot}
 \alias{ClusterPlot}
-\title{ClusterPlot}
+\alias{ClusterPlot,CONNECTORDataClustered-method}
+\title{Plot trajectories by assigned cluster}
 \usage{
 ClusterPlot(CONNECTORDataClustered, feature = NULL, feature_type = "auto")
+
+\S4method{ClusterPlot}{CONNECTORDataClustered}(CONNECTORDataClustered, feature = NULL, feature_type = "auto")
 }
 \arguments{
-\item{CONNECTORDataClustered}{Connector object created with ConnectorData}
+\item{CONNECTORDataClustered}{A \linkS4class{CONNECTORDataClustered} object.}
 
-\item{feature}{dunno}
+\item{feature}{Optional single character string naming an annotation column
+used to colour subject trajectories.}
 
-\item{feature_type}{Character string specifying how to treat the feature: "auto" (default), "discrete", or "continuous"}
+\item{feature_type}{How to interpret \code{feature}: \code{"auto"}, \code{"discrete"}, or
+\code{"continuous"}. In automatic mode, factors and characters are discrete;
+numeric variables with at most ten distinct values are also treated as
+discrete.}
 }
 \value{
-...
+A faceted \code{ggplot} object.
 }
 \description{
-plot ??
+Displays subject trajectories in a measure-by-cluster grid and overlays each
+fitted cluster centroid as a dashed curve.
+}
+\examples{
+\dontrun{
+ClusterPlot(clustered_data)
+ClusterPlot(clustered_data, feature = "group", feature_type = "discrete")
+}
+
 }
 \seealso{
-CONNECTORDataClustered ConfigSelection ClusterAnalysis
+\code{\link[=plot]{plot()}}, \code{\link[=getClusters]{getClusters()}}, \code{\link[=getClustersCentroids]{getClustersCentroids()}}
 }

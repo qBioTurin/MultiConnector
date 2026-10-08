@@ -1,16 +1,13 @@
-#' IndexPlotExtrapolation
+#' Plot clustering-search indices
 #'
-#' @description
+#' Displays the distributions of total tightness, functional Davies--Bouldin,
+#' and silhouette indices across candidate partitions. Symbols mark the most
+#' frequent, minimum-fDB, and maximum-silhouette solutions.
 #'
-#'  Print fDB and TT violin plots with best and most frequent value
+#' @param results The list returned by [estimateCluster()].
+#' @return A faceted `ggplot` object.
 #'
-#' @param results ClusterAnalysis output
-#'
-#'
-#' @return fDB and TT violin plots with best and most frequent value
-#'
-
-#' @seealso ClusterAnalysis
+#' @seealso [estimateCluster()], [selectCluster()]
 #'
 #' @import gghalves ggplot2 MetBrewer
 #'

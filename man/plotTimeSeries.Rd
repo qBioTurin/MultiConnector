@@ -2,20 +2,35 @@
 % Please edit documentation in R/plotTimeSeries.R
 \name{PlotTimeSeries}
 \alias{PlotTimeSeries}
-\title{PlotTimeSeries}
+\alias{PlotTimeSeries,CONNECTORData-method}
+\title{Plot longitudinal measurements}
 \usage{
 PlotTimeSeries(data, feature = NULL, labels)
+
+\S4method{PlotTimeSeries}{CONNECTORData}(data, feature = NULL, labels)
 }
 \arguments{
-\item{data}{CONNECTORData. See CONNECTORData for details.}
+\item{data}{A \linkS4class{CONNECTORData} object.}
 
-\item{feature}{The column name reported in the AnnotationFile containing the feature to be investigated.}
+\item{feature}{Optional single character string naming an annotation column.}
 
-\item{labels}{The vector containing the text for the axis names and plot title.}
+\item{labels}{Optional character vector of length three containing the x-axis
+label, y-axis label, and plot title, in that order.}
 }
 \value{
-PlotTimeSeries returns a ggplot object.
+A \code{ggplot} object with free scales for each measure.
 }
 \description{
-the line plot of the time series data. The curves are colored with respect to the feature chosen by the user and/or reported in the AnnotationFile.
+Draws one trajectory per subject and facets the result by measure. Curves can
+optionally be coloured by a subject-level annotation.
+}
+\examples{
+\dontrun{
+PlotTimeSeries(data)
+PlotTimeSeries(data, feature = "group", labels = c("Time", "Value", "Profiles"))
+}
+
+}
+\seealso{
+\code{\link[=plot]{plot()}}, \code{\link[=plotTimes]{plotTimes()}}
 }

@@ -1,11 +1,22 @@
-#' @title CONNECTORDataClustered
-#' @description CONNECTORDataClustered is a class with the set choosen and with KData that is a list with all output of PRESETKMEANS that are necessary for call JUSTKMEANS and INTFCLUST
-#' @slot TTandfDBandSil Contains TT, fDB, Silhouette and G choosen
-#' @slot CfitandParameteres Contains values calculated during clusteranalysis
-#' @slot h h value choosen
-#' @slot freq frequency of the clusterization
-#' @slot cluster.names names of the clusters
-#' @slot KData contains: CData Contains timeseriefile datas, TimeGrids TimeGrids present in CONNECTORData, points Initial coefficent spline points, N subject number, S block diagonal matrix, FullS full block diagonal matrix
+#' Selected functional clustering model
+#'
+#' An S4 container for a clustering solution selected from the candidates fitted
+#' by [estimateCluster()]. Objects are created with [selectCluster()].
+#'
+#' @slot TTandfDBandSil A tibble containing the total tightness (`TT`),
+#'   functional Davies--Bouldin index (`fDB`), silhouette index (`Sil`), and
+#'   selected number of clusters (`G`).
+#' @slot CfitandParameters A list containing the fitted model parameters,
+#'   posterior probabilities, and predicted cluster assignments.
+#' @slot h Numeric projection dimension used by the fitted model.
+#' @slot freq Numeric frequency with which this partition occurred among the
+#'   random initialisations.
+#' @slot cluster.names Character vector used to label clusters.
+#' @slot KData A list of preprocessed inputs, including the long-format data
+#'   (`CData`), time grids, initial spline coefficients, number of subjects,
+#'   design matrix (`S`), and full spline bases (`FullS`).
+#'
+#' @seealso [estimateCluster()], [selectCluster()], [getClusters()], and [plot()].
 #' @export
 
 setClass(
@@ -21,13 +32,12 @@ setClass(
 )
 
 # Method to extract annotations for both classes
-#' @title getAnnotations
-#' @description Extract and display annotations from CONNECTORData or CONNECTORDataClustered object.
-#' Shows all available features (annotation columns) in both cases.
-#' @param object CONNECTORData or CONNECTORDataClustered object
-#' @return A vector of annotation names for CONNECTORData objects.
-#' @details
-#' This method provides the features available in the annotations of the provided object.
+#' List available annotation columns
+#'
+#' @param object A [CONNECTORData-class] or
+#'   [CONNECTORDataClustered-class] object.
+#' @return A character vector of annotation column names. For clustered objects,
+#'   identifier columns (`subjID` and `measureID`) are excluded.
 #' @examples
 #' \dontrun{
 #' # For CONNECTORData
@@ -42,6 +52,7 @@ setGeneric("getAnnotations", function(object) {
   standardGeneric("getAnnotations")
 })
 
+#' @rdname getAnnotations
 setMethod("getAnnotations", signature(object = "CONNECTORDataClustered"), function(object) {
   # Get annotations from KData
   annotations <- object@KData$annotations
@@ -50,6 +61,7 @@ setMethod("getAnnotations", signature(object = "CONNECTORDataClustered"), functi
   return(feature_cols)
 })
 
+#' @rdname getAnnotations
 setMethod("getAnnotations", signature(object = "CONNECTORData"), function(object) {
   # Get annotations directly from CONNECTORData object
   annotations <- names(object@annotations)
@@ -58,20 +70,28 @@ setMethod("getAnnotations", signature(object = "CONNECTORData"), function(object
 })
 
 # Method to extract measures
-#' @title getMeasures
-#' @description Extract and display measures from CONNECTORData or CONNECTORDataClustered object.
-#' @param object CONNECTORData or CONNECTORDataClustered object
-#' @return A vector of measure names.
+#' List measures in a MultiConnector object
+#'
+#' @param object A [CONNECTORData-class] or
+#'   [CONNECTORDataClustered-class] object.
+#' @return A character vector containing the measure names in time-grid order.
+#' @examples
+#' \dontrun{
+#' getMeasures(data)
+#' getMeasures(clustered_data)
+#' }
 #' @export
 setGeneric("getMeasures", function(object) {
   standardGeneric("getMeasures")
 })
 
+#' @rdname getMeasures
 setMethod("getMeasures", signature(object = "CONNECTORData"), function(object) {
   measures <- names(object@TimeGrids)
   return(measures)
 })
 
+#' @rdname getMeasures
 setMethod("getMeasures", signature(object = "CONNECTORDataClustered"), function(object) {
   measures <- names(object@KData$TimeGrids)
   return(measures)
@@ -79,13 +99,12 @@ setMethod("getMeasures", signature(object = "CONNECTORDataClustered"), function(
 
 
 # Method to extract annotations for both classes
-#' @title getClusters
-#' @description Extract and display clusters from  CONNECTORDataClustered object.
-#' Shows all available features (annotation columns) in both cases.
-#' @param object CONNECTORDataClustered object
-#' @return A dataframe with the cluster association for each subjID.
-#' @details
-#' This method provides the features available in the annotations of the provided object.
+#' Extract cluster assignments
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @return A data frame with one row per subject and columns `subjID` and
+#'   `cluster`. Cluster labels are returned as a factor using the names supplied
+#'   by [setClusterNames()].
 #' @examples
 #' \dontrun{
 #'
@@ -98,6 +117,7 @@ setGeneric("getClusters", function(object) {
   standardGeneric("getClusters")
 })
 
+#' @rdname getClusters
 setMethod("getClusters", signature(object = "CONNECTORDataClustered"), function(object) {
   # Get annotations from KData
   # Get predicted clusters
@@ -124,12 +144,12 @@ setMethod("getClusters", signature(object = "CONNECTORDataClustered"), function(
 
 
 # Method to set cluster names
-#' @title setClusterNames
-#' @description Set custom names for clusters in a CONNECTORDataClustered object.
-#' These names will be used in plots and dataframes.
-#' @param object CONNECTORDataClustered object
-#' @param names Character vector of cluster names. Length must match the number of clusters.
-#' @return Updated CONNECTORDataClustered object with cluster names set.
+#' Set cluster labels
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @param names A unique character vector with one label for each cluster, in
+#'   numeric cluster order.
+#' @return A copy of `object` with updated cluster labels.
 #' @details
 #' This method allows you to assign meaningful names to clusters instead of using
 #' numeric identifiers. The names are stored in the object and used by other methods
@@ -170,10 +190,11 @@ setMethod(
 
 
 # Method to get cluster names
-#' @title getClusterNames
-#' @description Get the custom names assigned to clusters in a CONNECTORDataClustered object.
-#' @param object CONNECTORDataClustered object
-#' @return Character vector of cluster names, or NULL if no names have been set.
+#' Get cluster labels
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @return A character vector with one label per cluster. Numeric labels are
+#'   generated when no custom names have been stored.
 #' @examples
 #' \dontrun{
 #' # Get cluster names
@@ -200,13 +221,13 @@ setMethod(
 
 
 # Method to extract Clusters Centroids
-#' @title getClustersCentroids
-#' @description Extract and display clusters centroids from  CONNECTORDataClustered object.
-#' Shows all available features (annotation columns) in both cases.
-#' @param object CONNECTORDataClustered object
-#' @return A dataframe with the cluster association for each subjID.
-#' @details
-#' This method provides the features available in the annotations of the provided object.
+#' Extract fitted cluster-centroid curves
+#'
+#' Computes the fitted mean trajectory for every cluster and measure on the
+#' corresponding full time grid.
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @return A data frame with columns `time`, `measureID`, `cluster`, and `value`.
 #' @examples
 #' \dontrun{
 #'
@@ -219,6 +240,7 @@ setGeneric("getClustersCentroids", function(object) {
   standardGeneric("getClustersCentroids")
 })
 
+#' @rdname getClustersCentroids
 setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), function(object) {
   TimeGrids <- object@KData$TimeGrids
   # Get number of features per measure
@@ -256,13 +278,21 @@ setMethod("getClustersCentroids", signature(object = "CONNECTORDataClustered"), 
 })
 
 
-#' @title clusterDistribution
-#' @description Generate a table showing the distribution of subjects across clusters
-#' based on one or more features
-#' @param object CONNECTORDataClustered object
-#' @param feature Feature name(s) to analyze - can be a single feature or vector of features (must be present in annotations)
-#' @param include_totals Include total row and column (default: TRUE)
-#' @return A contingency table showing feature values vs clusters with subject counts
+#' Tabulate annotation values across clusters
+#'
+#' Cross-tabulates one or more subject-level annotations against the selected
+#' cluster assignments. Rows with missing values in any requested feature are
+#' excluded.
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @param feature Character vector naming annotation columns to tabulate.
+#' @param include_percentages Logical placeholder retained for API
+#'   compatibility. The current implementation returns counts.
+#' @param include_totals Logical; if `TRUE`, append marginal totals.
+#' @return A data frame whose leading columns are the requested features,
+#'   followed by one count column per cluster and, when `include_totals = TRUE`,
+#'   a `Total` column. Metadata about missing and complete cases is stored as
+#'   attributes.
 #' @details
 #' This method creates a cross-tabulation showing how subjects with different
 #' feature values are distributed across clusters. Can handle multiple features
@@ -288,6 +318,7 @@ setGeneric("clusterDistribution", function(object, feature,
   standardGeneric("clusterDistribution")
 })
 
+#' @rdname clusterDistribution
 setMethod(
   "clusterDistribution", signature(object = "CONNECTORDataClustered"),
   function(object, feature,
@@ -393,10 +424,11 @@ setMethod(
 )
 
 # Method to get selected parameters
-#' @title getParameters
-#' @description Get the parameters (G, p, h) used for the clustering in a CONNECTORDataClustered object.
-#' @param object CONNECTORDataClustered object
-#' @return A list containing G, p, and h.
+#' Extract selected clustering dimensions
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @return A list with `G` (number of clusters), `p` (named number of spline
+#'   basis functions per measure), and `h` (projection dimension).
 #' @examples
 #' \dontrun{
 #' # Get parameters
@@ -428,10 +460,11 @@ setMethod(
 
 
 # Method to get membership probabilities
-#' @title getMembershipProbs
-#' @description Get the cluster membership probabilities for each subject.
-#' @param object CONNECTORDataClustered object
-#' @return A tibble with subjID and membership probabilities for each cluster.
+#' Extract posterior cluster-membership probabilities
+#'
+#' @param object A [CONNECTORDataClustered-class] object.
+#' @return A tibble with a `subjID` column followed by one probability column
+#'   per cluster. Probability columns use the current cluster labels.
 #' @examples
 #' \dontrun{
 #' # Get membership probabilities

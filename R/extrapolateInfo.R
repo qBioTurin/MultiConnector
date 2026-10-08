@@ -1,19 +1,16 @@
-#' SubjectInfo
+#' Inspect selected subjects in a clustering solution
 #'
-#'@description
+#' Returns cluster assignments and longitudinal observations for selected
+#' subjects, together with a plot that highlights their trajectories against the
+#' remaining data and the fitted cluster centroids.
 #'
-#'  Get detailed information about specific subjects including cluster assignments,
-#'  highlighted plot, and quality metrics
+#' @param CONNECTORDataClustered A [CONNECTORDataClustered-class] object.
+#' @param subjIDs Character vector of subject identifiers to inspect.
+#' @param colors Optional character vector of colours, one for each value of
+#'   `subjIDs`. Standard R colour names and hexadecimal values are accepted.
 #'
-#' @param CONNECTORDataClustered Connector object created with ConnectorData
-#' @param subjIDs The subject ID(s) to analyze - can be a single ID or vector of IDs
-#' @param colors Optional character vector of colors to use for each subject in the plot.
-#'   If provided, must have the same length as subjIDs. Colors can be specified as
-#'   color names (e.g., "red", "blue") or hex codes (e.g., "#FF0000").
-#'   If NULL (default), colors are automatically generated using rainbow palette.
-#'
-#' @return A list containing: cluster assignments, highlighted plot, quality metrics, and subject data
-#'
+#' @return A list with `cluster_assignments` (readable summary), `cluster_table`,
+#'   `highlighted_plot`, `quality_metrics`, `subjects_data`, and `n_subjects`.
 #' @examples
 #' \dontrun{
 #' # Single subject with default color
@@ -27,7 +24,7 @@
 #' SubjectInfo(clustered_data, c("subj1", "subj2"), 
 #'             colors = c("#E41A1C", "#377EB8"))
 #' }
-#' @seealso CONNECTORDataClustered ClusterPlot
+#' @seealso [ClusterPlot()], [getClusters()], [validateCluster()]
 #'
 #' @importFrom magrittr %>%
 #' @import ggplot2
@@ -42,6 +39,7 @@ setGeneric("SubjectInfo", function(CONNECTORDataClustered,
   standardGeneric("SubjectInfo")
 })
 
+#' @rdname SubjectInfo
 setMethod("SubjectInfo", signature(CONNECTORDataClustered = "CONNECTORDataClustered"),
           function(CONNECTORDataClustered,
                    subjIDs,

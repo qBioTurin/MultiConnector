@@ -2,22 +2,26 @@
 % Please edit documentation in R/CONNECTORDataClustered-class.R
 \name{getAnnotations}
 \alias{getAnnotations}
-\title{getAnnotations}
+\alias{getAnnotations,CONNECTORDataClustered-method}
+\alias{getAnnotations,CONNECTORData-method}
+\title{List available annotation columns}
 \usage{
 getAnnotations(object)
+
+\S4method{getAnnotations}{CONNECTORDataClustered}(object)
+
+\S4method{getAnnotations}{CONNECTORData}(object)
 }
 \arguments{
-\item{object}{CONNECTORData or CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORData} or
+\linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-A vector of annotation names for CONNECTORData objects.
+A character vector of annotation column names. For clustered objects,
+identifier columns (\code{subjID} and \code{measureID}) are excluded.
 }
 \description{
-Extract and display annotations from CONNECTORData or CONNECTORDataClustered object.
-Shows all available features (annotation columns) in both cases.
-}
-\details{
-This method provides the features available in the annotations of the provided object.
+List available annotation columns
 }
 \examples{
 \dontrun{

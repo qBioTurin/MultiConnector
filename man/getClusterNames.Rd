@@ -3,20 +3,21 @@
 \name{getClusterNames}
 \alias{getClusterNames}
 \alias{getClusterNames,CONNECTORDataClustered-method}
-\title{getClusterNames}
+\title{Get cluster labels}
 \usage{
 getClusterNames(object)
 
 \S4method{getClusterNames}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-Character vector of cluster names, or NULL if no names have been set.
+A character vector with one label per cluster. Numeric labels are
+generated when no custom names have been stored.
 }
 \description{
-Get the custom names assigned to clusters in a CONNECTORDataClustered object.
+Get cluster labels
 }
 \examples{
 \dontrun{

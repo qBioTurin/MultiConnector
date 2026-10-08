@@ -2,26 +2,29 @@
 % Please edit documentation in R/extrapolateInfo.R
 \name{SubjectInfo}
 \alias{SubjectInfo}
-\title{SubjectInfo}
+\alias{SubjectInfo,CONNECTORDataClustered-method}
+\title{Inspect selected subjects in a clustering solution}
 \usage{
 SubjectInfo(CONNECTORDataClustered, subjIDs, colors = NULL)
+
+\S4method{SubjectInfo}{CONNECTORDataClustered}(CONNECTORDataClustered, subjIDs, colors = NULL)
 }
 \arguments{
-\item{CONNECTORDataClustered}{Connector object created with ConnectorData}
+\item{CONNECTORDataClustered}{A \linkS4class{CONNECTORDataClustered} object.}
 
-\item{subjIDs}{The subject ID(s) to analyze - can be a single ID or vector of IDs}
+\item{subjIDs}{Character vector of subject identifiers to inspect.}
 
-\item{colors}{Optional character vector of colors to use for each subject in the plot.
-If provided, must have the same length as subjIDs. Colors can be specified as
-color names (e.g., "red", "blue") or hex codes (e.g., "#FF0000").
-If NULL (default), colors are automatically generated using rainbow palette.}
+\item{colors}{Optional character vector of colours, one for each value of
+\code{subjIDs}. Standard R colour names and hexadecimal values are accepted.}
 }
 \value{
-A list containing: cluster assignments, highlighted plot, quality metrics, and subject data
+A list with \code{cluster_assignments} (readable summary), \code{cluster_table},
+\code{highlighted_plot}, \code{quality_metrics}, \code{subjects_data}, and \code{n_subjects}.
 }
 \description{
-Get detailed information about specific subjects including cluster assignments,
-highlighted plot, and quality metrics
+Returns cluster assignments and longitudinal observations for selected
+subjects, together with a plot that highlights their trajectories against the
+remaining data and the fitted cluster centroids.
 }
 \examples{
 \dontrun{
@@ -38,5 +41,5 @@ SubjectInfo(clustered_data, c("subj1", "subj2"),
 }
 }
 \seealso{
-CONNECTORDataClustered ClusterPlot
+\code{\link[=ClusterPlot]{ClusterPlot()}}, \code{\link[=getClusters]{getClusters()}}, \code{\link[=validateCluster]{validateCluster()}}
 }

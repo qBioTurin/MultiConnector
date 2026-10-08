@@ -3,42 +3,29 @@
 \docType{class}
 \name{CONNECTORDataClassified-class}
 \alias{CONNECTORDataClassified-class}
-\title{ClassificationCurves}
-\arguments{
-\item{data}{CONNECTORData. See CONNECTORData for details.}
-
-\item{CONNECTORDataClustered}{Configuration choosen by ConfigSelection()}
-
-\item{cores}{number of cores used}
-
-\item{entropyCutoff}{...}
-
-\item{probCutoff}{...}
-}
-\value{
-...
-}
+\title{Classified longitudinal curves}
 \description{
-...
-
-Objects of this class hold the results of classifying new curves into existing clusters.
+Stores posterior cluster-membership probabilities and assignments obtained by
+applying a selected clustering model to new longitudinal curves. Objects are
+created by \code{\link[=ClassificationCurves]{ClassificationCurves()}}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{ClassMatrix}}{Data frame with classification probabilities for each subject.}
+\item{\code{ClassMatrix}}{A data frame with one row per new subject, a \code{subjID}
+column, and one posterior-probability column per cluster.}
 
-\item{\code{ClassMatrix_entropy}}{Data frame with classification results including entropy and certainty thresholds.}
+\item{\code{ClassMatrix_entropy}}{A data frame containing cluster probabilities,
+entropy, maximum posterior probability, and the final cluster label (or
+\code{"Unclassified"}) for every subject.}
 
-\item{\code{ClassificationData}}{The CONNECTORData object containing the new curves.}
+\item{\code{ClassificationData}}{The \linkS4class{CONNECTORData} object containing the new
+curves.}
 
-\item{\code{ClusteredData}}{The CONNECTORDataClustered model used for classification.}
+\item{\code{ClusteredData}}{The \linkS4class{CONNECTORDataClustered} model used for
+classification.}
 }}
 
 \seealso{
-CONNECTORDataClustered()
-
-CONNECTORDataClustered()
-
-CONNECTORDataClassified
+\code{\link[=ClassificationCurves]{ClassificationCurves()}} and \code{\link[=plot]{plot()}}.
 }

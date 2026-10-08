@@ -1,11 +1,22 @@
-#' @title filterData
+#' Remove subjects with insufficient longitudinal observations
 #'
-#' @description Filters the CONNECTORData object by removing subjects that have less than a certain number of points in at least one of their measurements.
+#' Removes a subject when any of its observed measures contains fewer than the
+#' requested number of time points. The resulting dimensions and time grids are
+#' rebuilt with [ConnectorData()].
 #'
-#' @param data CONNECTORData. (see \code{\link{ConnectorData}})
-#' @param minPoints Minimum number of points required for each measure. If a subject has fewer than this value in any of its measurements, it will be removed. Default is 3.
-#' @return Returns a new CONNECTORData object with the filtered subjects.
+#' @param data A [CONNECTORData-class] object.
+#' @param minPoints Positive integer giving the minimum number of observations
+#'   required for every subject-measure curve. Defaults to `3`.
 #'
+#' @return A [CONNECTORData-class] object containing the retained subjects. If
+#'   no subject is removed, the original object is returned.
+#'
+#' @examples
+#' \dontrun{
+#' filtered <- filterData(data, minPoints = 4)
+#' }
+#'
+#' @seealso [ConnectorData()], [truncate()]
 #' @import dplyr
 #' @export
 #' @rdname filterData

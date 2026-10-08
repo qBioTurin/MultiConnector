@@ -2,14 +2,18 @@
 % Please edit documentation in R/MaximumDiscriminationFunction.R
 \name{MaximumDiscriminationFunction}
 \alias{MaximumDiscriminationFunction}
-\title{Maximum Discrimination Function}
+\alias{MaximumDiscriminationFunction,CONNECTORDataClustered-method}
+\title{Plot maximum-discrimination functions}
 \usage{
 MaximumDiscriminationFunction(CONNECTORDataClustered, absvalue = TRUE)
+
+\S4method{MaximumDiscriminationFunction}{CONNECTORDataClustered}(CONNECTORDataClustered, absvalue = TRUE)
 }
 \arguments{
-\item{CONNECTORDataClustered}{The CONNECTORDataClustered object obtained from selectCluster function.}
+\item{CONNECTORDataClustered}{A \linkS4class{CONNECTORDataClustered} object.}
 
-\item{absvalue}{If TRUE, the absolute values of the weights are plotted.}
+\item{absvalue}{Logical; if \code{TRUE}, plot absolute weights. If \code{FALSE}, retain
+their signs.}
 }
 \value{
 MaximumDiscriminationFunction returns a list containing:
@@ -20,12 +24,23 @@ MaximumDiscriminationFunction returns a list containing:
 }
 }
 \description{
-Visualizes the h curve(s) representing the optimal weights to apply to each dimension for determining the cluster membership.
-The measures in the plots are ordered by the sum of the absolute areas under their respective discrimination curves,
-meaning the most influential measures from a clustering perspective appear first.
+Computes the time-dependent discriminant weights associated with the fitted
+projection directions. Measures are ordered by the total absolute area under
+their discriminant functions.
+}
+\examples{
+\dontrun{
+discrimination <- MaximumDiscriminationFunction(clustered_data)
+discrimination$DiscrFunctionsPlot
+discrimination$measure_areas
+}
+
 }
 \references{
 Gareth M. James and Catherine A. Sugar, (2003). Clustering for Sparsely Sampled Functional Data. Journal of the American Statistical Association.
+}
+\seealso{
+\code{\link[=DiscriminantPlot]{DiscriminantPlot()}}, \code{\link[=selectCluster]{selectCluster()}}
 }
 \author{
 Cordero Francesca, Pernice Simone, Sirovich Roberta

@@ -2,19 +2,21 @@
 % Please edit documentation in R/plotIndexClustering.R
 \name{IndexPlotExtrapolation}
 \alias{IndexPlotExtrapolation}
-\title{IndexPlotExtrapolation}
+\title{Plot clustering-search indices}
 \usage{
 IndexPlotExtrapolation(results)
 }
 \arguments{
-\item{results}{ClusterAnalysis output}
+\item{results}{The list returned by \code{\link[=estimateCluster]{estimateCluster()}}.}
 }
 \value{
-fDB and TT violin plots with best and most frequent value
+A faceted \code{ggplot} object.
 }
 \description{
-Print fDB and TT violin plots with best and most frequent value
+Displays the distributions of total tightness, functional Davies--Bouldin,
+and silhouette indices across candidate partitions. Symbols mark the most
+frequent, minimum-fDB, and maximum-silhouette solutions.
 }
 \seealso{
-ClusterAnalysis
+\code{\link[=estimateCluster]{estimateCluster()}}, \code{\link[=selectCluster]{selectCluster()}}
 }

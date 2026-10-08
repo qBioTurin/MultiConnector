@@ -1,42 +1,23 @@
-#' @title Select Optimal Cluster Configuration
+#' Select a fitted clustering solution
 #'
-#' @description
-#' Selects the best cluster configuration from clustering analysis results based on quality metrics.
-#' This function evaluates different clustering solutions using functional Data Depth (fDB) and
-#' Total Time (TT) metrics, providing visualization through violin plots to aid in selection.
-#' Users can choose between selecting the most frequent configuration or the one with minimum fDB.
+#' Selects one candidate partition from the output of [estimateCluster()] for a
+#' fixed number of clusters.
 #'
-#' @param results A list object returned by \code{estimateCluster()} containing multiple clustering
-#'   solutions with different parameters and random initializations.
-#' @param G Integer specifying the number of clusters to select. Must be one of the values
-#'   used in the original clustering analysis.
-#' @param best Character string specifying the selection criterion:
+#' @param results A list returned by [estimateCluster()].
+#' @param G A single integer number of clusters fitted in `results`.
+#' @param best Selection criterion:
 #'   \itemize{
-#'     \item \code{"MaxFreq"}: Select the most frequently occurring configuration across runs
-#'     \item \code{"MinfDB"}: Select the configuration with minimum functional Data Depth
+#'     \item `"MaxFreq"`: most frequent initial partition;
+#'     \item `"MinfDB"`: minimum functional Davies--Bouldin index;
+#'     \item `"MaxSilhouette"`: maximum mean silhouette width.
 #'   }
 #'
-#' @return A CONNECTORDataClustered object containing:
-#'   \itemize{
-#'     \item Selected cluster configuration and parameters
-#'     \item Cluster assignments for each curve
-#'     \item Quality metrics (silhouette, entropy, fDB, TT)
-#'     \item All necessary information for downstream analysis and visualization
-#'   }
+#' @return A [CONNECTORDataClustered-class] object containing the selected fit,
+#'   cluster assignments, quality metrics, labels, and preprocessed data.
 #'
 #' @details
-#' This function is a crucial step in the clustering workflow. It helps identify the most
-#' stable and high-quality clustering solution from multiple runs. The function displays
-#' violin plots showing the distribution of fDB and TT values across different runs,
-#' highlighting the selected configuration.
-#'
-#' \strong{Selection criteria:}
-#' \itemize{
-#'   \item \strong{MaxFreq}: Chooses the configuration that appears most often across runs,
-#'     indicating stability and reproducibility
-#'   \item \strong{MinfDB}: Chooses the configuration with the lowest functional Data Depth,
-#'     indicating the most compact and well-separated clusters
-#' }
+#' Candidate fits containing errors are excluded before selection. Ties are
+#' resolved deterministically by their metric ordering.
 #'
 #' @examples
 #' \dontrun{
@@ -60,6 +41,7 @@
 setGeneric("selectCluster", function(results, G, best) {
   standardGeneric("selectCluster")
 })
+#' @rdname selectCluster
 setMethod("selectCluster", signature(), function(results, G, best) {
   error_indices <- sapply(results$Clusterings, function(res) {
     is.list(res) && "Error" %in% names(res$TTandfDBandSil)

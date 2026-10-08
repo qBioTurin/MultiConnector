@@ -3,20 +3,21 @@
 \name{getParameters}
 \alias{getParameters}
 \alias{getParameters,CONNECTORDataClustered-method}
-\title{getParameters}
+\title{Extract selected clustering dimensions}
 \usage{
 getParameters(object)
 
 \S4method{getParameters}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-A list containing G, p, and h.
+A list with \code{G} (number of clusters), \code{p} (named number of spline
+basis functions per measure), and \code{h} (projection dimension).
 }
 \description{
-Get the parameters (G, p, h) used for the clustering in a CONNECTORDataClustered object.
+Extract selected clustering dimensions
 }
 \examples{
 \dontrun{

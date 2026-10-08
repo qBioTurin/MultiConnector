@@ -1,4 +1,4 @@
-#' @title Discriminant Analysis Plot
+#' Plot curves in discriminant space
 #'
 #' @description
 #' Creates discriminant analysis plots to visualize clustering results in reduced dimensional space.
@@ -6,7 +6,7 @@
 #' adapting the plotting approach based on the dimensionality of the data (1D, 2D, or 3D with PCA).
 #' For high-dimensional cases, PCA is applied to reduce dimensionality for visualization.
 #'
-#' @param CONNECTORDataClustered A CONNECTORDataClustered object created with \code{selectCluster()}.
+#' @param CONNECTORDataClustered A [CONNECTORDataClustered-class] object created with [selectCluster()].
 #'   This contains the clustered data along with cluster assignments and parameters.
 #' @param feature Optional character string specifying a feature from the annotations to use for 
 #'   coloring points. If NULL, points will be colored uniformly. Must match a column name 
@@ -17,7 +17,8 @@
 #'     \item \code{ColCluster}: Plot colored by cluster assignments
 #'     \item \code{ColFeature}: Plot colored by the specified feature (or uniform if feature=NULL)
 #'   }
-#'   For 3D cases, returns interactive plotly objects. For 1D and 2D cases, returns ggplot2 objects.
+#'   Depending on the fitted projection dimension, entries are `ggplot` objects
+#'   or interactive `plotly` objects.
 #'
 #' @details
 #' The function automatically determines the appropriate visualization based on data dimensionality:
@@ -58,6 +59,7 @@ setGeneric("DiscriminantPlot", function(CONNECTORDataClustered,
   standardGeneric("DiscriminantPlot")
 })
 
+#' @rdname DiscriminantPlot
 setMethod("DiscriminantPlot", signature(CONNECTORDataClustered = "CONNECTORDataClustered"),
           function(CONNECTORDataClustered, feature = NULL) {
             if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {

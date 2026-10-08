@@ -2,7 +2,8 @@
 % Please edit documentation in R/CONNECTORDataClustered-class.R
 \name{clusterDistribution}
 \alias{clusterDistribution}
-\title{clusterDistribution}
+\alias{clusterDistribution,CONNECTORDataClustered-method}
+\title{Tabulate annotation values across clusters}
 \usage{
 clusterDistribution(
   object,
@@ -10,20 +11,29 @@ clusterDistribution(
   include_percentages = FALSE,
   include_totals = TRUE
 )
+
+\S4method{clusterDistribution}{CONNECTORDataClustered}(object, feature, include_totals = TRUE)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 
-\item{feature}{Feature name(s) to analyze - can be a single feature or vector of features (must be present in annotations)}
+\item{feature}{Character vector naming annotation columns to tabulate.}
 
-\item{include_totals}{Include total row and column (default: TRUE)}
+\item{include_percentages}{Logical placeholder retained for API
+compatibility. The current implementation returns counts.}
+
+\item{include_totals}{Logical; if \code{TRUE}, append marginal totals.}
 }
 \value{
-A contingency table showing feature values vs clusters with subject counts
+A data frame whose leading columns are the requested features,
+followed by one count column per cluster and, when \code{include_totals = TRUE},
+a \code{Total} column. Metadata about missing and complete cases is stored as
+attributes.
 }
 \description{
-Generate a table showing the distribution of subjects across clusters
-based on one or more features
+Cross-tabulates one or more subject-level annotations against the selected
+cluster assignments. Rows with missing values in any requested feature are
+excluded.
 }
 \details{
 This method creates a cross-tabulation showing how subjects with different

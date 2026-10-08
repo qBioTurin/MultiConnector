@@ -1,12 +1,12 @@
-#' @title Maximum Discrimination Function
+#' Plot maximum-discrimination functions
 #'
-#' @description
-#' Visualizes the h curve(s) representing the optimal weights to apply to each dimension for determining the cluster membership.
-#' The measures in the plots are ordered by the sum of the absolute areas under their respective discrimination curves,
-#' meaning the most influential measures from a clustering perspective appear first.
+#' Computes the time-dependent discriminant weights associated with the fitted
+#' projection directions. Measures are ordered by the total absolute area under
+#' their discriminant functions.
 #'
-#' @param CONNECTORDataClustered The CONNECTORDataClustered object obtained from selectCluster function.
-#' @param absvalue If TRUE, the absolute values of the weights are plotted.
+#' @param CONNECTORDataClustered A [CONNECTORDataClustered-class] object.
+#' @param absvalue Logical; if `TRUE`, plot absolute weights. If `FALSE`, retain
+#'   their signs.
 #' @return
 #' MaximumDiscriminationFunction returns a list containing:
 #' \itemize{
@@ -14,6 +14,15 @@
 #'   \item \code{Separated}: A ggplot object showing separated discriminant functions, ordered by their total area (importance).
 #'   \item \code{measure_areas}: A data frame containing the calculated areas for each measure and function, representing their relative importance in clustering.
 #' }
+#'
+#' @examples
+#' \dontrun{
+#' discrimination <- MaximumDiscriminationFunction(clustered_data)
+#' discrimination$DiscrFunctionsPlot
+#' discrimination$measure_areas
+#' }
+#'
+#' @seealso [DiscriminantPlot()], [selectCluster()]
 #'
 #' @author Cordero Francesca, Pernice Simone, Sirovich Roberta
 #'
@@ -31,6 +40,7 @@ setGeneric("MaximumDiscriminationFunction", function(CONNECTORDataClustered, abs
   standardGeneric("MaximumDiscriminationFunction")
 })
 
+#' @rdname MaximumDiscriminationFunction
 setMethod("MaximumDiscriminationFunction", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered, absvalue = TRUE) {
   if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {
     stop("Input must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))

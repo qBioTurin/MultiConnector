@@ -2,20 +2,36 @@
 % Please edit documentation in R/plotTimes.R
 \name{plotTimes}
 \alias{plotTimes}
-\title{plotTimes}
+\alias{plotTimes,CONNECTORData-method}
+\title{Visualise observation-time coverage}
 \usage{
 plotTimes(data, large = FALSE, measureIDs = NULL)
+
+\S4method{plotTimes}{CONNECTORData}(data, large = FALSE, measureIDs = NULL)
 }
 \arguments{
-\item{data}{CONNECTORData. (see \code{\link{DataImport}})}
+\item{data}{A \linkS4class{CONNECTORData} object.}
 
-\item{large}{logical. If TRUE the function will return a plot that represent time grid density.}
+\item{large}{Logical. If \code{FALSE}, return the compact coverage summary. If
+\code{TRUE}, add the two-dimensional observation-time density plot.}
+
+\item{measureIDs}{Optional character vector of measures to include. \code{NULL}
+includes all measures.}
 }
 \value{
-Data Visualization returns a plot with the density time grid and the line plot of growth data as a ggplot object.
-In details, a point $p_{x,y}$ of the time grid density  is defined by a pair of coordinates $p_{x,y}=( x,y) \ $ and by a colour. $p_{x,y}$ is defined if only if exists at least one sample with two observations at time $x\ $ and $y$.
-The colour associates with it encodes the frequency of samples in which $p_{x,y}$ is present.
+A patchwork plot assembled from \code{ggplot} objects.
 }
 \description{
-creates a barplot of the time presences in various IDs or also a plot that represent time grid density.
+Summarises how many subject-measure curves are observed at each time. The
+detailed view also displays the frequency of pairs of observation times.
+}
+\examples{
+\dontrun{
+plotTimes(data)
+plotTimes(data, large = TRUE, measureIDs = "marker")
+}
+
+}
+\seealso{
+\code{\link[=plot]{plot()}}, \code{\link[=getMeasures]{getMeasures()}}
 }

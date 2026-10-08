@@ -2,27 +2,47 @@
 % Please edit documentation in R/estimatepDimension.R
 \name{estimatepDimension}
 \alias{estimatepDimension}
-\title{estimatepDimension}
+\alias{estimatepDimension,CONNECTORData-method}
+\title{Select spline dimensions by cross-validation}
 \usage{
 estimatepDimension(data, i = NULL, p, cores = 1)
+
+\S4method{estimatepDimension}{CONNECTORData}(data, i = NULL, p, cores = 1)
 }
 \arguments{
-\item{data}{CONNECTORData. See CONNECTORData for details.}
+\item{data}{A \linkS4class{CONNECTORData} object.}
 
-\item{i}{the measure name to be used for the analysis. For example, if i="measure1" the first measure of the data set will be used for the analysis. If i=c("measure1","measure2") the first and the second measures of the data set will be used for the analysis. Default value is NULL.}
+\item{i}{Optional character vector naming measures to analyse. \code{NULL} analyses
+every measure.}
 
-\item{p}{The vector of the dimensions of the natural cubic spline basis}
+\item{p}{Integer vector of candidate spline-basis dimensions.}
 
-\item{cores}{The number of Cores to be used for parallel computation. Maximum number is 10.}
+\item{cores}{Positive integer number of worker processes. At most ten workers
+are used.}
 }
 \value{
-Returns a list containing:
+A named list containing one patchwork diagnostic plot per analysed
+measure, plus:
 \itemize{
-\item For each measure: A patchwork object containing three plots: (1) Time series of the growth curves, (2) Spline basis knots distribution, and (3) Cross-validated loglikelihood values for each dimension $p$.
-\item \code{summary}: A matrix reporting the mean loglikelihood for each measure (rows) and each dimension $p$ (columns).
-\item \code{p_suggested}: A named vector indicating the suggested dimension $p$ for each measure.
+\item \code{summary}: a matrix of mean cross-validated log-likelihoods, with
+measures in rows and candidate dimensions in columns;
+\item \code{p_suggested}: the suggested dimension for each measure, selected
+near the maximum mean score.
 }
 }
 \description{
-Generates a line plot reporting the cross-validated loglikelihood value for each number of knots. In details, for each number of knots 10\% of the curves from the whole data are removed and treated as a test set, then the remaing curves are fitted using the FCM and the loglikelihood on the test set is calculated. The process is then repeated nine more times.
+Evaluates candidate natural-spline basis dimensions separately for each
+measure. Curves are split into at most ten folds; each fold is held out in
+turn and scored with the functional clustering-model log-likelihood.
+}
+\examples{
+\dontrun{
+dimension_search <- estimatepDimension(data, p = 2:6, cores = 2)
+dimension_search$summary
+dimension_search$p_suggested
+}
+
+}
+\seealso{
+\code{\link[=estimateCluster]{estimateCluster()}}, \code{\link[=ConnectorData]{ConnectorData()}}
 }

@@ -1,18 +1,29 @@
-#' @title splinePlot
+#' Plot subject-level spline fits
 #'
-#' @description plot splines
+#' Compares each observed trajectory with its fitted spline and assigned cluster
+#' mean, including the fitted-curve confidence band.
 #'
-#' @param CONNECTORDataClustered data created with selectCluster()
+#' @param CONNECTORDataClustered A [CONNECTORDataClustered-class] object created
+#'   by [selectCluster()].
 #'
-#' @return a plot of splines for each data
+#' @return A named list of patchwork plots, one per subject. Each plot contains
+#'   one panel for every available measure.
 #'
-
+#' @examples
+#' \dontrun{
+#' fits <- splinePlot(clustered_data)
+#' fits[[1]]
+#' }
+#'
+#' @seealso [ClusterPlot()], [getClustersCentroids()]
+#'
 #' @importFrom dplyr filter
 #' @import ggplot2 patchwork rlist
 #' @export
 #'
 setGeneric("splinePlot", function(CONNECTORDataClustered) standardGeneric("splinePlot"))
 
+#' @rdname splinePlot
 setMethod("splinePlot", signature(CONNECTORDataClustered = "CONNECTORDataClustered"), function(CONNECTORDataClustered) {
   if (!inherits(CONNECTORDataClustered, "CONNECTORDataClustered")) {
     stop("Input must be of class 'CONNECTORDataClustered'. Current class: ", class(CONNECTORDataClustered))

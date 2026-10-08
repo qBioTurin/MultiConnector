@@ -3,7 +3,7 @@
 \name{generateReport}
 \alias{generateReport}
 \alias{generateReport,ANY-method}
-\title{Generate Analysis Report}
+\title{Generate an HTML analysis report}
 \usage{
 generateReport(
   data = NULL,
@@ -30,31 +30,52 @@ generateReport(
 )
 }
 \arguments{
-\item{data}{CONNECTORData object (optional if clustered_data is provided)}
+\item{data}{Optional \linkS4class{CONNECTORData} object. It may be omitted when
+\code{clustered_data} is supplied.}
 
-\item{clustered_data}{CONNECTORDataClustered object (optional if data is provided, output from selectCluster)}
+\item{clustered_data}{Optional \linkS4class{CONNECTORDataClustered} object or list
+of such objects returned by \code{\link[=selectCluster]{selectCluster()}}.}
 
-\item{report_title}{Title for the report}
+\item{report_title}{Character string used as the report title.}
 
-\item{p_analysis}{List of dimension analysis plots (output from estimatepDimension)}
+\item{p_analysis}{Optional output from \code{\link[=estimatepDimension]{estimatepDimension()}}.}
 
-\item{G_analysis}{Cluster estimation results (output from estimateCluster)}
+\item{G_analysis}{Optional output from \code{\link[=estimateCluster]{estimateCluster()}}.}
 
-\item{features}{Vector of feature names to analyze (optional)}
+\item{features}{Optional character vector of annotation columns to summarise.}
 
-\item{include_spline}{Include spline plots for each subjID (default: FALSE)}
+\item{include_spline}{Logical; include the potentially large collection of
+subject-level plots from \code{\link[=splinePlot]{splinePlot()}}.}
 
-\item{save_list}{= T, whether to save the list of data passed as input for the report (default: TRUE)}
+\item{save_list}{Logical; if \code{TRUE}, save the assembled report and supplied
+analysis objects to an \code{.rds} file beside the HTML report.}
 
-\item{output_file}{Output file path for HTML report (optional)}
+\item{output_file}{Path for the generated HTML file. If \code{NULL}, a timestamped
+filename is generated in the working directory.}
 }
 \value{
-A comprehensive report containing all plots and analysis summaries
+Invisibly returns \code{NULL}. The function writes the HTML report and,
+when \code{save_list = TRUE}, an RDS file whose \code{report} element can be passed to
+\code{\link[=printReportSummary]{printReportSummary()}}.
 }
 \description{
-Generate a comprehensive analysis report including all base plots and analysis choices
-for both CONNECTORData and CONNECTORDataClustered objects
+Collects data summaries, diagnostic plots, clustering results, and optional
+annotation analyses in a self-contained HTML report.
+}
+\examples{
+\dontrun{
+generateReport(
+  data = data,
+  clustered_data = clustered_data,
+  features = "group",
+  output_file = "analysis.html"
+)
+
+saved <- readRDS("analysis.rds")
+printReportSummary(saved$report)
+}
+
 }
 \seealso{
-CONNECTORData CONNECTORDataClustered
+\code{\link[=estimatepDimension]{estimatepDimension()}}, \code{\link[=estimateCluster]{estimateCluster()}}, \code{\link[=selectCluster]{selectCluster()}}
 }

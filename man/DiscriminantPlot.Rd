@@ -2,12 +2,15 @@
 % Please edit documentation in R/plotDiscriminant.R
 \name{DiscriminantPlot}
 \alias{DiscriminantPlot}
-\title{Discriminant Analysis Plot}
+\alias{DiscriminantPlot,CONNECTORDataClustered-method}
+\title{Plot curves in discriminant space}
 \usage{
 DiscriminantPlot(CONNECTORDataClustered, feature = NULL)
+
+\S4method{DiscriminantPlot}{CONNECTORDataClustered}(CONNECTORDataClustered, feature = NULL)
 }
 \arguments{
-\item{CONNECTORDataClustered}{A CONNECTORDataClustered object created with \code{selectCluster()}.
+\item{CONNECTORDataClustered}{A \linkS4class{CONNECTORDataClustered} object created with \code{\link[=selectCluster]{selectCluster()}}.
 This contains the clustered data along with cluster assignments and parameters.}
 
 \item{feature}{Optional character string specifying a feature from the annotations to use for
@@ -20,7 +23,8 @@ A list containing ggplot2 or plotly objects:
 \item \code{ColCluster}: Plot colored by cluster assignments
 \item \code{ColFeature}: Plot colored by the specified feature (or uniform if feature=NULL)
 }
-For 3D cases, returns interactive plotly objects. For 1D and 2D cases, returns ggplot2 objects.
+Depending on the fitted projection dimension, entries are \code{ggplot} objects
+or interactive \code{plotly} objects.
 }
 \description{
 Creates discriminant analysis plots to visualize clustering results in reduced dimensional space.

@@ -3,23 +3,23 @@
 \name{setClusterNames}
 \alias{setClusterNames}
 \alias{setClusterNames,CONNECTORDataClustered-method}
-\title{setClusterNames}
+\title{Set cluster labels}
 \usage{
 setClusterNames(object, names)
 
 \S4method{setClusterNames}{CONNECTORDataClustered}(object, names)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 
-\item{names}{Character vector of cluster names. Length must match the number of clusters.}
+\item{names}{A unique character vector with one label for each cluster, in
+numeric cluster order.}
 }
 \value{
-Updated CONNECTORDataClustered object with cluster names set.
+A copy of \code{object} with updated cluster labels.
 }
 \description{
-Set custom names for clusters in a CONNECTORDataClustered object.
-These names will be used in plots and dataframes.
+Set cluster labels
 }
 \details{
 This method allows you to assign meaningful names to clusters instead of using

@@ -2,20 +2,43 @@
 % Please edit documentation in R/truncate.R
 \name{truncate}
 \alias{truncate}
-\title{truncate}
+\alias{truncate,CONNECTORData-method}
+\title{Truncate longitudinal curves to a time interval}
 \usage{
 truncate(data, feature = NULL, truncTime = NULL, labels = NULL, measure = NULL)
+
+\S4method{truncate}{CONNECTORData}(data, truncTime = NULL, measure = NULL)
 }
 \arguments{
-\item{data}{CONNECTORData. (see \code{\link{ConnectorData}})}
+\item{data}{A \linkS4class{CONNECTORData} object.}
 
-\item{truncTime}{A two dimension vector of integers corresponding to the time points where the curves will be truncated. If an integer number is passed, than it will be considered as the upper time point by default.}
+\item{feature, labels}{Deprecated placeholders retained in the generic for
+compatibility. They are not used by the \code{CONNECTORData} method.}
 
-\item{measure}{Measure(s) on which to perform the Truncation. If NULL (default), all measures are truncated.}
+\item{truncTime}{A numeric value or a numeric vector of length two. A single
+value is interpreted as the upper bound, with the observed minimum time as
+the lower bound. Two values define the lower and upper bounds. If \code{NULL}, no
+temporal restriction is applied.}
+
+\item{measure}{Character vector naming the measures to truncate. \code{NULL}
+applies the operation to all measures.}
 }
 \value{
-truncate returns a list containing the truncated data and the plot of the truncated curves.
+A new \linkS4class{CONNECTORData} object containing the retained
+observations. A truncation summary is printed as a side effect.
 }
 \description{
-Truncates the functional data (the time series) at a specific time point chosen by the user.
+Keeps observations within a user-defined time interval for selected measures.
+Subjects that have no retained observations in a selected measure are removed
+consistently from the other measures.
+}
+\examples{
+\dontrun{
+early <- truncate(data, truncTime = 30)
+window <- truncate(data, truncTime = c(5, 30), measure = "marker")
+}
+
+}
+\seealso{
+\code{\link[=truncatePlot]{truncatePlot()}}, \code{\link[=filterData]{filterData()}}
 }

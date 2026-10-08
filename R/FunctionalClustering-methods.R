@@ -1,15 +1,13 @@
-#' presetKmeans
+#' Prepare longitudinal data for functional clustering
 #'
-#' @description
+#' @param CData Long-format longitudinal data from a `CONNECTORData` object.
+#' @param natural Logical; use natural cubic splines when `TRUE` and B-splines
+#'   otherwise.
+#' @param q Named integer vector of spline-basis dimensions by measure.
+#' @param pert Positive ridge perturbation for the initial coefficient fits.
 #'
-#'  presets data for the kmeans
-#'
-#' @param CData data
-#' @param natural ...
-#' @param q ...
-#' @param pert perturbation
-#'
-#' @return a list with all necessary data
+#' @return A list containing ordered data, time grids, initial spline
+#'   coefficients, subject count, design matrix, and full spline bases.
 #'
 #' @keywords internal
 #' @noRd
@@ -149,16 +147,12 @@
 }
 
 
-#' justKmeans
+#' Initialise clusters with k-means
 #'
-#' @description
+#' @param CLUSTData Preprocessed output from `presetKmeans()`.
+#' @param K Positive integer number of clusters.
 #'
-#'  uses kmeans
-#'
-#' @param CLUSTData data
-#' @param k number of clusters
-#'
-#' @return results of kmeans
+#' @return Integer vector of initial cluster assignments.
 #'
 #' @keywords internal
 #' @noRd
@@ -180,6 +174,12 @@
 }
 
 
+#' Group equivalent cluster assignments
+#'
+#' @param vector_list List of integer cluster-assignment vectors.
+#' @return A list with canonical assignment `patterns` and their `counts`.
+#' @keywords internal
+#' @noRd
 "kmeansGroup" <- function(vector_list) {
   unic_vectors <- list()
   count <- numeric()
@@ -213,25 +213,22 @@
 }
 
 
-#' intfclust
+#' Fit one functional clustering model
 #'
-#' @description
+#' @param q Named spline-basis dimensions by measure.
+#' @param h Projection dimension.
+#' @param pert Initial ridge perturbation retained for compatibility.
+#' @param K Number of clusters.
+#' @param class Initial subject-level cluster assignments.
+#' @param CLUSTData Preprocessed output from `presetKmeans()`.
+#' @param pert1 Ridge perturbation used in M-step linear solves.
+#' @param tol Relative convergence tolerance for the measure-specific variances.
+#' @param maxit Maximum number of EM iterations.
+#' @param hard Logical; use hard rather than posterior-weighted assignments.
+#' @param pert2 Ridge perturbation used when estimating projected scores.
 #'
-#'  ...
-#'
-#' @param q ...
-#' @param h ...
-#' @param pert ...
-#' @param K ...
-#' @param class ...
-#' @param CLUSTData ...
-#' @param pert1 ...
-#' @param tol ...
-#' @param maxit ...
-#' @param hard .....
-#' @param pert2 ...
-#'
-#' @return ...
+#' @return A list containing constrained fitted parameters (`cfit`) and
+#'   subject-level predictions (`pred`).
 #'
 
 #' @keywords internal
@@ -372,11 +369,11 @@
 #' @description
 #' Internal E-step for functional clustering.
 #'
-#' @param par Parameters
-#' @param curve_ok Data
-#' @param vars Variables
-#' @param S Spline basis
-#' @param hard Hard clustering flag
+#' @param par Current model parameters.
+#' @param curve_ok Ordered long-format observations.
+#' @param vars Current latent-variable moments and posterior probabilities.
+#' @param S Block design matrix.
+#' @param hard Logical; replace posterior probabilities by hard assignments.
 #'
 #' @return Updated variables.
 #'
@@ -452,15 +449,15 @@
 #' @description
 #' Internal M-step for functional clustering.
 #'
-#' @param parameters Parameters
-#' @param curve_ok Data
-#' @param S Spline basis
-#' @param vars Variables
-#' @param hard Hard clustering flag
-#' @param p_measures Vector of the number of spline basis functions for each measure
-#' @param p Rank
-#' @param pert1 Perturbation
-#' @param tol Tolerance
+#' @param parameters Current model parameters.
+#' @param curve_ok Ordered long-format observations.
+#' @param S Block design matrix.
+#' @param vars Current latent-variable moments and posterior probabilities.
+#' @param p_measures Named spline-basis dimensions by measure.
+#' @param hard Logical hard-clustering flag.
+#' @param p Rank retained in the random-effect covariance estimate.
+#' @param pert1 Ridge perturbation used in linear solves.
+#' @param tol Relative convergence tolerance.
 #'
 #' @return Updated parameters.
 #'
@@ -638,6 +635,16 @@
   return(parameters)
 }
 
+#' Memory-efficient M-step for functional clustering
+#'
+#' Implements the same parameter update as `fclustMstep()` while computing the
+#' random-effect contribution to each measure-specific variance by subject,
+#' avoiding large temporary block matrices.
+#'
+#' @inheritParams fclustMstep
+#' @return Updated model parameters, including a named variance vector `sigma`.
+#' @keywords internal
+#' @noRd
 "fclustMstepNEW" <- function(parameters,
                           curve_ok,
                           S,
@@ -802,9 +809,10 @@
 #' @description
 #' Enforces constraints on functional clustering parameters.
 #'
-#' @param parameters Parameters
-#' @param vars Variables
-#' @param S Spline basis
+#' @param parameters Fitted model parameters.
+#' @param vars Final latent-variable moments and posterior probabilities.
+#' @param S Block design matrix.
+#' @param measureID Measure associated with each row of `S`.
 #'
 #' @return List with updated parameters and variables.
 #'
@@ -845,18 +853,17 @@
 }
 
 
-#' fclust_pred
+#' Predict clusters from a fitted functional model
 #'
-#' @description
+#' @param fit Constrained fit returned by `fclustconst()`.
+#' @param data Preprocessed clustering data.
+#' @param reweight Logical; include fitted mixing proportions in posterior
+#'   classification probabilities.
+#' @param pert2 Ridge perturbation for inversion of the projected-score metric.
 #'
-#'  ...
-#'
-#' @param fit ...
-#' @param data ....
-#' @param rewight ...
-#' @param pert2 ...
-#'
-#' @return ...
+#' @return A list containing score covariance matrices, estimated scores,
+#'   predicted classes, distances, maximum probabilities, and full posterior
+#'   probabilities.
 #'
 
 #' @keywords internal
@@ -943,15 +950,11 @@
   return(pred)
 }
 
-#' nummax
+#' Row-wise maxima and their positions
 #'
-#' @description
+#' @param X Numeric matrix.
 #'
-#'  ...
-#'
-#' @param X
-#'
-#' @return ...
+#' @return A list with the index (`ind`) and value (`max`) of each row maximum.
 #'
 
 #' @keywords internal
@@ -969,19 +972,16 @@
   }
   list(ind = ind, max = m)
 }
-#' fclust.curvepred
+#' Predict fitted curves and uncertainty bands
 #'
-#' @description
+#' @param data Fit returned by `intfclust()`.
+#' @param tau Overall coverage level used to derive prediction quantiles.
+#' @param tau1 Posterior mass retained when combining likely clusters.
+#' @param q Named spline-basis dimensions by measure.
+#' @param KData Preprocessed clustering data.
 #'
-#'  ...
-#'
-#' @param data ...
-#' @param tau ...
-#' @param tau1 ...
-#' @param q ...
-#' @param KData ...
-#'
-#' @return ...
+#' @return A named list by measure containing fitted subject curves, confidence
+#'   and prediction bounds, and fitted cluster mean curves.
 #'
 
 #' @keywords internal

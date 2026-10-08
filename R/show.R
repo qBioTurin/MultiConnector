@@ -1,9 +1,18 @@
-#' @title show
-#' @description show method for MultiConnector objects.
-#' @param object The object to display.
+#' Display a MultiConnector object
+#'
+#' Prints a compact summary for raw longitudinal data and classified objects. For
+#' an [estimateCluster()] result, returns a table containing the best solutions
+#' under each selection criterion.
+#'
+#' @param object A MultiConnector object or an [estimateCluster()] result.
+#' @return For [CONNECTORData-class] and [CONNECTORDataClassified-class] objects,
+#'   invisibly returns `NULL` after printing. For a clustering-search list,
+#'   returns a data frame containing the maximum-frequency, minimum-fDB, and
+#'   maximum-silhouette solutions for each `G`.
 #' @importFrom methods show
 #' @name show
 #' @rdname show
+#' @aliases show,CONNECTORData-method
 #' @export
 setMethod("show", signature(object = "CONNECTORData"), function(object) {
   cat("CONNECTORData object with:\n")

@@ -3,20 +3,21 @@
 \name{getMembershipProbs}
 \alias{getMembershipProbs}
 \alias{getMembershipProbs,CONNECTORDataClustered-method}
-\title{getMembershipProbs}
+\title{Extract posterior cluster-membership probabilities}
 \usage{
 getMembershipProbs(object)
 
 \S4method{getMembershipProbs}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-A tibble with subjID and membership probabilities for each cluster.
+A tibble with a \code{subjID} column followed by one probability column
+per cluster. Probability columns use the current cluster labels.
 }
 \description{
-Get the cluster membership probabilities for each subject.
+Extract posterior cluster-membership probabilities
 }
 \examples{
 \dontrun{

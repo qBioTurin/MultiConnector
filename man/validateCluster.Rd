@@ -2,40 +2,30 @@
 % Please edit documentation in R/validateCluster.R
 \name{validateCluster}
 \alias{validateCluster}
-\title{Validate Cluster Quality}
+\alias{validateCluster,CONNECTORDataClustered-method}
+\title{Validate cluster assignments}
 \usage{
 validateCluster(CONNECTORDataClustered)
+
+\S4method{validateCluster}{CONNECTORDataClustered}(CONNECTORDataClustered)
 }
 \arguments{
-\item{CONNECTORDataClustered}{A CONNECTORDataClustered object created with \code{selectCluster()}.
-This should contain the final selected clustering configuration with cluster assignments
-and membership probabilities.}
+\item{CONNECTORDataClustered}{A \linkS4class{CONNECTORDataClustered} object created
+by \code{\link[=selectCluster]{selectCluster()}}.}
 }
 \value{
-A list containing validation results:
+A list containing:
 \itemize{
-\item \code{plot}: A combined ggplot2 visualization showing silhouette scores and entropy
-distributions across clusters
-\item \code{entropy_silhouette_table}: A data frame with per-curve quality metrics containing:
-\itemize{
-\item \code{curvesID}: Curve identifier
-\item \code{Cluster}: Assigned cluster (uses custom names if set via setClusterNames)
-\item \code{Silhouette}: Silhouette score for the curve (-1 to 1, higher is better)
-\item \code{Entropy}: Entropy measure (lower indicates more confident assignment)
-}
-\item \code{assignmentProbs}: A data frame with cluster assignment probabilities containing:
-\itemize{
-\item \code{curvesID}: Curve identifier
-\item \code{AssignedCluster}: The cluster the curve was assigned to
-\item One column per cluster with membership probabilities (column names use custom cluster names if set)
-}
+\item \code{plot}: a patchwork containing silhouette and entropy plots;
+\item \code{entropy_silhouette_table}: one row per subject with \code{subjID},
+\code{Cluster}, \code{Silhouette}, and \code{Entropy};
+\item \code{assignmentProbs}: one row per subject with \code{subjID},
+\code{AssignedCluster}, and one posterior-probability column per cluster.
 }
 }
 \description{
-Validates the quality of clustering results by calculating and visualizing key clustering metrics.
-This function computes silhouette scores and entropy measures to assess cluster
-separation. The results are presented both as numerical summaries and
-comprehensive visualizations to help users evaluate clustering quality.
+Computes subject-level silhouette widths and entropy of posterior membership
+probabilities for a selected clustering solution.
 }
 \details{
 This function provides comprehensive cluster validation through multiple metrics:
@@ -54,8 +44,9 @@ This function provides comprehensive cluster validation through multiple metrics
 \item Helps identify curves with ambiguous cluster membership
 }
 
-The visualization includes boxplots, density plots, and summary statistics to provide
-a comprehensive view of clustering quality.
+Silhouette values range from -1 to 1, with larger values indicating better
+separation. Entropy is computed in bits; lower values indicate more certain
+posterior assignments. Singleton clusters receive silhouette value zero.
 }
 \examples{
 \dontrun{

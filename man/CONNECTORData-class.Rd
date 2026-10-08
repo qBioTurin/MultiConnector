@@ -3,19 +3,28 @@
 \docType{class}
 \name{CONNECTORData-class}
 \alias{CONNECTORData-class}
-\title{CONNECTORData}
+\title{Functional longitudinal data}
 \description{
-CONNECTORData is a S4 objectwith four arguments: (i) curves: tibble with n columns (i.e. ID, time and n-2 columns of records) encoding the growth data for each sample, (ii) length: the tibble reporting the number of observations collected per sample  (iii) annotation: the tibble matching the samples with their annotations, (iv) TimeGrid: the vector storing all the sample time points (i.e. time grid). Furthermore, it prints a brief summary of the input data, i.e. the total number of curves (samples), the minimum and the maximum curve length.
+An S4 container for longitudinal observations and subject-level annotations.
+Objects are normally created with \code{\link[=ConnectorData]{ConnectorData()}} rather than with \code{new()}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{curves}}{tibble with n columns (i.e. ID, time and n-2 columns of records) encoding the growth data for each sample}
+\item{\code{curves}}{A tibble in long format with columns \code{subjID}, \code{measureID},
+\code{time}, \code{curvesID}, and \code{value}. Each row is one observation.}
 
-\item{\code{dimensions}}{the tibble reporting the number of observations collected per sample}
+\item{\code{dimensions}}{A tibble containing the number of observations for each
+subject-measure curve.}
 
-\item{\code{annotations}}{the tibble matching the samples with their annotations}
+\item{\code{annotations}}{A tibble of subject-level annotations. It must contain a
+\code{subjID} column.}
 
-\item{\code{TimeGrids}}{the vector storing all the sample time points (i.e. time grid)}
+\item{\code{TimeGrids}}{A named list. Each element contains the sorted unique time
+points observed for one measure.}
 }}
 
+\seealso{
+\code{\link[=ConnectorData]{ConnectorData()}} to construct an object, \code{\link[=filterData]{filterData()}} and
+\code{\link[=truncate]{truncate()}} to transform it, and \code{\link[=plot]{plot()}} to visualise it.
+}

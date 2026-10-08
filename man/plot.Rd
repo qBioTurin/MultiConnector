@@ -6,7 +6,7 @@
 \alias{plot,CONNECTORDataClustered-method}
 \alias{plot,list-method}
 \alias{plot,CONNECTORDataClassified-method}
-\title{Intelligent Plot Dispatch for MultiConnector Objects}
+\title{Plot MultiConnector objects}
 \usage{
 plot(x, ...)
 
@@ -19,46 +19,26 @@ plot(x, ...)
 \S4method{plot}{CONNECTORDataClassified}(x, subjID = NULL, ...)
 }
 \arguments{
-\item{...}{Additional arguments passed to the specific plotting functions:
-\itemize{
-\item \code{feature}: Feature name for coloring (used in all plot types)
-\item \code{labels}: Custom labels for the plots
-\item \code{measurementColName}: Specific measurement to plot (for time series)
-\item Other plot-specific parameters
-}}
+\item{x}{A \linkS4class{CONNECTORData}, \linkS4class{CONNECTORDataClustered},
+\linkS4class{CONNECTORDataClassified}, or the list returned by
+\code{\link[=estimateCluster]{estimateCluster()}}.}
 
-\item{data}{Either a CONNECTORData object (for raw time series visualization) or
-a CONNECTORDataClustered object (for cluster visualization), or a list object
-(for clustering quality metrics visualization).}
+\item{...}{Additional arguments for the selected method. Raw-data plots accept
+\code{feature} and \code{labels}; clustered plots accept \code{feature};
+classified-data plots accept \code{subjID}.}
+
+\item{subjID}{Optional character vector of subjects to highlight when \code{x} is a
+\linkS4class{CONNECTORDataClassified} object. \code{NULL} plots every classified
+subject.}
 }
 \value{
-The appropriate plot object based on input type:
-\itemize{
-\item For CONNECTORData: ggplot2 time series plots via \code{\link{PlotTimeSeries}}
-\item For CONNECTORDataClustered: ggplot2 cluster plots via \code{\link{PlotCluster}}
-\item For list objects: ggplot2 quality metrics plots via \code{\link{IndexPlotExtrapolation}}
-\item For CONNECTORDataClassified: ggplot2 classification plots (overview or specific subjects)  \code{\link{ClassificationCurves}}
-}
+A \code{ggplot} or patchwork object. The exact plot depends on the class of
+\code{x}. If a requested classified subject does not exist, the method warns and
+returns \code{NULL}.
 }
 \description{
-Provides a unified plotting interface that automatically selects the appropriate
-visualization based on the input object type. This function serves as the main
-entry point for visualizing data and clustering results in the MultiConnector package,
-dispatching to specialized plotting functions based on object class.
-}
-\details{
-This function implements intelligent method dispatch to provide a consistent interface
-for visualization across different stages of the analysis workflow:
-
-\strong{Workflow Integration:}
-\itemize{
-\item \strong{Data Exploration}: \code{plot(data)} shows raw time series
-\item \strong{Cluster Visualization}: \code{plot(clustered_data)} shows cluster results
-\item \strong{Quality Assessment}: \code{plot(cluster_metrics)} shows validation plots
-}
-
-The function automatically determines the most appropriate visualization while
-maintaining a simple, consistent user interface throughout the analysis pipeline.
+Provides a common plotting interface for raw data, selected clustering models,
+clustering searches, and classified curves.
 }
 \examples{
 \dontrun{
@@ -71,13 +51,12 @@ plot(my_clustered_data, feature = "gender")
 # Plot clustering quality metrics
 plot(clustering_results)
 
-# With custom parameters
-plot(my_data, feature = "age", measurementColName = "biomarker1")
+# Plot selected classified subjects
+plot(classified_data, subjID = c("S1", "S2"))
 }
 
 }
 \seealso{
-\code{\link{PlotTimeSeries}} for time series visualization,
-\code{\link{PlotCluster}} for cluster visualization,
-\code{\link{IndexPlotExtrapolation}} for quality metrics
+\code{\link[=PlotTimeSeries]{PlotTimeSeries()}}, \code{\link[=ClusterPlot]{ClusterPlot()}}, \code{\link[=DiscriminantPlot]{DiscriminantPlot()}},
+\code{\link[=validateCluster]{validateCluster()}}
 }

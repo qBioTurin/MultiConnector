@@ -3,23 +3,33 @@
 \docType{class}
 \name{CONNECTORDataClustered-class}
 \alias{CONNECTORDataClustered-class}
-\title{CONNECTORDataClustered}
+\title{Selected functional clustering model}
 \description{
-CONNECTORDataClustered is a class with the set choosen and with KData that is a list with all output of PRESETKMEANS that are necessary for call JUSTKMEANS and INTFCLUST
+An S4 container for a clustering solution selected from the candidates fitted
+by \code{\link[=estimateCluster]{estimateCluster()}}. Objects are created with \code{\link[=selectCluster]{selectCluster()}}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{TTandfDBandSil}}{Contains TT, fDB, Silhouette and G choosen}
+\item{\code{TTandfDBandSil}}{A tibble containing the total tightness (\code{TT}),
+functional Davies--Bouldin index (\code{fDB}), silhouette index (\code{Sil}), and
+selected number of clusters (\code{G}).}
 
-\item{\code{CfitandParameteres}}{Contains values calculated during clusteranalysis}
+\item{\code{CfitandParameters}}{A list containing the fitted model parameters,
+posterior probabilities, and predicted cluster assignments.}
 
-\item{\code{h}}{h value choosen}
+\item{\code{h}}{Numeric projection dimension used by the fitted model.}
 
-\item{\code{freq}}{frequency of the clusterization}
+\item{\code{freq}}{Numeric frequency with which this partition occurred among the
+random initialisations.}
 
-\item{\code{cluster.names}}{names of the clusters}
+\item{\code{cluster.names}}{Character vector used to label clusters.}
 
-\item{\code{KData}}{contains: CData Contains timeseriefile datas, TimeGrids TimeGrids present in CONNECTORData, points Initial coefficent spline points, N subject number, S block diagonal matrix, FullS full block diagonal matrix}
+\item{\code{KData}}{A list of preprocessed inputs, including the long-format data
+(\code{CData}), time grids, initial spline coefficients, number of subjects,
+design matrix (\code{S}), and full spline bases (\code{FullS}).}
 }}
 
+\seealso{
+\code{\link[=estimateCluster]{estimateCluster()}}, \code{\link[=selectCluster]{selectCluster()}}, \code{\link[=getClusters]{getClusters()}}, and \code{\link[=plot]{plot()}}.
+}

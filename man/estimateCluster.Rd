@@ -2,7 +2,8 @@
 % Please edit documentation in R/estimateCluster.R
 \name{estimateCluster}
 \alias{estimateCluster}
-\title{Estimate Clustering Parameters and Solutions}
+\alias{estimateCluster,CONNECTORData-method}
+\title{Fit functional clustering solutions}
 \usage{
 estimateCluster(
   CONNECTORData,
@@ -16,57 +17,62 @@ estimateCluster(
   MinErrFreq = 0,
   pert = 0.01
 )
+
+\S4method{estimateCluster}{CONNECTORData}(
+  CONNECTORData,
+  G,
+  p,
+  h = NULL,
+  runs = 50,
+  seed = 2404,
+  cores = 1,
+  PercPCA = 0.85,
+  MinErrFreq = 0,
+  pert = 0.01
+)
 }
 \arguments{
-\item{CONNECTORData}{A CONNECTORData object created with \code{\link{ConnectorData}}.
-Contains the time series data, annotations, and time grids to be clustered.}
+\item{CONNECTORData}{A \linkS4class{CONNECTORData} object.}
 
-\item{G}{Integer vector specifying the range of cluster numbers to evaluate (e.g., 2:6).
-The algorithm will test each specified number of clusters.}
+\item{G}{Integer vector containing the numbers of clusters to fit.}
 
-\item{p}{Named vector or single integer specifying the dimension of the natural cubic
-spline basis for each measurement type. Higher values capture more complex curve shapes
-but may lead to overfitting. See \code{\link{estimatepDimension}} for guidance.
+\item{p}{Named integer vector specifying the natural-spline basis dimension
+for each measure, or one integer to use for every measure. See
+\code{\link[=estimatepDimension]{estimatepDimension()}} for guidance.
 If a single integer is supplied it is recycled for all measures with a warning.
 If a vector is supplied, its length must equal the number of measures; otherwise
 an error is raised.}
 
-\item{h}{Projection dimension parameter. Must be ≤ min(p, G-1) for identifiability.
-Lower values provide simpler representations but may lose important curve features.}
+\item{h}{Optional positive integer projection dimension. If \code{NULL}, it is
+selected automatically from \code{G} and \code{p}; failed fits are retried with a
+smaller dimension.}
 
-\item{runs}{Integer specifying the number of random initializations for each parameter
-combination. More runs improve stability but increase computation time. Default: 50.}
+\item{runs}{Positive integer giving the number of k-means initialisations for
+each value of \code{G}.}
 
-\item{seed}{Integer seed for reproducible results. Ensures consistent random initializations
-across runs.}
+\item{seed}{Integer random seed, or \code{NULL} to use the current random-number
+state.}
 
-\item{cores}{Integer specifying the number of CPU cores for parallel computation.
-Speeds up analysis for large datasets or many parameter combinations.}
+\item{cores}{Positive integer number of worker processes used to fit distinct
+candidate partitions. Small searches can be faster with \code{cores = 1}.}
 
-\item{PercPCA}{Numeric (0-1) specifying the minimum percentage of variance to retain
-in PCA preprocessing. Default: 0.85 (85\% of variance retained).}
-
-\item{MinErrFreq}{Minimum error frequency threshold for stability assessment.}
-
-\item{pert}{Perturbation parameter for numerical stability in optimization.}
+\item{PercPCA, MinErrFreq, pert}{Reserved arguments retained for backward
+compatibility; they are not currently used.}
 }
 \value{
-A comprehensive list containing:
+A list with:
 \itemize{
-\item \code{Clusterings}: List of all clustering solutions for each G and run
-\item \code{QualityMetrics}: Data frame with quality metrics (fDB, silhouette, etc.)
-for each solution
-\item \code{ConsensusInfo}: Consensus matrices and stability measures across runs
-\item \code{Parameters}: Summary of all tested parameter combinations
-\item \code{seed}: The random seed used for reproducibility
+\item \code{Clusterings}: fitted models for the distinct initial partitions,
+including \code{TT}, \code{fDB}, and silhouette metrics, fitted parameters, \code{h},
+and partition frequency;
+\item \code{KData}: the preprocessed spline bases and longitudinal data;
+\item \code{Seed}: the supplied random seed.
 }
 }
 \description{
-Performs comprehensive clustering analysis using the Functional Clustering Model approach.
-This function fits multiple clustering solutions with different numbers of clusters and
-parameters, running multiple iterations to ensure stability and robustness. The method
-is particularly suited for functional/longitudinal data where curves are clustered based
-on their shape and temporal patterns.
+Fits the functional clustering model for several requested numbers of
+clusters and random k-means initialisations. Equivalent initial partitions
+are grouped before model fitting and their occurrence frequency is retained.
 }
 \details{
 \strong{Clustering Approach:}
@@ -81,13 +87,13 @@ The function implements functional clustering based on the Sugar & James model, 
 \itemize{
 \item \strong{G}: Start with 2-6 clusters, extend based on domain knowledge
 \item \strong{p}: Use \code{estimatepDimension()} to find optimal spline dimensions
-\item \strong{h}: Usually 2-3, must be ≤ min(p, G-1)
+\item \strong{h}: Usually 2-3, must be no greater than \code{min(p, G - 1)}
 \item \strong{runs}: 50-100 for final analysis, 10-20 for exploration
 }
 
 \strong{Quality Assessment:}
-Multiple quality metrics are computed including functional Data Depth (fDB),
-silhouette scores, and stability measures to help identify optimal solutions.
+The fitted quality metrics are total tightness (\code{TT}), the functional
+Davies--Bouldin index (\code{fDB}), and mean silhouette width (\code{Sil}).
 }
 \examples{
 \dontrun{

@@ -2,16 +2,29 @@
 % Please edit documentation in R/CONNECTORDataClustered-class.R
 \name{getMeasures}
 \alias{getMeasures}
-\title{getMeasures}
+\alias{getMeasures,CONNECTORData-method}
+\alias{getMeasures,CONNECTORDataClustered-method}
+\title{List measures in a MultiConnector object}
 \usage{
 getMeasures(object)
+
+\S4method{getMeasures}{CONNECTORData}(object)
+
+\S4method{getMeasures}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORData or CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORData} or
+\linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-A vector of measure names.
+A character vector containing the measure names in time-grid order.
 }
 \description{
-Extract and display measures from CONNECTORData or CONNECTORDataClustered object.
+List measures in a MultiConnector object
+}
+\examples{
+\dontrun{
+getMeasures(data)
+getMeasures(clustered_data)
+}
 }

@@ -2,22 +2,23 @@
 % Please edit documentation in R/CONNECTORDataClustered-class.R
 \name{getClusters}
 \alias{getClusters}
-\title{getClusters}
+\alias{getClusters,CONNECTORDataClustered-method}
+\title{Extract cluster assignments}
 \usage{
 getClusters(object)
+
+\S4method{getClusters}{CONNECTORDataClustered}(object)
 }
 \arguments{
-\item{object}{CONNECTORDataClustered object}
+\item{object}{A \linkS4class{CONNECTORDataClustered} object.}
 }
 \value{
-A dataframe with the cluster association for each subjID.
+A data frame with one row per subject and columns \code{subjID} and
+\code{cluster}. Cluster labels are returned as a factor using the names supplied
+by \code{\link[=setClusterNames]{setClusterNames()}}.
 }
 \description{
-Extract and display clusters from  CONNECTORDataClustered object.
-Shows all available features (annotation columns) in both cases.
-}
-\details{
-This method provides the features available in the annotations of the provided object.
+Extract cluster assignments
 }
 \examples{
 \dontrun{

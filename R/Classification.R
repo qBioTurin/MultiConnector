@@ -1,34 +1,20 @@
-#' ClassificationCurves
+#' Classified longitudinal curves
 #'
-#' @description ...
+#' Stores posterior cluster-membership probabilities and assignments obtained by
+#' applying a selected clustering model to new longitudinal curves. Objects are
+#' created by [ClassificationCurves()].
 #'
+#' @slot ClassMatrix A data frame with one row per new subject, a `subjID`
+#'   column, and one posterior-probability column per cluster.
+#' @slot ClassMatrix_entropy A data frame containing cluster probabilities,
+#'   entropy, maximum posterior probability, and the final cluster label (or
+#'   `"Unclassified"`) for every subject.
+#' @slot ClassificationData The [CONNECTORData-class] object containing the new
+#'   curves.
+#' @slot ClusteredData The [CONNECTORDataClustered-class] model used for
+#'   classification.
 #'
-#'
-#' @param data CONNECTORData. See CONNECTORData for details.
-#' @param CONNECTORDataClustered Configuration choosen by ConfigSelection()
-#' @param cores number of cores used
-#' @param entropyCutoff ...
-#' @param probCutoff ...
-#'
-#' @return ...
-#'
-#' @seealso CONNECTORDataClustered()
-#'
-#' @import parallel ggplot2
-#' @importFrom Matrix bdiag
-#' @importFrom dplyr select filter group_by mutate arrange
-#' @importFrom tidyr gather spread
-#' @export
-#'
-
-#' @seealso CONNECTORDataClustered()
-#'
-#' CONNECTORDataClassified
-#' @description Objects of this class hold the results of classifying new curves into existing clusters.
-#' @slot ClassMatrix Data frame with classification probabilities for each subject.
-#' @slot ClassMatrix_entropy Data frame with classification results including entropy and certainty thresholds.
-#' @slot ClassificationData The CONNECTORData object containing the new curves.
-#' @slot ClusteredData The CONNECTORDataClustered model used for classification.
+#' @seealso [ClassificationCurves()] and [plot()].
 #' @export
 setClass(
   "CONNECTORDataClassified",
@@ -40,6 +26,47 @@ setClass(
   )
 )
 
+#' Classify new longitudinal curves
+#'
+#' Projects new curves onto a fitted functional clustering model and computes
+#' their posterior probabilities of belonging to each existing cluster.
+#'
+#' @param data A [CONNECTORData-class] object containing the new curves. Its
+#'   measures must be compatible with those in the fitted model.
+#' @param CONNECTORDataClustered A [CONNECTORDataClustered-class] object used as
+#'   the reference model.
+#' @param cores Positive integer number of worker processes used across subjects.
+#' @param entropyCutoff Numeric entropy threshold. A subject is assigned when its
+#'   entropy is below this value or its largest posterior probability exceeds
+#'   `probCutoff`.
+#' @param probCutoff Numeric threshold for the largest posterior probability.
+#'
+#' @return A [CONNECTORDataClassified-class] object.
+#'
+#' @details
+#' Subjects with fewer than two observations in any measure receive zero raw
+#' likelihoods and cannot be classified reliably. Entropy is measured in bits.
+#'
+#' @examples
+#' \dontrun{
+#' classified <- ClassificationCurves(
+#'   new_data,
+#'   clustered_data,
+#'   cores = 2,
+#'   entropyCutoff = 1,
+#'   probCutoff = 0.6
+#' )
+#' classified@ClassMatrix
+#' plot(classified)
+#' }
+#'
+#' @seealso [CONNECTORDataClassified-class], [selectCluster()], [plot()]
+#'
+#' @import parallel ggplot2
+#' @importFrom Matrix bdiag
+#' @importFrom dplyr select filter group_by mutate arrange
+#' @importFrom tidyr gather spread
+#' @export
 setGeneric("ClassificationCurves", function(data,
                                             CONNECTORDataClustered,
                                             cores = 1,
@@ -47,6 +74,7 @@ setGeneric("ClassificationCurves", function(data,
   standardGeneric("ClassificationCurves")
 })
 
+#' @rdname ClassificationCurves
 #' @export
 setMethod(
   "ClassificationCurves", signature(data = "CONNECTORData", CONNECTORDataClustered = "CONNECTORDataClustered"),
@@ -186,6 +214,8 @@ setMethod(
   }
 )
 
+#' @rdname show
+#' @aliases show,CONNECTORDataClassified-method
 setMethod("show", signature(object = "CONNECTORDataClassified"), function(object) {
   cat("CONNECTORDataClassified Object\n")
   cat("------------------------------\n")
