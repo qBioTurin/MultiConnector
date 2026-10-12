@@ -253,6 +253,7 @@ setMethod(
             MaximumD <- MaximumDiscriminationFunction(obj)
             model_report$plots$maxdiscriminant_plot <- MaximumD$Separated
             model_report$tables$discriminant_areas <- MaximumD$measure_areas
+            model_report$plots$SeparationOverview <- MaximumD$SeparationOverview
           },
           error = function(e) {
             cat(paste("  Warning: Maximum discrimination analysis failed for", model_name, ":", e$message, "\n"))
