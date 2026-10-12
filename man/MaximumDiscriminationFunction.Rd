@@ -18,9 +18,15 @@ their signs.}
 \value{
 MaximumDiscriminationFunction returns a list containing:
 \itemize{
-\item \code{DiscrFunctionsPlot}: A ggplot object showing overlapping discriminant functions for each measure in a grid.
-\item \code{Separated}: A ggplot object showing separated discriminant functions, ordered by their total area (importance).
-\item \code{measure_areas}: A data frame containing the calculated areas for each measure and function, representing their relative importance in clustering.
+  \item \code{DiscrFunctionsPlot}: A ggplot object showing overlapping discriminant functions for each measure in a grid.
+  \item \code{Separated}: A ggplot object showing separated discriminant functions, ordered by their total absolute area.
+  \item \code{measure_areas}: Total absolute coefficient area per measure; this is not a percentage of clustering importance.
+  \item \code{LocalSeparationPlot}: A ggplot comparing the local separation index across measures on a common vertical scale.
+  \item \code{local_separation}: A data frame with \code{measureID}, \code{Time}, \code{BetweenVariance}, \code{WithinVariance}, and \code{LocalSeparation}.
+  \item \code{separation_summary}: Per-measure \code{MeanSeparation} and \code{Area}, integrated over the common interval \code{TimeStart} to \code{TimeEnd}, sorted by decreasing mean separation.
+  \item \code{SeparationSummaryPlot}: A horizontal bar chart of mean local separation over the common time interval.
+  \item \code{SeparationOverview}: A patchwork combining the local separation and summary plots.
+  \item \code{separation_intervals}: Background-band cells with \code{TimeStart}, \code{TimeEnd}, and the leading \code{measureID}; \code{NA} denotes ties or unavailable comparisons.
 }
 }
 \description{
@@ -28,11 +34,40 @@ Computes the time-dependent discriminant weights associated with the fitted
 projection directions. Measures are ordered by the total absolute area under
 their discriminant functions.
 }
+\details{
+The local index is \eqn{J_m(t) = \sum_k \pi_k
+(\mu_{km}(t) - \bar\mu_m(t))^2 / v_m(t)}, where cluster means and
+proportions come from the fitted model and
+\eqn{v_m(t) = s_m(t)\Gamma s_m(t)^T + \sigma_m}.
+It measures marginal separation relative to within-cluster variation, not
+additional information conditional on other measures. It is independent of
+\code{absvalue} and is not a probability or an importance percentage.
+The summary uses trapezoidal integration on each measure's time grid within
+the intersection of all time ranges, with linear interpolation at its
+endpoints. Mean separation is area divided by interval duration. If the
+common interval has no positive duration, summary scores are \code{NA} and
+a warning is issued. Nonpositive within-cluster variances produce \code{NA}
+indices and a warning; affected summary scores are also \code{NA}.
+Plot colors identify the same measures across all panels. Discriminant
+directions are distinguished by line type. Shading under weights extends to
+zero and does not represent uncertainty. Background bands in the local
+separation plot compare linearly interpolated indices at the midpoints of
+400 equal cells over the common interval. They approximate which measure has
+the largest local index; ties within relative tolerance \code{1e-8} (with
+scale at least one) and missing comparisons are grey. No extrapolation or
+confidence intervals are used. Bands are omitted for a single measure or
+an empty common interval.
+}
 \examples{
 \dontrun{
 discrimination <- MaximumDiscriminationFunction(clustered_data)
 discrimination$DiscrFunctionsPlot
 discrimination$measure_areas
+discrimination$LocalSeparationPlot
+discrimination$local_separation
+discrimination$separation_summary
+discrimination$SeparationOverview
+discrimination$SeparationSummaryPlot
 }
 
 }
