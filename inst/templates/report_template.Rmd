@@ -144,11 +144,14 @@ if (!is.null(report$clustering_results) && length(report$clustering_results) > 0
                     cat("\n\n")
                 }
             }
-
             if (!is.null(res$plots$maxdiscriminant_plot)) {
                 print(res$plots$maxdiscriminant_plot)
                 cat("\n\n")
                 print(knitr::kable(x = res$tables$discriminant_areas, caption = "Relative importance of measures in clustering."))
+                cat("\n\n")
+            }
+            if (!is.null(res$plots$SeparationOverview)) {
+                print(res$plots$SeparationOverview)
                 cat("\n\n")
             }
         }
